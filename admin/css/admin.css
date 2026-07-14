@@ -497,13 +497,24 @@ a.ovebotai-dash-card-wide-count:hover { text-decoration: underline; }
 	font-size: 20px;
 }
 
-.ovebotai-back-link {
+.ovebotai-back-link,
+.ovebotai-back-link:hover,
+.ovebotai-back-link:focus,
+.ovebotai-back-link:focus-visible,
+.ovebotai-back-link:active {
 	font-size: 13px;
 	color: #50575e;
 	text-decoration: none;
+	border: 0 !important;
+	border-color: transparent !important;
+	box-shadow: none !important;
+	outline: none !important;
+	background: none !important;
 }
 
-.ovebotai-back-link:hover {
+.ovebotai-back-link:hover,
+.ovebotai-back-link:focus,
+.ovebotai-back-link:focus-visible {
 	color: #2271b1;
 	text-decoration: underline;
 }
@@ -530,16 +541,24 @@ a.ovebotai-dash-card-wide-count:hover { text-decoration: underline; }
 
 .ovebotai-status-dot.is-connected { background: #00a32a; }
 
-.ovebotai-disconnect-btn {
+.ovebotai-disconnect-btn,
+.ovebotai-disconnect-btn:hover,
+.ovebotai-disconnect-btn:focus,
+.ovebotai-disconnect-btn:focus-visible,
+.ovebotai-disconnect-btn:active {
 	color: #d63638 !important;
 	font-size: 12px !important;
 	text-decoration: none !important;
 	border: 0 !important;
+	border-color: transparent !important;
 	box-shadow: none !important;
 	outline: none !important;
+	background: none !important;
 }
 
-.ovebotai-disconnect-btn:hover { text-decoration: underline !important; }
+.ovebotai-disconnect-btn:hover,
+.ovebotai-disconnect-btn:focus,
+.ovebotai-disconnect-btn:focus-visible { text-decoration: underline !important; }
 
 /* ── Save notice ─────────────────────────────────────────────────────────── */
 

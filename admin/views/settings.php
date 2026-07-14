@@ -2,6 +2,7 @@
 defined( 'ABSPATH' ) || exit;
 
 $ovebotai_oauth     = Ovebotai_OAuth::instance();
+$ovebotai_workspace = $ovebotai_oauth->get_workspace();
 $ovebotai_widget    = Ovebotai_Settings::get_widget();
 
 $ovebotai_feed_hash = (string) get_option( 'ovebotai_feed_hash', '' );
