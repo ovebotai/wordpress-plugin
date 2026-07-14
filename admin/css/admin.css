@@ -27,6 +27,12 @@
 	gap: 12px;
 }
 
+.ovebotai-logo a {
+	display: block;
+	line-height: 0;
+	text-decoration: none;
+}
+
 .ovebotai-logo img {
 	display: block;
 	max-width: 160px;

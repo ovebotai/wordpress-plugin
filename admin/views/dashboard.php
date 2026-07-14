@@ -50,7 +50,9 @@ if ( $is_connected && $workspace ) {
 
 	<div class="ovebotai-settings-header">
 		<div class="ovebotai-logo">
-			<img src="<?php echo esc_url( OVEBOTAI_URL . 'admin/img/logo.png' ); ?>" alt="Ovebot.ai" height="32">
+			<a href="https://ovebot.ai" target="_blank" rel="noopener noreferrer">
+				<img src="<?php echo esc_url( OVEBOTAI_URL . 'admin/img/logo.png' ); ?>" alt="Ovebot.ai" height="32">
+			</a>
 			<h1><?php esc_html_e( 'Ovebot.ai', 'ovebotai' ); ?></h1>
 		</div>
 		<?php require OVEBOTAI_DIR . 'admin/views/partials/connection-badge.php'; ?>

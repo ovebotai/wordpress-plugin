@@ -15,7 +15,9 @@ $is_connected = $oauth->is_connected(); // false when refresh token missing/revo
 
 	<div class="ovebotai-settings-header">
 		<div class="ovebotai-logo">
-			<img src="<?php echo esc_url( OVEBOTAI_URL . 'admin/img/logo.png' ); ?>" alt="Ovebot.ai" height="32">
+			<a href="https://ovebot.ai" target="_blank" rel="noopener noreferrer">
+				<img src="<?php echo esc_url( OVEBOTAI_URL . 'admin/img/logo.png' ); ?>" alt="Ovebot.ai" height="32">
+			</a>
 			<h1><?php esc_html_e( 'Settings', 'ovebotai' ); ?></h1>
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=ovebotai' ) ); ?>" class="ovebotai-back-link">
 				<?php esc_html_e( '← Dashboard', 'ovebotai' ); ?>

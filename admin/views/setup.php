@@ -25,7 +25,9 @@ $oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp_unslash(
 		<!-- Header -->
 		<div class="ovebotai-setup-header">
 			<div class="ovebotai-logo">
-				<img src="<?php echo esc_url( OVEBOTAI_URL . 'admin/img/logo.png' ); ?>" alt="Ovebot.ai" height="36">
+				<a href="https://ovebot.ai" target="_blank" rel="noopener noreferrer">
+					<img src="<?php echo esc_url( OVEBOTAI_URL . 'admin/img/logo.png' ); ?>" alt="Ovebot.ai" height="36">
+				</a>
 			</div>
 		</div>
 
