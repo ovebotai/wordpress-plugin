@@ -57,9 +57,6 @@ ovebot_ai.push(['chat', <?php echo wp_json_encode( $params ?: (object) array() )
 		?>
 <script>
   (function () {
-    var KEY = 'ovebot_autoopened';
-    if (localStorage.getItem(KEY)) return;   // vizitatorul a mai fost -> nu deschidem
-
     var MAX_MS = 15000;
     var t0 = Date.now();
 
@@ -82,7 +79,6 @@ ovebot_ai.push(['chat', <?php echo wp_json_encode( $params ?: (object) array() )
         // fab e vizibil doar când chat-ul e închis; ascuns (display:none) când e deja deschis
         var visible = window.getComputedStyle(fab).display !== 'none';
         if (visible) {
-          localStorage.setItem(KEY, '1');
           fab.click();
         }
         clearInterval(timer);   // widget-ul e prezent -> oprim polling-ul oricum
