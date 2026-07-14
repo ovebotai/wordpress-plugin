@@ -51,13 +51,6 @@ class Ovebotai_Settings {
 
 		update_option( 'ovebotai_chat_status', ! empty( $_POST['chat_status'] ) ? '1' : '0', false );
 
-		if ( isset( $_POST['workspace'] ) ) {
-			update_option( 'ovebotai_workspace', sanitize_key( wp_unslash( $_POST['workspace'] ) ), false );
-		}
-		if ( isset( $_POST['agent'] ) ) {
-			update_option( 'ovebotai_agent', sanitize_key( wp_unslash( $_POST['agent'] ) ), false );
-		}
-
 		$widget = array();
 		foreach ( self::$widget_keys as $key ) {
 			if ( isset( $_POST[ 'widget_' . $key ] ) ) {
@@ -87,42 +80,20 @@ class Ovebotai_Settings {
 			}
 		}
 
-		// ── Requires OAuth: knowledge base pages ──────────────────────────────
-		// Every checked page is created/updated on each save (so edited page
-		// content stays in sync, not just brand-new pages). Pages that were
-		// checked before and are unchecked now get deactivated — that part
-		// has to stay diff-based, there's no other way to know what to unset.
-
-		$kb_checked_ids  = array_map( 'absint', (array) ( $_POST['kb_pages'] ?? array() ) );
-		$kb_previous_ids = (array) get_option( 'ovebotai_kb_page_ids', array() );
-		$kb_removed_ids  = array_diff( $kb_previous_ids, $kb_checked_ids );
-
-		update_option( 'ovebotai_kb_page_ids', $kb_checked_ids, false );
-
-		$kb_setup    = Ovebotai_Setup::instance();
-		$kb_result   = $kb_setup->sync_kb_pages( $kb_checked_ids, true );
-		$kb_errors   = $kb_result['errors'];
-		$kb_warnings = $kb_result['warnings'];
-		if ( $kb_removed_ids ) {
-			$kb_removed_result = $kb_setup->sync_kb_pages( $kb_removed_ids, false );
-			$kb_errors         = array_merge( $kb_errors, $kb_removed_result['errors'] );
-			$kb_warnings       = array_merge( $kb_warnings, $kb_removed_result['warnings'] );
-		}
+		// Knowledge base pages are only synced from the setup wizard — this form
+		// never touches _ovebotai_kb_id mappings or triggers a KB sync.
 
 		// ── Sync everything else to Ovebot API ────────────────────────────────
 
 		$api_error  = $this->sync_to_api( $widget );
-		$all_errors = $kb_errors;
-		if ( $api_error ) {
-			$all_errors[] = $api_error;
-		}
+		$all_errors = $api_error ? array( $api_error ) : array();
 
-		// Local save always succeeded at this point — remote sync failures and
-		// skipped KB pages are reported as warnings alongside the success
-		// message, not as a reason to call the save itself unsuccessful.
+		// Local save always succeeded at this point — a remote sync failure is
+		// reported as a warning alongside the success message, not as a reason
+		// to call the save itself unsuccessful.
 		wp_send_json_success( array(
 			'message'  => __( 'Settings saved.', 'ovebotai' ),
-			'warnings' => array_merge( $all_errors, $kb_warnings ),
+			'warnings' => $all_errors,
 		) );
 	}
 

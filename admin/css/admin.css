@@ -727,7 +727,7 @@ a.ovebotai-dash-card-wide-count:hover { text-decoration: underline; }
 .ovebotai-save-row {
 	position: sticky;
 	bottom: 0px;
-	padding: 12px 0 8px;
+	padding: 16px;
 	background: #fff;
 }
 

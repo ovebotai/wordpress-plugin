@@ -65,7 +65,6 @@ class Ovebotai_Feed {
 	// availability just relays _stock_status ("onbackorder" => "preorder"). Products
 	// that end up "out_of_stock" either way are never included.
 	private function build_feed(): array {
-		$lang     = get_bloginfo( 'language' );
 		$currency = Ovebotai::store_currency();
 
 		$args = array(
@@ -95,8 +94,11 @@ class Ovebotai_Feed {
 
 			if ( $manage_stock ) {
 				// Managed stock: trust our own quantity/backorder math over the
-				// (possibly stale) _stock_status meta.
-				$quantity   = (int) $product->get_stock_quantity();
+				// (possibly stale) _stock_status meta. Net out stock already held
+				// by unpaid/pending orders (WooCommerce's checkout hold window) so
+				// we don't advertise quantity that's already spoken for.
+				$held       = (int) wc_get_held_stock_quantity( $product );
+				$quantity   = max( 0, (int) $product->get_stock_quantity() - $held );
 				$backorders = $product->get_backorders(); // 'no' | 'notify' | 'yes'
 
 				if ( $quantity <= 0 ) {
@@ -144,7 +146,11 @@ class Ovebotai_Feed {
 				}
 			}
 
-			$description = wp_strip_all_tags( $product->get_short_description() ?: $product->get_description() );
+			// strip_shortcodes() first: shortcode brackets like [gallery] or
+			// [contact-form-7] aren't HTML tags, so wp_strip_all_tags() alone
+			// would leave the raw "[shortcode attr=...]" text in the feed.
+			$description = strip_shortcodes( $product->get_short_description() ?: $product->get_description() );
+			$description = wp_strip_all_tags( $description );
 			$description = html_entity_decode( $description, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 			$description = trim( (string) preg_replace( '/\s+/', ' ', $description ) );
 
@@ -160,7 +166,6 @@ class Ovebotai_Feed {
 				'image'        => $image_url ?: null,
 				'url'          => get_permalink( $pid ),
 				'attributes'   => $attributes,
-				'lang'         => $lang,
 			);
 
 			// Quantity and special are optional: omit them entirely rather than

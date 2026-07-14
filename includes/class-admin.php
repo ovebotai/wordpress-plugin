@@ -48,26 +48,16 @@ class Ovebotai_Admin {
 	// ── Admin menu ───────────────────────────────────────────────────────────
 
 	public function register_menu() {
-		add_menu_page(
+		// Under Settings rather than its own top-level menu item — the page
+		// itself (slug "ovebotai") is unchanged, so every existing
+		// admin.php?page=ovebotai link/redirect keeps working as-is.
+		add_options_page(
 			__( 'Ovebot.ai', 'ovebotai' ),
 			__( 'Ovebot.ai', 'ovebotai' ),
 			'manage_options',
 			'ovebotai',
-			array( $this, 'render_page' ),
-			$this->menu_icon(),
-			58
+			array( $this, 'render_page' )
 		);
-	}
-
-	private function menu_icon(): string {
-		// Simplified version of the Ovebot.ai circular mark, using brand purple.
-		// WP colours menu icons via CSS filter when active; we use currentColor so it works.
-		$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">'
-			. '<circle cx="10" cy="10" r="9" fill="none" stroke="#a7aaad" stroke-width="2"/>'
-			. '<path d="M10 4a6 6 0 1 1-4.243 10.243" stroke="#a7aaad" stroke-width="2" fill="none" stroke-linecap="round"/>'
-			. '<path d="M4.5 11.5 6 10l1.5 1.5-1.5 1.5z" fill="#a7aaad"/>'
-			. '</svg>';
-		return 'data:image/svg+xml;base64,' . base64_encode( $svg );
 	}
 
 	// ── OAuth: start ────────────────────────────────────────────────────────
@@ -148,7 +138,8 @@ class Ovebotai_Admin {
 	// ── Assets ───────────────────────────────────────────────────────────────
 
 	public function enqueue_assets( string $hook ) {
-		if ( 'toplevel_page_ovebotai' !== $hook ) return;
+		// Hook suffix for a page registered under Settings (add_options_page).
+		if ( 'settings_page_ovebotai' !== $hook ) return;
 
 		wp_enqueue_style(
 			'ovebotai-admin',
@@ -169,8 +160,9 @@ class Ovebotai_Admin {
 					true
 				);
 				wp_localize_script( 'ovebotai-settings', 'ovebotaiSettings', array(
-					'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
-					'nonce'      => wp_create_nonce( 'ovebotai_settings' ),
+					'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
+					'nonce'        => wp_create_nonce( 'ovebotai_settings' ),
+					'dashboardUrl' => admin_url( 'admin.php?page=ovebotai' ),
 					'i18n'       => array(
 						'saved'             => __( 'Settings saved.', 'ovebotai' ),
 						'saving'            => __( 'Saving…', 'ovebotai' ),

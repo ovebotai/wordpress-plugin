@@ -22,12 +22,16 @@
 					var needsReconnect = resp.success && resp.data && resp.data.partial && !(warnings && warnings.length);
 					showNotice( ! needsReconnect && resp.success, msg, needsReconnect ? 'warning' : null );
 					showWarnings( resp.success ? warnings : null );
+
+					if (resp.success && cfg.dashboardUrl) {
+						setTimeout(function () { window.location.href = cfg.dashboardUrl; }, 1200);
+					} else {
+						$btn.prop('disabled', false).text(ovebotaiSettingsText);
+					}
 				})
 				.fail(function () {
 					showNotice(false, cfg.i18n.error);
 					showWarnings(null);
-				})
-				.always(function () {
 					$btn.prop('disabled', false).text(ovebotaiSettingsText);
 				});
 		});

@@ -155,7 +155,10 @@ class Ovebotai_Setup {
 				continue;
 			}
 
-			$raw_content = wp_strip_all_tags( $post->post_content );
+			// strip_shortcodes() first: shortcode brackets like [gallery] or
+			// [contact-form-7] aren't HTML tags, so wp_strip_all_tags() alone
+			// would leave the raw "[shortcode attr=...]" text in the KB entry.
+			$raw_content = wp_strip_all_tags( strip_shortcodes( $post->post_content ) );
 			$content     = html_entity_decode( $raw_content, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 			$content     = trim( (string) preg_replace( '/\s+/', ' ', $content ) );
 

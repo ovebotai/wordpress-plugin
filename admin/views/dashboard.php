@@ -7,8 +7,10 @@ $is_connected = $oauth->is_connected();
 
 // Live product count from Ovebot.ai's side (how many products it actually has
 // indexed for this agent) — not the local feed_count, which is what we send.
+// There's no product feed at all without WooCommerce, so skip entirely.
+$wc_active      = Ovebotai::woocommerce_active();
 $products_count = 0;
-if ( $is_connected ) {
+if ( $wc_active && $is_connected ) {
 	$status_result = $oauth->api_request( 'GET', '/v1/integration/status' );
 	if ( ( $status_result['status'] ?? 0 ) >= 200 && ( $status_result['status'] ?? 0 ) < 300 ) {
 		$products_count = (int) ( $status_result['body']['integration']['counts']['products'] ?? 0 );
@@ -71,6 +73,7 @@ if ( $is_connected && $workspace ) {
 		<?php endif; ?>
 	</div>
 
+	<?php if ( $wc_active ) : ?>
 	<div class="ovebotai-dash-card-wide">
 		<span class="ovebotai-dash-card-wide-label"><?php esc_html_e( 'Products', 'ovebotai' ); ?></span>
 		<?php
@@ -85,6 +88,7 @@ if ( $is_connected && $workspace ) {
 		<span class="<?php echo esc_attr( $count_classes ); ?>"><?php echo $count_html; ?></span>
 		<?php endif; ?>
 	</div>
+	<?php endif; ?>
 
 	<div class="ovebotai-fieldset">
 		<div class="ovebotai-fieldset-legend"><?php esc_html_e( 'Knowledge Bases', 'ovebotai' ); ?></div>

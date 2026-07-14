@@ -21,8 +21,12 @@ class Ovebotai_OAuth {
 		$challenge = $this->b64url( hash( 'sha256', $verifier, true ) );
 		$state     = bin2hex( random_bytes( 8 ) );
 
-		set_transient( 'ovebotai_pkce_verifier', $verifier, 600 );
-		set_transient( 'ovebotai_oauth_state',   $state,    600 );
+		// Keyed by the state itself (not a single fixed slot) so clicking
+		// "Connect" again — e.g. after abandoning a prior attempt partway
+		// through Ovebot's domain/workspace flow and going back — doesn't
+		// invalidate an still-in-flight authorization that later completes
+		// with the earlier state, causing a false "state mismatch".
+		set_transient( 'ovebotai_pkce_verifier_' . $state, $verifier, 600 );
 
 		return 'https://' . OVEBOTAI_ACCOUNT_HOST . '/oauth/authorize?' . http_build_query( array(
 			'site_domain'            => (string) parse_url( home_url(), PHP_URL_HOST ),
@@ -37,13 +41,10 @@ class Ovebotai_OAuth {
 	// ── Code exchange ────────────────────────────────────────────────────────
 
 	public function exchange_code( string $code, string $state ): array {
-		$saved_state = get_transient( 'ovebotai_oauth_state' );
-		$verifier    = get_transient( 'ovebotai_pkce_verifier' );
+		$verifier = get_transient( 'ovebotai_pkce_verifier_' . $state );
+		delete_transient( 'ovebotai_pkce_verifier_' . $state );
 
-		delete_transient( 'ovebotai_oauth_state' );
-		delete_transient( 'ovebotai_pkce_verifier' );
-
-		if ( ! $saved_state || ! hash_equals( (string) $saved_state, $state ) ) {
+		if ( ! $verifier ) {
 			return array( 'error' => __( 'State mismatch. Please try again.', 'ovebotai' ) );
 		}
 

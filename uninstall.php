@@ -52,19 +52,19 @@ foreach ( $options as $option ) {
 	delete_option( $option );
 }
 
-delete_transient( 'ovebotai_pkce_verifier' );
-delete_transient( 'ovebotai_oauth_state' );
-
 // ── Per-page knowledge-base id mapping ───────────────────────────────────
 
 delete_post_meta_by_key( '_ovebotai_kb_id' );
 
-// ── Cached product feed pages (transient key includes a version number, so
-//    match by prefix rather than tracking every version ever used) ────────
+// ── Cached product feed pages + pending OAuth PKCE verifiers (both use a
+//    transient key with a variable suffix — version number, or per-attempt
+//    state — so match by prefix rather than tracking every value ever used)
 
 global $wpdb;
 $wpdb->query(
 	"DELETE FROM {$wpdb->options}
 	 WHERE option_name LIKE '\_transient\_ovebotai\_feed\_v%'
-	    OR option_name LIKE '\_transient\_timeout\_ovebotai\_feed\_v%'"
+	    OR option_name LIKE '\_transient\_timeout\_ovebotai\_feed\_v%'
+	    OR option_name LIKE '\_transient\_ovebotai\_pkce\_verifier\_%'
+	    OR option_name LIKE '\_transient\_timeout\_ovebotai\_pkce\_verifier\_%'"
 );
