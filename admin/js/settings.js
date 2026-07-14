@@ -83,10 +83,9 @@
 				.done(function (resp) {
 					if (resp.success) {
 						$('#oveFeedUrl').val(resp.data.url);
-						var msg = resp.data.message || cfg.i18n.saved;
-						showNotice(!resp.data.partial, msg, resp.data.partial ? 'warning' : null);
+						showNotice(true, resp.data.message || cfg.i18n.saved);
 					} else {
-						showNotice(false, cfg.i18n.error);
+						showNotice(false, (resp.data && resp.data.message) || cfg.i18n.error);
 					}
 				})
 				.always(function () { $btn.prop('disabled', false); });
@@ -102,10 +101,9 @@
 					if (resp.success) {
 						$('#oveApiUser').val(resp.data.user);
 						$('#oveApiPass').val(resp.data.pass);
-						var msg = resp.data.message || cfg.i18n.saved;
-						showNotice(!resp.data.partial, msg, resp.data.partial ? 'warning' : null);
+						showNotice(true, resp.data.message || cfg.i18n.saved);
 					} else {
-						showNotice(false, cfg.i18n.error);
+						showNotice(false, (resp.data && resp.data.message) || cfg.i18n.error);
 					}
 				})
 				.always(function () { $btn.prop('disabled', false); });

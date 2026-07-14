@@ -171,20 +171,26 @@ class Ovebotai_Settings {
 			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'ovebotai' ) ) );
 		}
 
-		$hash = wp_generate_password( 32, false );
-		update_option( 'ovebotai_feed_hash', $hash, false );
-
-		// Sync new feed URL to API immediately — do not wait for the form save.
+		$hash     = wp_generate_password( 32, false );
 		$feed_url = add_query_arg( 'hash', $hash, home_url( '/wp-json/ovebotai/v1/feed' ) );
-		$synced   = $this->put_setup( array( 'products' => array( 'feed_url' => $feed_url ) ) );
+
+		// Sync the new feed URL to Ovebot.ai first — only persist locally once we
+		// have confirmation it took, so the old (still working) hash never gets
+		// clobbered by one that Ovebot.ai never actually received.
+		$synced = $this->put_setup( array( 'products' => array( 'feed_url' => $feed_url, 'enabled' => true ) ) );
+
+		if ( ! $synced ) {
+			wp_send_json_error( array(
+				'message' => __( 'Could not sync with Ovebot.ai — feed hash left unchanged.', 'ovebotai' ),
+			) );
+		}
+
+		update_option( 'ovebotai_feed_hash', $hash, false );
 
 		wp_send_json_success( array(
 			'hash'    => $hash,
 			'url'     => $feed_url,
-			'partial' => ! $synced,
-			'message' => $synced
-				? __( 'Feed URL regenerated and synced with Ovebot.ai.', 'ovebotai' )
-				: __( 'Feed URL regenerated locally, but could not sync with Ovebot.ai.', 'ovebotai' ),
+			'message' => __( 'Feed URL regenerated and synced with Ovebot.ai.', 'ovebotai' ),
 		) );
 	}
 
@@ -201,19 +207,24 @@ class Ovebotai_Settings {
 		$user = trim( $slug, '_' ) . '_' . substr( wp_generate_password( 8, false ), 0, 8 );
 		$pass = wp_generate_password( 24, false );
 
+		// Sync the new credentials to Ovebot.ai first — only persist locally once
+		// we have confirmation it took, so the old (still working) credentials
+		// never get clobbered by ones that Ovebot.ai never actually received.
+		$synced = $this->put_setup( array( 'order_info' => array( 'api_user' => $user, 'api_password' => $pass, 'enabled' => true ) ) );
+
+		if ( ! $synced ) {
+			wp_send_json_error( array(
+				'message' => __( 'Could not sync with Ovebot.ai — credentials left unchanged.', 'ovebotai' ),
+			) );
+		}
+
 		update_option( 'ovebotai_order_user', $user, false );
 		update_option( 'ovebotai_order_pass', $pass, false );
-
-		// Sync to API immediately — do not wait for the form save.
-		$synced = $this->put_setup( array( 'order_info' => array( 'api_user' => $user, 'api_password' => $pass ) ) );
 
 		wp_send_json_success( array(
 			'user'    => $user,
 			'pass'    => $pass,
-			'partial' => ! $synced,
-			'message' => $synced
-				? __( 'Credentials regenerated and synced with Ovebot.ai.', 'ovebotai' )
-				: __( 'Credentials regenerated locally, but could not sync with Ovebot.ai.', 'ovebotai' ),
+			'message' => __( 'Credentials regenerated and synced with Ovebot.ai.', 'ovebotai' ),
 		) );
 	}
 
