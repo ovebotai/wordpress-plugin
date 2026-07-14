@@ -83,7 +83,7 @@ $oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp_unslash(
 					</form>
 					<div class="ovebotai-register-hint">
 						<?php esc_html_e( "Don't have an account?", 'ovebotai' ); ?>
-						<a href="https://account.ovebot.ai/ro/register" target="_blank" rel="noopener noreferrer">
+						<a href="https://account.ovebot.ai/register" target="_blank" rel="noopener noreferrer">
 							<?php esc_html_e( 'Create an account →', 'ovebotai' ); ?>
 						</a>
 					</div>
