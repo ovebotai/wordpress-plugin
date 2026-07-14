@@ -85,7 +85,7 @@ class Ovebotai_Settings {
 
 		// ── Sync everything else to Ovebot API ────────────────────────────────
 
-		$api_error  = $this->sync_to_api( $widget );
+		$api_error  = $this->sync_to_api();
 		$all_errors = $api_error ? array( $api_error ) : array();
 
 		// Local save always succeeded at this point — a remote sync failure is
@@ -97,43 +97,16 @@ class Ovebotai_Settings {
 		) );
 	}
 
-	private function sync_to_api( array $widget ): string {
-		$oauth = Ovebotai_OAuth::instance();
-
-		// Widget section — filter empty values so we don't override with blanks.
-		$widget_payload = array_filter( $widget, function( $v ) { return $v !== ''; } );
-		$order_url      = home_url( '/wp-json/ovebotai/v1/orders' );
-
-		$payload = array(
-			'widget'     => $widget_payload ?: (object) array(),
-			'order_info' => array(
-				'enabled'      => true,
-				'api_url'      => $order_url,
-				'api_user'     => (string) get_option( 'ovebotai_order_user', '' ),
-				'api_password' => (string) get_option( 'ovebotai_order_pass', '' ),
-				'lookup_method'=> 'email',
-			),
-		);
-
-		// Checked live — never cached — so this always matches whether
-		// WooCommerce is actually installed right now.
-		if ( Ovebotai::woocommerce_active() ) {
-			$feed_hash = (string) get_option( 'ovebotai_feed_hash', '' );
-			$payload['products'] = array(
-				'enabled'  => true,
-				'feed_url' => add_query_arg( 'hash', $feed_hash, home_url( '/wp-json/ovebotai/v1/feed' ) ),
-				'currency' => Ovebotai::store_currency(),
-			);
+	private function sync_to_api(): string {
+		// The widget option was already persisted by the caller before this
+		// runs, so build_setup_payload() (which reads that option) reflects
+		// it — single source of truth shared with the (re)activation resync
+		// in Ovebotai::resync_setup().
+		if ( Ovebotai::resync_setup() ) {
+			return '';
 		}
 
-		$result = $oauth->api_request( 'PUT', $oauth->setup_api_path(), $payload );
-
-		$status = $result['status'] ?? 0;
-		if ( $status < 200 || $status >= 300 ) {
-			return __( 'Settings saved locally but could not sync with Ovebot.ai.', 'ovebotai' );
-		}
-
-		return '';
+		return __( 'Settings saved locally but could not sync with Ovebot.ai.', 'ovebotai' );
 	}
 
 	// ── Regenerate feed hash ─────────────────────────────────────────────────

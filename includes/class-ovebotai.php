@@ -58,6 +58,18 @@ class Ovebotai {
 		if ( ! get_option( 'ovebotai_cache_version' ) ) {
 			update_option( 'ovebotai_cache_version', 1, false );
 		}
+
+		// Safety net for deactivate → reactivate: nothing else re-pushes our
+		// config to Ovebot.ai just because the plugin came back online, so if
+		// their copy of the feed/order/widget setup had gone stale for any
+		// reason while we were inactive (or the REST routes were briefly
+		// unreachable), reactivating silently leaves it stale otherwise. Only
+		// meaningful if we were already connected before this activation —
+		// a brand-new install goes through the setup wizard instead.
+		if ( self::is_setup_complete() ) {
+			require_once OVEBOTAI_DIR . 'includes/class-oauth.php';
+			self::resync_setup();
+		}
 	}
 
 	public static function deactivate() {}
@@ -81,5 +93,46 @@ class Ovebotai {
 	// products.enabled/feed_url when writing the products section of /setup.
 	public static function store_currency(): string {
 		return function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : 'RON';
+	}
+
+	// Builds the same PUT /setup payload shape used by both the settings-save
+	// flow and the (re)activation resync below — single source of truth so
+	// the two never drift apart.
+	public static function build_setup_payload(): array {
+		$widget         = (array) get_option( 'ovebotai_widget', array() );
+		$widget_payload = array_filter( $widget, function( $v ) { return $v !== ''; } );
+
+		$payload = array(
+			'widget'     => $widget_payload ?: (object) array(),
+			'order_info' => array(
+				'enabled'       => true,
+				'api_url'       => home_url( '/wp-json/ovebotai/v1/orders' ),
+				'api_user'      => (string) get_option( 'ovebotai_order_user', '' ),
+				'api_password'  => (string) get_option( 'ovebotai_order_pass', '' ),
+				'lookup_method' => 'email',
+			),
+		);
+
+		// Checked live — never cached — so this always matches whether
+		// WooCommerce is actually installed right now.
+		if ( self::woocommerce_active() ) {
+			$feed_hash = (string) get_option( 'ovebotai_feed_hash', '' );
+			$payload['products'] = array(
+				'enabled'  => true,
+				'feed_url' => add_query_arg( 'hash', $feed_hash, home_url( '/wp-json/ovebotai/v1/feed' ) ),
+				'currency' => self::store_currency(),
+			);
+		}
+
+		return $payload;
+	}
+
+	// Pushes the current local config to Ovebot.ai. Returns true on success.
+	public static function resync_setup(): bool {
+		$oauth  = Ovebotai_OAuth::instance();
+		$result = $oauth->api_request( 'PUT', $oauth->setup_api_path(), self::build_setup_payload() );
+
+		$status = $result['status'] ?? 0;
+		return $status >= 200 && $status < 300;
 	}
 }
