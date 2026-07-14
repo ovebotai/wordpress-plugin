@@ -126,7 +126,13 @@ class Ovebotai_Feed {
 
 			if ( 'out_of_stock' === $availability ) continue;
 
-			$price   = (float) $product->get_price();
+			$price = (float) $product->get_price();
+
+			// Defense in depth: the meta_query above already excludes non-positive
+			// _price at the SQL level, but that meta can lag the live computed
+			// price (e.g. a scheduled sale that just ended) — re-check here too.
+			if ( $price <= 0 ) continue;
+
 			$regular = (float) $product->get_regular_price();
 			$special = $product->is_on_sale() ? $price : null;
 			$display = $product->is_on_sale() ? $regular : $price;
