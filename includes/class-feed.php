@@ -149,7 +149,7 @@ class Ovebotai_Feed {
 			$description = trim( (string) preg_replace( '/\s+/', ' ', $description ) );
 
 			$row = array(
-				'ref'          => $product->get_sku() ?: (string) $pid,
+				'ref'          => (string) $pid,
 				'name'         => $product->get_name(),
 				'description'  => $description,
 				'category'     => $category,
