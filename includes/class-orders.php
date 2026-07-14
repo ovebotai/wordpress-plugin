@@ -101,6 +101,7 @@ class Ovebotai_Orders {
 	private function format_order( WC_Order $order ): array {
 		$status   = $order->get_status();
 		$date_str = $order->get_date_created() ? $order->get_date_created()->format( 'Y-m-d H:i:s' ) : '';
+		$tracking = $this->get_order_tracking( $order );
 
 		return array(
 			'id'                 => $order->get_order_number(),
@@ -108,10 +109,251 @@ class Ovebotai_Orders {
 			'status'             => wc_get_order_status_name( $status ),
 			'total'              => round( (float) $order->get_total(), 2 ),
 			'currency'           => $order->get_currency(),
-			'awb'                => null,
-			'awb_tracking_url'   => null,
-			'carrier'            => null,
+			'awb'                => $tracking['awb'] ?? null,
+			'awb_tracking_url'   => $tracking['tracking_url'] ?? null,
+			'carrier'            => $tracking['carrier'] ?? null,
 			'estimated_delivery' => $this->get_estimated_delivery( $order ),
+		);
+	}
+
+	// ── AWB / carrier / tracking URL ────────────────────────────────────────
+	//
+	// We don't generate or own any of this data — it's read from whichever
+	// shipping plugin the store actually uses to create labels/AWBs. Each
+	// adapter below queries that plugin's own storage directly (never its
+	// PHP classes/methods, which are often private, DI-wired, or would
+	// re-run constructor side effects) and degrades to null if the plugin
+	// isn't installed/active or simply has no data for this order yet.
+	// See plans/order-tracking-adapters.md for the full research behind this.
+
+	private function get_order_tracking( WC_Order $order ): ?array {
+		$adapters = array(
+			'get_tracking_from_a2z_fedex',
+			'get_tracking_from_colissimo',
+			'get_tracking_from_gls',
+			'get_tracking_from_packeta',
+			'get_tracking_from_sameday',
+			'get_tracking_from_seur',
+			'get_tracking_from_multishipping',
+			'get_tracking_from_dpd_baltic',
+		);
+
+		foreach ( $adapters as $method ) {
+			$result = $this->$method( $order );
+			if ( $result ) return $result;
+		}
+
+		return null;
+	}
+
+	// a2z-fedex-shipping: {$wpdb->prefix}shipi_fedex_meta (order_id, meta_key,
+	// meta_value), row meta_key='values' holds a JSON array of shipments.
+	// shipi_get_meta() is a method on hitshippo_fedex_parent, not a global
+	// function — instantiating that class would re-register its hooks as a
+	// side effect, so we read the table directly instead.
+	private function get_tracking_from_a2z_fedex( WC_Order $order ): ?array {
+		global $wpdb;
+		$table = $wpdb->prefix . 'shipi_fedex_meta';
+		if ( $wpdb->get_var( "SHOW TABLES LIKE '$table'" ) !== $table ) return null;
+
+		$raw = $wpdb->get_var( $wpdb->prepare(
+			"SELECT meta_value FROM $table WHERE order_id = %d AND meta_key = %s",
+			$order->get_id(),
+			'values'
+		) );
+		if ( ! $raw ) return null;
+
+		$shipments = json_decode( maybe_unserialize( $raw ), true );
+		if ( empty( $shipments ) || ! is_array( $shipments ) ) return null;
+
+		// New shipments are appended, so the last element is the most recent
+		// one — matters for orders shipped in multiple partial shipments.
+		$shipment = end( $shipments );
+		if ( empty( $shipment['tracking_num'] ) ) return null;
+
+		return array(
+			'awb'          => (string) $shipment['tracking_num'],
+			'carrier'      => 'FedEx',
+			'tracking_url' => 'https://track.myshipi.com/?no=' . rawurlencode( $shipment['tracking_num'] ) . '&track=1&embed=1',
+		);
+	}
+
+	// colissimo-shipping-methods-for-woocommerce: {$wpdb->prefix}lpc_outward_label
+	// holds one row per parcel (supports multi-parcel orders); prefer the
+	// MASTER parcel if present, else the most recently created row. The
+	// single order-meta 'lpc_outward_parcel_number' the plugin also writes
+	// gets blanked when any one label on the order is deleted, even if other
+	// parcels still exist — the table is the more reliable source.
+	private function get_tracking_from_colissimo( WC_Order $order ): ?array {
+		global $wpdb;
+		$table = $wpdb->prefix . 'lpc_outward_label';
+		if ( $wpdb->get_var( "SHOW TABLES LIKE '$table'" ) !== $table ) return null;
+
+		$row = $wpdb->get_row( $wpdb->prepare(
+			"SELECT tracking_number FROM $table WHERE order_id = %d ORDER BY FIELD(label_type, 'MASTER') DESC, id DESC LIMIT 1",
+			$order->get_id()
+		) );
+		if ( ! $row || ! $row->tracking_number ) return null;
+
+		$tracking_number = (string) $row->tracking_number;
+
+		return array(
+			'awb'          => $tracking_number,
+			'carrier'      => 'Colissimo',
+			'tracking_url' => 'https://www.laposte.fr/outils/suivre-vos-envois?code=' . rawurlencode( $tracking_number ),
+		);
+	}
+
+	// gls-shipping-for-woocommerce: order meta '_gls_tracking_codes' (array,
+	// current) with legacy singular '_gls_tracking_code' fallback.
+	private function get_tracking_from_gls( WC_Order $order ): ?array {
+		$codes = $order->get_meta( '_gls_tracking_codes' );
+		if ( empty( $codes ) || ! is_array( $codes ) ) {
+			$legacy = $order->get_meta( '_gls_tracking_code' );
+			$codes  = $legacy ? array( $legacy ) : array();
+		}
+		if ( empty( $codes ) ) return null;
+
+		$tracking_number = (string) reset( $codes );
+		$settings        = get_option( 'woocommerce_gls_shipping_method_settings' );
+		$country         = is_array( $settings ) ? ( $settings['country'] ?? '' ) : '';
+
+		return array(
+			'awb'          => $tracking_number,
+			'carrier'      => 'GLS',
+			'tracking_url' => $country
+				? 'https://gls-group.eu/' . rawurlencode( $country ) . '/en/parcel-tracking/?match=' . rawurlencode( $tracking_number )
+				: null,
+		);
+	}
+
+	// packeta: {$wpdb->prefix}packetery_order (id = WC order id), columns
+	// packet_id (AWB) + carrier_id. carrier_id is only a numeric foreign key
+	// into {$wpdb->prefix}packetery_carrier for real (non pickup-point)
+	// carriers, so the name lookup only runs when it's numeric.
+	private function get_tracking_from_packeta( WC_Order $order ): ?array {
+		global $wpdb;
+		$table = $wpdb->prefix . 'packetery_order';
+		if ( $wpdb->get_var( "SHOW TABLES LIKE '$table'" ) !== $table ) return null;
+
+		$row = $wpdb->get_row( $wpdb->prepare( "SELECT packet_id, carrier_id FROM $table WHERE id = %d", $order->get_id() ) );
+		if ( ! $row || ! $row->packet_id ) return null;
+
+		$carrier_label = 'Packeta';
+		if ( $row->carrier_id !== null && is_numeric( $row->carrier_id ) ) {
+			$carrier_table = $wpdb->prefix . 'packetery_carrier';
+			if ( $wpdb->get_var( "SHOW TABLES LIKE '$carrier_table'" ) === $carrier_table ) {
+				$carrier_name = $wpdb->get_var( $wpdb->prepare( "SELECT name FROM $carrier_table WHERE id = %d", (int) $row->carrier_id ) );
+				if ( $carrier_name ) {
+					$carrier_label = (string) $carrier_name;
+				}
+			}
+		}
+
+		return array(
+			'awb'          => (string) $row->packet_id,
+			'carrier'      => $carrier_label,
+			'tracking_url' => 'https://tracking.packeta.com/Z' . rawurlencode( $row->packet_id ),
+		);
+	}
+
+	// samedaycourier-shipping: {$wpdb->prefix}sameday_awb (order_id, awb_number).
+	// Public tracking page confirmed by the user: sameday.ro/status-colet/.
+	private function get_tracking_from_sameday( WC_Order $order ): ?array {
+		global $wpdb;
+		$table = $wpdb->prefix . 'sameday_awb';
+		if ( $wpdb->get_var( "SHOW TABLES LIKE '$table'" ) !== $table ) return null;
+
+		$row = $wpdb->get_row( $wpdb->prepare(
+			"SELECT awb_number FROM $table WHERE order_id = %d ORDER BY id DESC LIMIT 1",
+			$order->get_id()
+		) );
+		if ( ! $row || ! $row->awb_number ) return null;
+
+		return array(
+			'awb'          => (string) $row->awb_number,
+			'carrier'      => 'Sameday',
+			'tracking_url' => 'https://sameday.ro/status-colet/?awb=' . rawurlencode( $row->awb_number ),
+		);
+	}
+
+	// seur: order meta '_seur_shipping_id_number'. The plugin's own tracking
+	// URL includes a delivery-date param that's only known once delivered —
+	// its own template still works with that param blank/absent, so we omit it.
+	private function get_tracking_from_seur( WC_Order $order ): ?array {
+		$tracking_number = $order->get_meta( '_seur_shipping_id_number' );
+		if ( ! $tracking_number ) return null;
+
+		return array(
+			'awb'          => (string) $tracking_number,
+			'carrier'      => 'SEUR',
+			'tracking_url' => 'https://www.seur.com/livetracking/pages/seguimiento-online.do?segOnlineIdentificador=' . rawurlencode( $tracking_number ),
+		);
+	}
+
+	// wc-multishipping: {$wpdb->prefix}wms_labels (order_id, shipping_provider,
+	// outward_tracking_number), one row per parcel across UPS/Chronopost/
+	// Mondial Relay sub-modules. Mondial Relay's URL needs a store-wide
+	// customer/brand code pair, read from the same options the plugin itself
+	// uses — falls back to null if the merchant never configured it.
+	private function get_tracking_from_multishipping( WC_Order $order ): ?array {
+		global $wpdb;
+		$table = $wpdb->prefix . 'wms_labels';
+		if ( $wpdb->get_var( "SHOW TABLES LIKE '$table'" ) !== $table ) return null;
+
+		$row = $wpdb->get_row( $wpdb->prepare(
+			"SELECT shipping_provider, outward_tracking_number FROM $table WHERE order_id = %d AND outward_tracking_number != '' ORDER BY id DESC LIMIT 1",
+			$order->get_id()
+		) );
+		if ( ! $row || ! $row->outward_tracking_number ) return null;
+
+		$carriers = array(
+			'ups'           => array( 'UPS', 'https://www.ups.com/WebTracking/processInputRequest?tracknum=%s&loc=en_US&requester=ST/trackdetails' ),
+			'chronopost'    => array( 'Chronopost', 'https://www.chronopost.fr/fr/chrono_suivi_search?listeNumerosLT=%s' ),
+			'mondial_relay' => array( 'Mondial Relay', null ), // built below — needs store-wide ens code
+		);
+		[ $label, $url_template ] = $carriers[ $row->shipping_provider ] ?? array( ucfirst( $row->shipping_provider ), null );
+
+		if ( 'mondial_relay' === $row->shipping_provider ) {
+			$ens = get_option( 'wms_mondial_relay_customer_code', '' ) . get_option( 'wms_mondial_relay_brand_code', '' );
+			if ( '' !== $ens ) {
+				$url_template = 'https://www.mondialrelay.com/public/permanent/tracking.aspx?ens=' . rawurlencode( $ens ) . '&exp=%s&language=fr';
+			}
+		}
+
+		return array(
+			'awb'          => (string) $row->outward_tracking_number,
+			'carrier'      => $label,
+			'tracking_url' => $url_template ? sprintf( $url_template, rawurlencode( $row->outward_tracking_number ) ) : null,
+		);
+	}
+
+	// woo-shipping-dpd-baltic: {$wpdb->prefix}dpd_barcodes (order_id, dpd_barcode).
+	// dpdgroup.com is the URL the plugin actually shows the customer (via a
+	// customer-facing order note); tracking.dpd.de is only used in an
+	// admin-only note, so we don't use it here.
+	private function get_tracking_from_dpd_baltic( WC_Order $order ): ?array {
+		global $wpdb;
+		$table = $wpdb->prefix . 'dpd_barcodes';
+		if ( $wpdb->get_var( "SHOW TABLES LIKE '$table'" ) !== $table ) return null;
+
+		$row = $wpdb->get_row( $wpdb->prepare(
+			"SELECT dpd_barcode FROM $table WHERE order_id = %d ORDER BY id DESC LIMIT 1",
+			$order->get_id()
+		) );
+		if ( ! $row || ! $row->dpd_barcode ) return null;
+
+		switch ( get_option( 'dpd_api_service_provider' ) ) {
+			case 'lt': $country = 'lt'; $lang = 'lt_lt'; break;
+			case 'lv': $country = 'lv'; $lang = 'lv_lv'; break;
+			case 'ee': $country = 'ee'; $lang = 'et_et'; break;
+			default:   $country = 'lt'; $lang = 'en';    break;
+		}
+
+		return array(
+			'awb'          => (string) $row->dpd_barcode,
+			'carrier'      => 'DPD',
+			'tracking_url' => 'https://www.dpdgroup.com/' . $country . '/mydpd/my-parcels/track?lang=' . $lang . '&parcelNumber=' . rawurlencode( $row->dpd_barcode ),
 		);
 	}
 
