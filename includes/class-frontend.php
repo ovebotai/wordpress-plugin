@@ -40,7 +40,7 @@ class Ovebotai_Frontend {
 			}
 		}
 
-		if (!empty($_GET['ocw-fab-open']) && 'true' === $_GET['ocw-fab-open']) {
+		if (is_admin() && !empty($_GET['ocw-fab-open'])) {
 			$params['auto_open'] = true;
 		}
 
