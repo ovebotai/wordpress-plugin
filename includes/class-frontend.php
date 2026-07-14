@@ -15,7 +15,6 @@ class Ovebotai_Frontend {
 
 	private function init() {
 		add_action( 'wp_footer', array( $this, 'inject_widget' ) );
-		add_action( 'wp_footer', array( $this, 'maybe_inject_autoopen' ) );
 		add_action( 'woocommerce_thankyou', array( $this, 'inject_purchase_event' ), 20 );
 	}
 
@@ -41,6 +40,10 @@ class Ovebotai_Frontend {
 			}
 		}
 
+		if (!empty($_GET['ocw-fab-open']) && 'true' === $_GET['ocw-fab-open']) {
+			$params['auto_open'] = true;
+		}
+
 		$widget_host = esc_url( 'https://' . $workspace . '.ovebot.ai/widget/chat-loader.js' );
 		?>
 <script>
@@ -48,46 +51,6 @@ var ovebot_ai = ovebot_ai || [];
 ovebot_ai.push(['chat', <?php echo wp_json_encode( $params ?: (object) array() ); ?>]);
 </script>
 <script src="<?php echo $widget_host; ?>" defer></script>
-		<?php
-	}
-
-	public function maybe_inject_autoopen() {
-		if ( is_admin() ) return;
-		if ( ! isset( $_GET['ocw-fab-open'] ) || 'true' !== $_GET['ocw-fab-open'] ) return;
-		?>
-<script>
-  (function () {
-    var MAX_MS = 15000;
-    var t0 = Date.now();
-
-    // Caută butonul flotant în interiorul oricărui shadow root de pe pagină.
-    function findFab() {
-      var hosts = document.body.querySelectorAll('*');
-      for (var i = 0; i < hosts.length; i++) {
-        var sr = hosts[i].shadowRoot;
-        if (sr) {
-          var fab = sr.getElementById('ocw-fab');
-          if (fab) return fab;
-        }
-      }
-      return null;
-    }
-
-    var timer = setInterval(function () {
-      var fab = findFab();
-      if (fab) {
-        // fab e vizibil doar când chat-ul e închis; ascuns (display:none) când e deja deschis
-        var visible = window.getComputedStyle(fab).display !== 'none';
-        if (visible) {
-          fab.click();
-        }
-        clearInterval(timer);   // widget-ul e prezent -> oprim polling-ul oricum
-      } else if (Date.now() - t0 > MAX_MS) {
-        clearInterval(timer);
-      }
-    }, 200);
-  })();
-  </script>
 		<?php
 	}
 

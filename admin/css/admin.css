@@ -420,6 +420,37 @@
 	line-height: 1;
 }
 
+.ovebotai-dash-card-wide {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 20px 24px;
+	margin: 0 0 28px;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 6px;
+}
+
+.ovebotai-dash-card-wide-label {
+	font-weight: 600;
+	font-size: 14px;
+	color: #1d2327;
+}
+
+.ovebotai-dash-card-wide-count {
+	font-size: 32px;
+	font-weight: 700;
+	line-height: 1;
+	text-align: right;
+	text-decoration: none;
+}
+
+a.ovebotai-dash-card-wide-count:hover { text-decoration: underline; }
+
+.ovebotai-dash-card-wide-count.is-positive { color: #00a32a; }
+.ovebotai-dash-card-wide-count.is-zero     { color: #d63638; }
+
 /* ── Dashboard knowledge base list ───────────────────────────────────────── */
 
 .ovebotai-kb-list .ovebotai-page-item {

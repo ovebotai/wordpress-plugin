@@ -5,7 +5,18 @@ $oauth        = Ovebotai_OAuth::instance();
 $workspace    = $oauth->get_workspace();
 $is_connected = $oauth->is_connected();
 
-$account_url = $workspace ? 'https://' . $workspace . '.ovebot.ai' : '';
+// Live product count from Ovebot.ai's side (how many products it actually has
+// indexed for this agent) — not the local feed_count, which is what we send.
+$products_count = 0;
+if ( $is_connected ) {
+	$status_result = $oauth->api_request( 'GET', '/v1/integration/status' );
+	if ( ( $status_result['status'] ?? 0 ) >= 200 && ( $status_result['status'] ?? 0 ) < 300 ) {
+		$products_count = (int) ( $status_result['body']['integration']['counts']['products'] ?? 0 );
+	}
+}
+
+$account_url  = $workspace ? 'https://' . $workspace . '.ovebot.ai' : '';
+$products_url = $workspace ? 'https://' . $workspace . '.ovebot.ai/products' : '';
 $chat_url    = add_query_arg( 'ocw-fab-open', 'true', home_url( '/' ) );
 $settings_url = add_query_arg( 'view', 'settings', admin_url( 'admin.php?page=ovebotai' ) );
 
@@ -57,6 +68,21 @@ if ( $is_connected && $workspace ) {
 			<span class="ovebotai-dash-card-icon">↗</span>
 			<span class="ovebotai-dash-card-title"><?php esc_html_e( 'Ovebot.ai account', 'ovebotai' ); ?></span>
 		</a>
+		<?php endif; ?>
+	</div>
+
+	<div class="ovebotai-dash-card-wide">
+		<span class="ovebotai-dash-card-wide-label"><?php esc_html_e( 'Products', 'ovebotai' ); ?></span>
+		<?php
+		$count_classes = 'ovebotai-dash-card-wide-count ' . ( $products_count > 0 ? 'is-positive' : 'is-zero' );
+		$count_html    = esc_html( number_format_i18n( $products_count ) );
+		?>
+		<?php if ( $products_url ) : ?>
+		<a class="<?php echo esc_attr( $count_classes ); ?>" href="<?php echo esc_url( $products_url ); ?>" target="_blank" rel="noopener noreferrer">
+			<?php echo $count_html; ?>
+		</a>
+		<?php else : ?>
+		<span class="<?php echo esc_attr( $count_classes ); ?>"><?php echo $count_html; ?></span>
 		<?php endif; ?>
 	</div>
 
