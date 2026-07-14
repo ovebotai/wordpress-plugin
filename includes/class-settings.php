@@ -234,9 +234,7 @@ class Ovebotai_Settings {
 			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'ovebotai' ) ) );
 		}
 
-		$v = (int) get_option( 'ovebotai_cache_version', 1 ) + 1;
-		update_option( 'ovebotai_cache_version', $v, false );
-		delete_transient( 'ovebotai_feed_v' . ( $v - 1 ) );
+		Ovebotai_Feed::instance()->invalidate_cache();
 
 		wp_send_json_success( array( 'message' => __( 'Cache cleared.', 'ovebotai' ) ) );
 	}

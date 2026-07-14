@@ -20,6 +20,17 @@ class Ovebotai_Feed {
 				'permission_callback' => array( $this, 'check_hash' ),
 			) );
 		} );
+
+		// Invalidate the feed cache whenever a product is saved (admin edit, quick
+		// edit, bulk edit, or a new product), so the feed never serves stale data.
+		add_action( 'woocommerce_update_product', array( $this, 'invalidate_cache' ) );
+		add_action( 'woocommerce_new_product', array( $this, 'invalidate_cache' ) );
+	}
+
+	public function invalidate_cache() {
+		$v = (int) get_option( 'ovebotai_cache_version', 1 ) + 1;
+		update_option( 'ovebotai_cache_version', $v, false );
+		delete_transient( 'ovebotai_feed_v' . ( $v - 1 ) );
 	}
 
 	public function check_hash( WP_REST_Request $request ): bool {
@@ -48,9 +59,11 @@ class Ovebotai_Feed {
 		return new WP_REST_Response( $data, 200 );
 	}
 
-	// Only products that are actually purchasable go on the feed: in stock, or
-	// on backorder (sent with availability "preorder"). Plain out-of-stock
-	// products are never included.
+	// Only products that are actually purchasable go on the feed. For managed-stock
+	// products, availability/quantity are derived from real stock qty + _backorders
+	// (backorders allowed => "in_stock" even at qty 0). For unmanaged-stock products,
+	// availability just relays _stock_status ("onbackorder" => "preorder"). Products
+	// that end up "out_of_stock" either way are never included.
 	private function build_feed(): array {
 		$lang     = get_bloginfo( 'language' );
 		$currency = Ovebotai::store_currency();
@@ -60,6 +73,8 @@ class Ovebotai_Feed {
 			'post_status'    => 'publish',
 			'posts_per_page' => -1,
 			'fields'         => 'ids',
+			'orderby'        => 'ID',
+			'order'          => 'ASC',
 			'meta_query'     => array(
 				'relation' => 'AND',
 				array( 'key' => '_stock_status', 'value' => array( 'instock', 'onbackorder' ), 'compare' => 'IN' ),
@@ -76,9 +91,35 @@ class Ovebotai_Feed {
 			$product = wc_get_product( $pid );
 			if ( ! $product || ! $product->is_visible() ) continue;
 
-			$stock_status = $product->get_stock_status();
-			if ( 'outofstock' === $stock_status ) continue;
-			$availability = 'onbackorder' === $stock_status ? 'preorder' : 'in_stock';
+			$manage_stock = $product->get_manage_stock();
+
+			if ( $manage_stock ) {
+				// Managed stock: trust our own quantity/backorder math over the
+				// (possibly stale) _stock_status meta.
+				$quantity   = (int) $product->get_stock_quantity();
+				$backorders = $product->get_backorders(); // 'no' | 'notify' | 'yes'
+
+				if ( $quantity <= 0 ) {
+					$availability = ( 'no' === $backorders ) ? 'out_of_stock' : 'in_stock';
+				} else {
+					$availability = 'in_stock';
+				}
+			} else {
+				// Unmanaged stock: no quantity to report, just relay _stock_status.
+				$quantity = null;
+				switch ( $product->get_stock_status() ) {
+					case 'instock':
+						$availability = 'in_stock';
+						break;
+					case 'onbackorder':
+						$availability = 'preorder';
+						break;
+					default:
+						$availability = 'out_of_stock';
+				}
+			}
+
+			if ( 'out_of_stock' === $availability ) continue;
 
 			$price   = (float) $product->get_price();
 			$regular = (float) $product->get_regular_price();
@@ -89,6 +130,7 @@ class Ovebotai_Feed {
 			$image_url = $image_id ? wp_get_attachment_url( $image_id ) : null;
 
 			$category = $this->get_category_path( $pid );
+			$brand    = $this->get_brand( $pid );
 
 			$attributes = array();
 			foreach ( $product->get_attributes() as $attr ) {
@@ -106,48 +148,58 @@ class Ovebotai_Feed {
 			$description = html_entity_decode( $description, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 			$description = trim( (string) preg_replace( '/\s+/', ' ', $description ) );
 
-			$data[] = array(
+			$row = array(
 				'ref'          => $product->get_sku() ?: (string) $pid,
 				'name'         => $product->get_name(),
 				'description'  => $description,
 				'category'     => $category,
-				'manufacturer' => $product->get_attribute( 'pa_brand' ) ?: null,
+				'manufacturer' => $brand,
 				'availability' => $availability,
-				'quantity'     => $product->get_stock_quantity() ?? 0,
 				'price'        => round( $display, 2 ),
-				'special'      => $special !== null ? round( $special, 2 ) : null,
 				'currency'     => $currency,
 				'image'        => $image_url ?: null,
 				'url'          => get_permalink( $pid ),
 				'attributes'   => $attributes,
 				'lang'         => $lang,
 			);
+
+			// Quantity and special are optional: omit them entirely rather than
+			// sending null.
+			if ( null !== $quantity ) {
+				$row['quantity'] = $quantity;
+			}
+			if ( null !== $special ) {
+				$row['special'] = round( $special, 2 );
+			}
+
+			$data[] = $row;
 		}
 
 		return $data;
+	}
+
+	private function get_brand( int $product_id ): ?string {
+		$brands = wp_get_post_terms($product_id, 'product_brand');
+
+		return $brands ? implode( ' | ', wp_list_pluck( $brands, 'name' ) ) : null;
 	}
 
 	private function get_category_path( int $product_id ): ?string {
 		$terms = get_the_terms( $product_id, 'product_cat' );
 		if ( ! $terms || is_wp_error( $terms ) ) return null;
 
-		$best_path  = '';
-		$best_depth = -1;
+		$paths = array();
 
 		foreach ( $terms as $term ) {
 			$ancestors = get_ancestors( $term->term_id, 'product_cat' );
-			$depth     = count( $ancestors );
-			if ( $depth > $best_depth ) {
-				$parts = array_reverse( array_map(
-					function( $id ) { $t = get_term( $id, 'product_cat' ); return $t ? $t->name : ''; },
-					$ancestors
-				) );
-				$parts[]    = $term->name;
-				$best_depth = $depth;
-				$best_path  = implode( ' > ', $parts );
-			}
+			$parts     = array_reverse( array_map(
+				function( $id ) { $t = get_term( $id, 'product_cat' ); return $t ? $t->name : ''; },
+				$ancestors
+			) );
+			$parts[] = $term->name;
+			$paths[] = implode( ' > ', $parts );
 		}
 
-		return $best_path ?: null;
+		return $paths ? implode( ' | ', $paths ) : null;
 	}
 }
