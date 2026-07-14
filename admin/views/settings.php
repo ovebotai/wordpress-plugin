@@ -38,6 +38,7 @@ $is_connected = $oauth->is_connected(); // false when refresh token missing/revo
 	<?php endif; ?>
 
 	<div id="oveSettingsNotice" class="ovebotai-save-notice" style="display:none"></div>
+	<div id="oveSettingsWarnings" class="ovebotai-save-notice ovebotai-notice-warning" style="display:none"></div>
 
 	<form id="oveSettingsForm">
 

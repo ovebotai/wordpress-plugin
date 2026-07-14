@@ -131,6 +131,10 @@
 				$('#oveSyncLoading').hide();
 				if (resp.success) {
 					$('#oveSyncDone').show();
+					var warnings = resp.data && resp.data.warnings;
+					if (warnings && warnings.length) {
+						$('#oveSyncWarnings').html('<p>' + warnings.join('<br>') + '</p>').show();
+					}
 					// All done — every dot (including the last one) turns green.
 					$('.ovebotai-step-dot').removeClass('is-active').addClass('is-done');
 				} else {

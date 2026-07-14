@@ -99,10 +99,14 @@ class Ovebotai_Settings {
 
 		update_option( 'ovebotai_kb_page_ids', $kb_checked_ids, false );
 
-		$kb_setup  = Ovebotai_Setup::instance();
-		$kb_errors = $kb_setup->sync_kb_pages( $kb_checked_ids, true );
+		$kb_setup    = Ovebotai_Setup::instance();
+		$kb_result   = $kb_setup->sync_kb_pages( $kb_checked_ids, true );
+		$kb_errors   = $kb_result['errors'];
+		$kb_warnings = $kb_result['warnings'];
 		if ( $kb_removed_ids ) {
-			$kb_errors = array_merge( $kb_errors, $kb_setup->sync_kb_pages( $kb_removed_ids, false ) );
+			$kb_removed_result = $kb_setup->sync_kb_pages( $kb_removed_ids, false );
+			$kb_errors         = array_merge( $kb_errors, $kb_removed_result['errors'] );
+			$kb_warnings       = array_merge( $kb_warnings, $kb_removed_result['warnings'] );
 		}
 
 		// ── Sync everything else to Ovebot API ────────────────────────────────
@@ -113,15 +117,13 @@ class Ovebotai_Settings {
 			$all_errors[] = $api_error;
 		}
 
-		if ( $all_errors ) {
-			// Local save succeeded; only some remote sync failed.
-			wp_send_json_success( array(
-				'message' => implode( ' ', $all_errors ),
-				'partial' => true,
-			) );
-		}
-
-		wp_send_json_success( array( 'message' => __( 'Settings saved.', 'ovebotai' ) ) );
+		// Local save always succeeded at this point — remote sync failures and
+		// skipped KB pages are reported as warnings alongside the success
+		// message, not as a reason to call the save itself unsuccessful.
+		wp_send_json_success( array(
+			'message'  => __( 'Settings saved.', 'ovebotai' ),
+			'warnings' => array_merge( $all_errors, $kb_warnings ),
+		) );
 	}
 
 	private function sync_to_api( array $widget ): string {

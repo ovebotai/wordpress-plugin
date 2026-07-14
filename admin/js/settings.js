@@ -16,12 +16,16 @@
 			$.post(cfg.ajaxUrl, data)
 				.done(function (resp) {
 					var msg = resp.data && resp.data.message ? resp.data.message : (resp.success ? cfg.i18n.saved : cfg.i18n.error);
-					// partial = saved locally but API sync skipped/failed — show as warning not error
-					var ok  = resp.success && !(resp.data && resp.data.partial);
-					showNotice(ok, msg, resp.success && resp.data && resp.data.partial ? 'warning' : null);
+					var warnings = resp.data && resp.data.warnings;
+					// needs_reconnect has no warnings list of its own — it's a single
+					// caveat on the save itself, so it still takes over the main notice.
+					var needsReconnect = resp.success && resp.data && resp.data.partial && !(warnings && warnings.length);
+					showNotice( ! needsReconnect && resp.success, msg, needsReconnect ? 'warning' : null );
+					showWarnings( resp.success ? warnings : null );
 				})
 				.fail(function () {
 					showNotice(false, cfg.i18n.error);
+					showWarnings(null);
 				})
 				.always(function () {
 					$btn.prop('disabled', false).text(ovebotaiSettingsText);
@@ -134,6 +138,17 @@
 			clearTimeout($n.data('timer'));
 			var delay = type === 'warning' ? 7000 : 4000;
 			$n.data('timer', setTimeout(function () { $n.slideUp(180); }, delay));
+		}
+
+		function showWarnings(warnings) {
+			var $w = $('#oveSettingsWarnings');
+			clearTimeout($w.data('timer'));
+			if (warnings && warnings.length) {
+				$w.html('<p>' + warnings.join('<br>') + '</p>').slideDown(180);
+				$w.data('timer', setTimeout(function () { $w.slideUp(180); }, 9000));
+			} else {
+				$w.slideUp(180);
+			}
 		}
 	});
 

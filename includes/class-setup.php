@@ -30,8 +30,10 @@ class Ovebotai_Setup {
 		$page_ids = array_map( 'absint', (array) ( $_POST['page_ids'] ?? array() ) );
 		update_option( 'ovebotai_kb_page_ids', $page_ids, false );
 
-		$oauth  = Ovebotai_OAuth::instance();
-		$errors = $this->sync_kb_pages( $page_ids, true );
+		$oauth     = Ovebotai_OAuth::instance();
+		$kb_result = $this->sync_kb_pages( $page_ids, true );
+		$errors    = $kb_result['errors'];
+		$warnings  = $kb_result['warnings'];
 
 		// ── Setup: feed (if WooCommerce is active) + order info ──────────────
 
@@ -69,20 +71,37 @@ class Ovebotai_Setup {
 		if ( empty( $errors ) ) {
 			update_option( 'ovebotai_chat_status',   '1', false );
 			update_option( 'ovebotai_setup_complete', '1', false );
-			wp_send_json_success( array( 'message' => __( 'Setup complete!', 'ovebotai' ) ) );
+
+			$message = __( 'Setup complete!', 'ovebotai' );
+			if ( $warnings ) {
+				$message .= '<br>' . implode( '<br>', $warnings );
+			}
+
+			wp_send_json_success( array( 'message' => $message, 'warnings' => $warnings ) );
 		} else {
+			$message = implode( '<br>', array_merge( $errors, $warnings ) );
 			wp_send_json_error( array(
-				'message' => implode( ' ', $errors ),
-				'errors'  => $errors,
+				'message'  => $message,
+				'errors'   => $errors,
+				'warnings' => $warnings,
 			) );
 		}
 	}
 
 	/**
 	 * Create/update ($active = true) or soft-deactivate ($active = false) the
-	 * KB entry for each given page. Pages already carrying an _ovebotai_kb_id
-	 * are PUT to that id instead of re-created, so re-running setup/reconnect
-	 * (or an unrelated settings save) never duplicates entries.
+	 * KB entry for each given page. We always fetch the current remote entry
+	 * list first (both on first connect and on every later save) and validate
+	 * against it:
+	 *  - a page with a local _ovebotai_kb_id whose id is no longer present
+	 *    remotely is treated as never-synced (the mapping is stale — e.g. the
+	 *    entry was deleted on Ovebot's side) and falls through to creation;
+	 *  - a page with no local id (mapping never saved, or just invalidated
+	 *    above) is matched against a remote entry with an identical title
+	 *    before creating a new one, so a title collision is treated as the
+	 *    same entry even without a locally stored id.
+	 * Either way, a resolved id is PUT to instead of re-created, so re-running
+	 * setup/reconnect (or an unrelated settings save) never duplicates entries.
 	 *
 	 * Ovebot's API has no DELETE for knowledge-base entries — only an
 	 * `is_active` flag (.tasks/oauth-api.md §5) — so unchecking a page
@@ -90,21 +109,51 @@ class Ovebotai_Setup {
 	 * mapping is kept either way, so re-checking the page later reactivates
 	 * the same entry instead of creating a duplicate.
 	 *
-	 * Returns an array of human-readable error strings, one per page that
-	 * failed to sync.
+	 * Returns array( 'errors' => [...], 'warnings' => [...] ) — human-readable
+	 * strings. 'errors' are actual sync failures (API call rejected); 'warnings'
+	 * are pages that were intentionally skipped (unpublished / not enough text)
+	 * and shouldn't block the overall save from being reported as a success.
 	 */
 	public function sync_kb_pages( array $page_ids, bool $active = true ): array {
-		$oauth  = Ovebotai_OAuth::instance();
-		$errors = array();
+		if ( ! $page_ids ) return array( 'errors' => array(), 'warnings' => array() );
+
+		$oauth    = Ovebotai_OAuth::instance();
+		$errors   = array();
+		$warnings = array();
+
+		$remote_entries = $this->fetch_remote_kb_entries();
+		$remote_by_id    = array(); // id    => title
+		$remote_by_title = array(); // title => id
+		foreach ( $remote_entries as $entry ) {
+			if ( ! isset( $entry['id'], $entry['title'] ) ) continue;
+			$remote_by_id[ (int) $entry['id'] ]          = (string) $entry['title'];
+			$remote_by_title[ (string) $entry['title'] ] = (int) $entry['id'];
+		}
 
 		foreach ( $page_ids as $page_id ) {
 			$kb_id = (int) get_post_meta( $page_id, '_ovebotai_kb_id', true );
 
-			// Never synced and now being unchecked — nothing to deactivate.
+			// Locally mapped id no longer exists remotely — stale mapping,
+			// treat the page as never-synced.
+			if ( $kb_id && ! isset( $remote_by_id[ $kb_id ] ) ) {
+				$kb_id = 0;
+			}
+
+			// Never synced (or just invalidated above) and now being
+			// unchecked — nothing to deactivate.
 			if ( ! $active && ! $kb_id ) continue;
 
 			$post = get_post( $page_id );
-			if ( ! $post || 'publish' !== $post->post_status ) continue;
+			if ( ! $post ) continue;
+
+			if ( 'publish' !== $post->post_status ) {
+				$warnings[] = sprintf(
+					/* translators: %s: page title */
+					__( 'Skipped "%s" — page is not published.', 'ovebotai' ),
+					esc_html( get_the_title( $post ) )
+				);
+				continue;
+			}
 
 			$raw_content = wp_strip_all_tags( $post->post_content );
 			$content     = html_entity_decode( $raw_content, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
@@ -114,8 +163,23 @@ class Ovebotai_Setup {
 			$body  = trim( $title . ( '' !== $content ? "\n\n" . $content : '' ) );
 
 			// The API requires a body of at least 10 characters; skip pages with
-			// too little text (e.g. a short title and no plain-text content).
-			if ( mb_strlen( $body ) < 10 ) continue;
+			// too little text (e.g. a short title and no plain-text content, common
+			// with page builders that don't store text in post_content).
+			if ( mb_strlen( $body ) < 10 ) {
+				$warnings[] = sprintf(
+					/* translators: %s: page title */
+					__( 'Skipped "%s" — not enough text content to sync (minimum 10 characters).', 'ovebotai' ),
+					esc_html( $title )
+				);
+				continue;
+			}
+
+			// No usable id — check for a remote entry with the same title
+			// before creating a new one.
+			if ( $active && ! $kb_id && isset( $remote_by_title[ $title ] ) ) {
+				$kb_id = $remote_by_title[ $title ];
+				update_post_meta( $page_id, '_ovebotai_kb_id', $kb_id );
+			}
 
 			$payload = array(
 				'title'     => $title,
@@ -149,12 +213,41 @@ class Ovebotai_Setup {
 			}
 		}
 
-		return $errors;
+		return array( 'errors' => $errors, 'warnings' => $warnings );
 	}
 
 	// Per .tasks/oauth-api.md §5: POST .../knowledge-base responds with the
 	// created entry at the top level, e.g. {"id": 12, "slug": "...", ...}.
 	private function extract_kb_id( array $body ): int {
 		return isset( $body['id'] ) ? (int) $body['id'] : 0;
+	}
+
+	// Pages through GET .../knowledge-base (paginated, max per_page=100 per
+	// .tasks/oauth-api.md §5) and returns every remote entry (id + title),
+	// so callers can validate local ids and match on title.
+	private function fetch_remote_kb_entries(): array {
+		$oauth     = Ovebotai_OAuth::instance();
+		$all       = array();
+		$page      = 1;
+		$fetched   = 0;
+		$total     = 0;
+
+		do {
+			$result = $oauth->api_request( 'GET', $oauth->kb_api_path() . '?' . http_build_query( array(
+				'page'     => $page,
+				'per_page' => 100,
+			) ) );
+
+			if ( ( $result['status'] ?? 0 ) < 200 || ( $result['status'] ?? 0 ) >= 300 ) break;
+
+			$entries = (array) ( $result['body']['entries'] ?? array() );
+			$all     = array_merge( $all, $entries );
+
+			$total    = (int) ( $result['body']['total'] ?? 0 );
+			$fetched += count( $entries );
+			$page++;
+		} while ( $entries && $fetched < $total );
+
+		return $all;
 	}
 }

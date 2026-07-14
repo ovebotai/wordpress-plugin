@@ -156,6 +156,7 @@ $oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp_unslash(
 						<?php esc_html_e( 'Your store is now connected to Ovebot.ai.', 'ovebotai' ); ?>
 						<?php esc_html_e( 'Your AI assistant is now live on your website, ready to help your customers.', 'ovebotai' ); ?>
 					</p>
+					<div class="ovebotai-notice ovebotai-notice-warning" id="oveSyncWarnings" style="display:none"></div>
 					<div class="ovebotai-done-actions">
 						<a href="<?php echo esc_url( add_query_arg( 'view', 'settings', admin_url( 'admin.php?page=ovebotai' ) ) ); ?>" class="button ovebotai-btn-muted">
 							<?php esc_html_e( 'More settings', 'ovebotai' ); ?>
