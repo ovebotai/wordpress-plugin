@@ -38,10 +38,12 @@ class Ovebotai_Admin {
 		if ( ! get_option( 'ovebotai_activation_redirect' ) ) return;
 		delete_option( 'ovebotai_activation_redirect' );
 
-		// Don't redirect during bulk activation.
+		// Don't redirect during bulk activation — read-only check of WP core's
+		// own bulk-activate flag, no state change, no nonce to verify.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['activate-multi'] ) ) return;
 
-		wp_redirect( admin_url( 'admin.php?page=ovebotai' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=ovebotai' ) );
 		exit;
 	}
 
@@ -76,22 +78,31 @@ class Ovebotai_Admin {
 	// ── OAuth: return ────────────────────────────────────────────────────────
 
 	public function handle_oauth_return() {
+		// This is an external OAuth redirect from account.ovebot.ai, not a
+		// same-site form submission — a WP nonce can't apply here (Ovebot.ai
+		// has no session to generate one from). CSRF protection is the OAuth
+		// `state` param itself, validated against our stored PKCE verifier
+		// inside exchange_code() below.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( empty( $_GET['page'] ) || 'ovebotai' !== $_GET['page'] ) return;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( empty( $_GET['code'] ) ) return;
 		if ( ! current_user_can( 'manage_options' ) ) return;
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$code  = sanitize_text_field( wp_unslash( $_GET['code'] ) );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$state = sanitize_text_field( wp_unslash( $_GET['state'] ?? '' ) );
 
 		$result = Ovebotai_OAuth::instance()->exchange_code( $code, $state );
 
 		if ( ! empty( $result['error'] ) ) {
-			wp_redirect( add_query_arg( array(
+			wp_safe_redirect( add_query_arg( array(
 				'page'        => 'ovebotai',
 				'oauth_error' => rawurlencode( $result['error'] ),
 			), admin_url( 'admin.php' ) ) );
 		} else {
-			wp_redirect( add_query_arg( array(
+			wp_safe_redirect( add_query_arg( array(
 				'page' => 'ovebotai',
 				'step' => '2',
 			), admin_url( 'admin.php' ) ) );
@@ -111,7 +122,7 @@ class Ovebotai_Admin {
 		$oauth->disconnect_remote();
 		$oauth->clear_tokens();
 
-		wp_redirect( add_query_arg( 'page', 'ovebotai', admin_url( 'admin.php' ) ) );
+		wp_safe_redirect( add_query_arg( 'page', 'ovebotai', admin_url( 'admin.php' ) ) );
 		exit;
 	}
 
@@ -127,6 +138,8 @@ class Ovebotai_Admin {
 			return;
 		}
 
+		// Read-only view routing — no state change, no nonce to verify.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['view'] ) && 'settings' === $_GET['view'] ) {
 			require OVEBOTAI_DIR . 'admin/views/settings.php';
 			return;
@@ -151,7 +164,9 @@ class Ovebotai_Admin {
 		if ( Ovebotai::is_setup_complete() ) {
 			// The dashboard is static (no form, no AJAX) — only the Manual
 			// settings view needs settings.js.
-			if ( isset( $_GET['view'] ) && 'settings' === $_GET['view'] ) {
+			// Read-only view routing — no state change, no nonce to verify.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['view'] ) && 'settings' === $_GET['view'] ) {
 				wp_enqueue_script(
 					'ovebotai-settings',
 					OVEBOTAI_URL . 'admin/js/settings.js',
@@ -182,6 +197,8 @@ class Ovebotai_Admin {
 			// Steps present in this flow — Products KB only when WooCommerce is active.
 			$steps_seq = $wc_active ? array( 1, 2, 3, 4 ) : array( 1, 2, 4 );
 
+			// Read-only view routing — no state change, no nonce to verify.
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$initial_step = isset( $_GET['step'] ) ? (int) $_GET['step'] : ( $oauth->is_connected() ? 2 : 1 );
 			if ( ! in_array( $initial_step, $steps_seq, true ) ) {
 				$initial_step = $steps_seq[0];
@@ -207,6 +224,8 @@ class Ovebotai_Admin {
 				'stepsSequence'  => $steps_seq,
 				'isConnected'    => $oauth->is_connected() ? 1 : 0,
 				'productCounts'  => $product_counts,
+				// Read-only error message display, already sanitized — no state change.
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				'oauthError'     => isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp_unslash( $_GET['oauth_error'] ) ) : '',
 				'i18n'           => array(
 					'next'                  => __( 'Next →', 'ovebotai' ),
@@ -231,13 +250,19 @@ class Ovebotai_Admin {
 			return array( 'total' => 0, 'feed_count' => 0 );
 		}
 
+		// Direct queries: a DISTINCT+JOIN aggregate count like this isn't
+		// expressible through get_posts()/WP_Query without pulling every
+		// matching row into PHP just to count them — and it's a live,
+		// dashboard-only figure, not something worth caching.
 		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$total = (int) $wpdb->get_var( "
 			SELECT COUNT(DISTINCT p.ID) FROM {$wpdb->posts} p
 			WHERE p.post_type = 'product' AND p.post_status = 'publish'
 		" );
 		// Products that actually go on the feed: in stock or on backorder, with a
 		// positive price (matches the meta_query in Ovebotai_Feed::build_feed()).
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$feed_count = (int) $wpdb->get_var( $wpdb->prepare( "
 			SELECT COUNT(DISTINCT p.ID) FROM {$wpdb->posts} p
 			JOIN {$wpdb->postmeta} pm_stock ON p.ID = pm_stock.post_id

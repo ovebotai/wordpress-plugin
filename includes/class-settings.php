@@ -148,7 +148,7 @@ class Ovebotai_Settings {
 			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'ovebotai' ) ) );
 		}
 
-		$host = (string) parse_url( home_url(), PHP_URL_HOST );
+		$host = (string) wp_parse_url( home_url(), PHP_URL_HOST );
 		$slug = strtolower( preg_replace( '/[^a-z0-9]+/i', '_', preg_replace( '/^www\./i', '', $host ) ) );
 		$user = trim( $slug, '_' ) . '_' . substr( wp_generate_password( 8, false ), 0, 8 );
 		$pass = wp_generate_password( 24, false );

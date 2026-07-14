@@ -40,18 +40,24 @@ class Ovebotai_Frontend {
 			}
 		}
 
-		if (!empty($_GET['ocw-fab-open']) && current_user_can('administrator')) {
+		// Read-only UI toggle (auto-open the widget for an admin previewing
+		// their own site) — not a state change, nothing to verify a nonce for.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! empty( $_GET['ocw-fab-open'] ) && current_user_can( 'administrator' ) ) {
 			$params['auto_open'] = true;
 		}
 
-		$widget_host = esc_url( 'https://' . $workspace . '.ovebot.ai/widget/chat-loader.js' );
-		?>
-<script>
-var ovebot_ai = ovebot_ai || [];
-ovebot_ai.push(['chat', <?php echo wp_json_encode( $params ?: (object) array() ); ?>]);
-</script>
-<script src="<?php echo $widget_host; ?>" defer></script>
-		<?php
+		$widget_host = 'https://' . $workspace . '.ovebot.ai/widget/chat-loader.js';
+
+		// wp_footer runs inject_widget() at its default priority (10), which is
+		// before core's own wp_print_footer_scripts (priority 20) — so enqueuing
+		// here still gets picked up and printed in the same footer pass.
+		wp_enqueue_script( 'ovebotai-chat-loader', $widget_host, array(), OVEBOTAI_VERSION, true );
+		wp_add_inline_script(
+			'ovebotai-chat-loader',
+			'var ovebot_ai = ovebot_ai || []; ovebot_ai.push(["chat", ' . wp_json_encode( $params ?: (object) array() ) . ']);',
+			'before'
+		);
 	}
 
 	public function inject_purchase_event( int $order_id ) {
@@ -66,20 +72,22 @@ ovebot_ai.push(['chat', <?php echo wp_json_encode( $params ?: (object) array() )
 		$order->update_meta_data( '_ovebotai_purchase_tracked', 'yes' );
 		$order->save();
 
-		$workspace = (string) get_option( 'ovebotai_workspace', '' );
-		$event_host = esc_url( 'https://' . $workspace . '.ovebot.ai/widget/event.js' );
+		$workspace  = (string) get_option( 'ovebotai_workspace', '' );
+		$event_host = 'https://' . $workspace . '.ovebot.ai/widget/event.js';
 
 		$payload = array(
 			'transaction_id' => $order->get_order_number(),
 			'total'          => round( (float) $order->get_total(), 2 ),
 			'currency'       => $order->get_currency(),
 		);
-		?>
-<script type="text/javascript">
-var ovebot_ai = ovebot_ai || [];
-ovebot_ai.push(['purchase', <?php echo wp_json_encode( $payload ); ?>]);
-</script>
-<script src="<?php echo $event_host; ?>"></script>
-		<?php
+
+		// woocommerce_thankyou fires while the page content is rendering, well
+		// before wp_footer's wp_print_footer_scripts — safe to enqueue here.
+		wp_enqueue_script( 'ovebotai-purchase-event', $event_host, array(), OVEBOTAI_VERSION, true );
+		wp_add_inline_script(
+			'ovebotai-purchase-event',
+			'var ovebot_ai = ovebot_ai || []; ovebot_ai.push(["purchase", ' . wp_json_encode( $payload ) . ']);',
+			'before'
+		);
 	}
 }

@@ -29,7 +29,7 @@ class Ovebotai_OAuth {
 		set_transient( 'ovebotai_pkce_verifier_' . $state, $verifier, 600 );
 
 		return 'https://' . OVEBOTAI_ACCOUNT_HOST . '/oauth/authorize?' . http_build_query( array(
-			'site_domain'            => (string) parse_url( home_url(), PHP_URL_HOST ),
+			'site_domain'            => (string) wp_parse_url( home_url(), PHP_URL_HOST ),
 			'callback_url'           => $callback_url,
 			'scopes'                 => self::SCOPES,
 			'code_challenge'         => $challenge,

@@ -1,23 +1,28 @@
 <?php
 defined( 'ABSPATH' ) || exit;
 
-$oauth = Ovebotai_OAuth::instance();
-$admin = Ovebotai_Admin::instance();
+$ovebotai_oauth = Ovebotai_OAuth::instance();
+$ovebotai_admin = Ovebotai_Admin::instance();
 
-$pages         = $admin->get_pages_for_kb();
-$is_connected  = $oauth->is_connected();
-$wc_active     = Ovebotai::woocommerce_active();
+$pages         = $ovebotai_admin->get_pages_for_kb();
+$ovebotai_is_connected  = $ovebotai_oauth->is_connected();
+$ovebotai_wc_active     = Ovebotai::woocommerce_active();
 
 // Steps present in this flow — Products KB only exists when WooCommerce is active.
 // Checked live on every load, never cached.
-$steps_seq = $wc_active ? array( 1, 2, 3, 4 ) : array( 1, 2, 4 );
+$ovebotai_steps_seq = $ovebotai_wc_active ? array( 1, 2, 3, 4 ) : array( 1, 2, 4 );
 
 // Detect initial step, clamped to one that actually exists in this flow.
-$initial_step = isset( $_GET['step'] ) ? (int) $_GET['step'] : ( $is_connected ? 2 : 1 );
-if ( ! in_array( $initial_step, $steps_seq, true ) ) {
-	$initial_step = $steps_seq[0];
+// Read-only view routing (which step panel to show) — no state change, no
+// nonce to verify.
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$ovebotai_initial_step = isset( $_GET['step'] ) ? (int) $_GET['step'] : ( $ovebotai_is_connected ? 2 : 1 );
+if ( ! in_array( $ovebotai_initial_step, $ovebotai_steps_seq, true ) ) {
+	$ovebotai_initial_step = $ovebotai_steps_seq[0];
 }
-$oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp_unslash( $_GET['oauth_error'] ) ) : '';
+// Read-only error message display, already sanitized — no state change.
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$ovebotai_oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp_unslash( $_GET['oauth_error'] ) ) : '';
 ?>
 <div class="wrap ovebotai-wrap">
 	<div class="ovebotai-setup-card">
@@ -40,20 +45,20 @@ $oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp_unslash(
 		<div class="ovebotai-steps-nav">
 			<div class="ovebotai-steps-nav-inner">
 			<?php
-			$step_labels = array(
+			$ovebotai_step_labels = array(
 				1 => __( 'Connect', 'ovebotai' ),
 				2 => __( 'General Knowledge Base', 'ovebotai' ),
 				3 => __( 'Products Knowledge Base', 'ovebotai' ),
 				4 => __( 'Finish', 'ovebotai' ),
 			);
-			$current_pos = array_search( $initial_step, $steps_seq, true );
-			foreach ( $steps_seq as $pos => $num ) : ?>
-			<div class="ovebotai-step-dot<?php echo $num === $initial_step ? ' is-active' : ''; ?><?php echo $pos < $current_pos ? ' is-done' : ''; ?>" data-step="<?php echo esc_attr( $num ); ?>">
+			$ovebotai_current_pos = array_search( $ovebotai_initial_step, $ovebotai_steps_seq, true );
+			foreach ( $ovebotai_steps_seq as $ovebotai_pos => $ovebotai_num ) : ?>
+			<div class="ovebotai-step-dot<?php echo $ovebotai_num === $ovebotai_initial_step ? ' is-active' : ''; ?><?php echo $ovebotai_pos < $ovebotai_current_pos ? ' is-done' : ''; ?>" data-step="<?php echo esc_attr( $ovebotai_num ); ?>">
 				<div class="ovebotai-dot-circle">
-					<span class="dot-num"><?php echo esc_html( $pos + 1 ); ?></span>
+					<span class="dot-num"><?php echo esc_html( $ovebotai_pos + 1 ); ?></span>
 					<span class="dot-check">✓</span>
 				</div>
-				<span class="ovebotai-dot-label"><?php echo esc_html( $step_labels[ $num ] ); ?></span>
+				<span class="ovebotai-dot-label"><?php echo esc_html( $ovebotai_step_labels[ $ovebotai_num ] ); ?></span>
 			</div>
 			<?php endforeach; ?>
 			</div>
@@ -63,15 +68,15 @@ $oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp_unslash(
 		<div class="ovebotai-panels">
 
 			<!-- Step 1: Connect -->
-			<div class="ovebotai-panel" data-panel="1" <?php echo 1 !== $initial_step ? 'style="display:none"' : ''; ?>>
+			<div class="ovebotai-panel" data-panel="1" <?php echo 1 !== $ovebotai_initial_step ? 'style="display:none"' : ''; ?>>
 				<h2><?php esc_html_e( 'Connect your store to Ovebot.ai', 'ovebotai' ); ?></h2>
 				<p class="ovebotai-lead">
 					<?php esc_html_e( 'Log in to your Ovebot.ai account and grant access to this store. You will be redirected to ovebot.ai and back.', 'ovebotai' ); ?>
 				</p>
 
-				<?php if ( $oauth_error ) : ?>
+				<?php if ( $ovebotai_oauth_error ) : ?>
 				<div class="ovebotai-notice ovebotai-notice-error">
-					<p><?php echo esc_html( $oauth_error ); ?></p>
+					<p><?php echo esc_html( $ovebotai_oauth_error ); ?></p>
 				</div>
 				<?php endif; ?>
 
@@ -93,7 +98,7 @@ $oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp_unslash(
 			</div>
 
 			<!-- Step 2: Knowledge Base (pages) -->
-			<div class="ovebotai-panel" data-panel="2" <?php echo 2 !== $initial_step ? 'style="display:none"' : ''; ?>>
+			<div class="ovebotai-panel" data-panel="2" <?php echo 2 !== $ovebotai_initial_step ? 'style="display:none"' : ''; ?>>
 				<h2><?php esc_html_e( 'General knowledge base', 'ovebotai' ); ?></h2>
 				<p class="ovebotai-lead">
 					<?php esc_html_e( 'The following pages will be used by the chat to provide accurate information to your customers. Select the ones you want to include.', 'ovebotai' ); ?>
@@ -127,9 +132,9 @@ $oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp_unslash(
 				<?php endif; ?>
 			</div>
 
-			<?php if ( $wc_active ) : ?>
+			<?php if ( $ovebotai_wc_active ) : ?>
 			<!-- Step 3: Products (only reachable when WooCommerce is active) -->
-			<div class="ovebotai-panel" data-panel="3" <?php echo 3 !== $initial_step ? 'style="display:none"' : ''; ?>>
+			<div class="ovebotai-panel" data-panel="3" <?php echo 3 !== $ovebotai_initial_step ? 'style="display:none"' : ''; ?>>
 				<h2><?php esc_html_e( 'Products knowledge base', 'ovebotai' ); ?></h2>
 				<p class="ovebotai-lead" id="oveProductMsg">
 					<?php esc_html_e( 'Loading product counts…', 'ovebotai' ); ?>
@@ -138,7 +143,7 @@ $oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp_unslash(
 			<?php endif; ?>
 
 			<!-- Step 4: Sync / Done -->
-			<div class="ovebotai-panel" data-panel="4" <?php echo 4 !== $initial_step ? 'style="display:none"' : ''; ?>>
+			<div class="ovebotai-panel" data-panel="4" <?php echo 4 !== $ovebotai_initial_step ? 'style="display:none"' : ''; ?>>
 				<div class="ovebotai-sync-idle" id="oveSyncIdle">
 					<h2><?php esc_html_e( 'Ready to sync', 'ovebotai' ); ?></h2>
 					<p class="ovebotai-lead">
@@ -180,8 +185,8 @@ $oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp_unslash(
 			<button type="button" class="button" id="ovePrevBtn" style="display:none">
 				<?php esc_html_e( '← Previous', 'ovebotai' ); ?>
 			</button>
-			<?php $next_hidden = 1 === $initial_step && ! $is_connected; ?>
-			<button type="button" class="button button-primary" id="oveNextBtn" <?php echo $next_hidden ? 'style="display:none"' : ''; ?>>
+			<?php $ovebotai_next_hidden = 1 === $ovebotai_initial_step && ! $ovebotai_is_connected; ?>
+			<button type="button" class="button button-primary" id="oveNextBtn" <?php echo $ovebotai_next_hidden ? 'style="display:none"' : ''; ?>>
 				<?php esc_html_e( 'Next →', 'ovebotai' ); ?>
 			</button>
 		</div>

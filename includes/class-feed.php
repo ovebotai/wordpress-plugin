@@ -74,7 +74,10 @@ class Ovebotai_Feed {
 			'fields'         => 'ids',
 			'orderby'        => 'ID',
 			'order'          => 'ASC',
-			'meta_query'     => array(
+			// Filtering by stock status + price has no non-meta_query equivalent
+			// in WooCommerce's product schema; the feed itself is transient-cached
+			// (see serve_feed()), so this doesn't run on every request.
+			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 				'relation' => 'AND',
 				array( 'key' => '_stock_status', 'value' => array( 'instock', 'onbackorder' ), 'compare' => 'IN' ),
 				// Ovebot rejects rows with a non-positive price ("missing required

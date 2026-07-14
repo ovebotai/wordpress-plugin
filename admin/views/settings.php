@@ -1,15 +1,15 @@
 <?php
 defined( 'ABSPATH' ) || exit;
 
-$oauth     = Ovebotai_OAuth::instance();
-$widget    = Ovebotai_Settings::get_widget();
+$ovebotai_oauth     = Ovebotai_OAuth::instance();
+$ovebotai_widget    = Ovebotai_Settings::get_widget();
 
-$feed_hash = (string) get_option( 'ovebotai_feed_hash', '' );
-$feed_url  = add_query_arg( 'hash', $feed_hash, home_url( '/wp-json/ovebotai/v1/feed' ) );
-$order_url = home_url( '/wp-json/ovebotai/v1/orders' );
+$ovebotai_feed_hash = (string) get_option( 'ovebotai_feed_hash', '' );
+$ovebotai_feed_url  = add_query_arg( 'hash', $ovebotai_feed_hash, home_url( '/wp-json/ovebotai/v1/feed' ) );
+$ovebotai_order_url = home_url( '/wp-json/ovebotai/v1/orders' );
 
-$wc_active   = Ovebotai::woocommerce_active();
-$is_connected = $oauth->is_connected(); // false when refresh token missing/revoked
+$ovebotai_wc_active   = Ovebotai::woocommerce_active();
+$ovebotai_is_connected = $ovebotai_oauth->is_connected(); // false when refresh token missing/revoked
 ?>
 <div class="wrap ovebotai-wrap">
 
@@ -26,7 +26,7 @@ $is_connected = $oauth->is_connected(); // false when refresh token missing/revo
 		<?php require OVEBOTAI_DIR . 'admin/views/partials/connection-badge.php'; ?>
 	</div>
 
-	<?php if ( ! $is_connected ) : ?>
+	<?php if ( ! $ovebotai_is_connected ) : ?>
 	<div class="ovebotai-notice ovebotai-notice-warning ovebotai-reconnect-banner">
 		<p>
 			<strong><?php esc_html_e( 'Connection lost.', 'ovebotai' ); ?></strong>
@@ -61,7 +61,7 @@ $is_connected = $oauth->is_connected(); // false when refresh token missing/revo
 			</div>
 		</div>
 
-		<?php if ( $wc_active && $is_connected ) : ?>
+		<?php if ( $ovebotai_wc_active && $ovebotai_is_connected ) : ?>
 
 		<!-- ── Product Feed ─────────────────────────────────────────────── -->
 		<div class="ovebotai-fieldset">
@@ -72,7 +72,7 @@ $is_connected = $oauth->is_connected(); // false when refresh token missing/revo
 					<label><?php esc_html_e( 'Feed URL', 'ovebotai' ); ?></label>
 					<div class="ovebotai-url-row">
 						<input type="text" class="regular-text ovebotai-readonly-url" id="oveFeedUrl"
-							value="<?php echo esc_attr( $feed_url ); ?>" readonly>
+							value="<?php echo esc_attr( $ovebotai_feed_url ); ?>" readonly>
 						<button type="button" class="button ovebotai-copy-btn" data-target="oveFeedUrl">
 							<?php esc_html_e( 'Copy', 'ovebotai' ); ?>
 						</button>
@@ -101,7 +101,7 @@ $is_connected = $oauth->is_connected(); // false when refresh token missing/revo
 					<label><?php esc_html_e( 'Endpoint URL', 'ovebotai' ); ?></label>
 					<div class="ovebotai-url-row">
 						<input type="text" class="regular-text ovebotai-readonly-url" id="oveOrderUrl"
-							value="<?php echo esc_attr( $order_url ); ?>" readonly>
+							value="<?php echo esc_attr( $ovebotai_order_url ); ?>" readonly>
 						<button type="button" class="button ovebotai-copy-btn" data-target="oveOrderUrl">
 							<?php esc_html_e( 'Copy', 'ovebotai' ); ?>
 						</button>
@@ -146,30 +146,30 @@ $is_connected = $oauth->is_connected(); // false when refresh token missing/revo
 			<div class="ovebotai-fieldset-body">
 
 				<?php
-				$delivery_fields = array(
+				$ovebotai_delivery_fields = array(
 					array( 'shipped',  __( 'Shipped order', 'ovebotai' ),                       __( 'Counted from the ship date.', 'ovebotai' ),                          1, 2 ),
 					array( 'instock', __( 'New / processing — all in stock', 'ovebotai' ),      __( 'Counted from the order date.', 'ovebotai' ),                         2, 4 ),
 					array( 'oos',     __( 'New / processing — some out of stock', 'ovebotai' ), __( 'Counted from the order date.', 'ovebotai' ),                         5, 10 ),
 				);
-				foreach ( $delivery_fields as list( $key, $label, $help, $dmin, $dmax ) ) : ?>
+				foreach ( $ovebotai_delivery_fields as list( $ovebotai_key, $ovebotai_label, $ovebotai_help, $ovebotai_dmin, $ovebotai_dmax ) ) : ?>
 				<div class="ovebotai-field ovebotai-field-delivery">
-					<label><?php echo esc_html( $label ); ?></label>
+					<label><?php echo esc_html( $ovebotai_label ); ?></label>
 					<div class="ovebotai-delivery-inputs">
-						<input type="number" name="days_<?php echo esc_attr( $key ); ?>_min" class="small-text"
-							value="<?php echo esc_attr( Ovebotai_Settings::get_delivery( 'days_' . $key . '_min', $dmin ) ); ?>" min="0" max="60">
+						<input type="number" name="days_<?php echo esc_attr( $ovebotai_key ); ?>_min" class="small-text"
+							value="<?php echo esc_attr( Ovebotai_Settings::get_delivery( 'days_' . $ovebotai_key . '_min', $ovebotai_dmin ) ); ?>" min="0" max="60">
 						<span class="ovebotai-dash">&ndash;</span>
-						<input type="number" name="days_<?php echo esc_attr( $key ); ?>_max" class="small-text"
-							value="<?php echo esc_attr( Ovebotai_Settings::get_delivery( 'days_' . $key . '_max', $dmax ) ); ?>" min="0" max="60">
+						<input type="number" name="days_<?php echo esc_attr( $ovebotai_key ); ?>_max" class="small-text"
+							value="<?php echo esc_attr( Ovebotai_Settings::get_delivery( 'days_' . $ovebotai_key . '_max', $ovebotai_dmax ) ); ?>" min="0" max="60">
 						<span class="ovebotai-unit"><?php esc_html_e( 'business days', 'ovebotai' ); ?></span>
 					</div>
-					<p class="description"><?php echo esc_html( $help ); ?></p>
+					<p class="description"><?php echo esc_html( $ovebotai_help ); ?></p>
 				</div>
 				<?php endforeach; ?>
 
 			</div>
 		</div>
 
-		<?php elseif ( $wc_active && ! $is_connected ) : ?>
+		<?php elseif ( $ovebotai_wc_active && ! $ovebotai_is_connected ) : ?>
 		<div class="ovebotai-fieldset ovebotai-fieldset-locked">
 			<div class="ovebotai-fieldset-legend">
 				<?php esc_html_e( 'Product feed', 'ovebotai' ); ?>
@@ -211,9 +211,9 @@ $is_connected = $oauth->is_connected(); // false when refresh token missing/revo
 						<div class="ovebotai-field">
 							<label for="ove_accent_color"><?php esc_html_e( 'Accent colour', 'ovebotai' ); ?></label>
 							<div class="ovebotai-color-wrap">
-								<input type="color" id="ove_color_picker" value="<?php echo esc_attr( $widget['accent_color'] ?? '#2271B1' ); ?>">
+								<input type="color" id="ove_color_picker" value="<?php echo esc_attr( $ovebotai_widget['accent_color'] ?? '#2271B1' ); ?>">
 								<input type="text" name="widget_accent_color" id="ove_accent_color" class="regular-text"
-									value="<?php echo esc_attr( $widget['accent_color'] ?? '' ); ?>"
+									value="<?php echo esc_attr( $ovebotai_widget['accent_color'] ?? '' ); ?>"
 									placeholder="#2271B1" maxlength="7">
 							</div>
 						</div>
@@ -221,64 +221,64 @@ $is_connected = $oauth->is_connected(); // false when refresh token missing/revo
 						<div class="ovebotai-field">
 							<label for="ove_theme"><?php esc_html_e( 'Theme', 'ovebotai' ); ?></label>
 							<select name="widget_theme" id="ove_theme">
-								<option value="" <?php selected( $widget['theme'] ?? '', '' ); ?>><?php esc_html_e( 'Default (light)', 'ovebotai' ); ?></option>
-								<option value="light" <?php selected( $widget['theme'] ?? '', 'light' ); ?>><?php esc_html_e( 'Light', 'ovebotai' ); ?></option>
-								<option value="dark" <?php selected( $widget['theme'] ?? '', 'dark' ); ?>><?php esc_html_e( 'Dark', 'ovebotai' ); ?></option>
+								<option value="" <?php selected( $ovebotai_widget['theme'] ?? '', '' ); ?>><?php esc_html_e( 'Default (light)', 'ovebotai' ); ?></option>
+								<option value="light" <?php selected( $ovebotai_widget['theme'] ?? '', 'light' ); ?>><?php esc_html_e( 'Light', 'ovebotai' ); ?></option>
+								<option value="dark" <?php selected( $ovebotai_widget['theme'] ?? '', 'dark' ); ?>><?php esc_html_e( 'Dark', 'ovebotai' ); ?></option>
 							</select>
 						</div>
 
 						<div class="ovebotai-field">
 							<label for="ove_language"><?php esc_html_e( 'Language', 'ovebotai' ); ?></label>
 							<select name="widget_language" id="ove_language">
-								<option value=""     <?php selected( $widget['language'] ?? '', '' ); ?>><?php esc_html_e( 'Default', 'ovebotai' ); ?></option>
-								<option value="auto" <?php selected( $widget['language'] ?? '', 'auto' ); ?>><?php esc_html_e( 'Auto (browser)', 'ovebotai' ); ?></option>
-								<option value="en" <?php selected( $widget['language'] ?? '', 'en' ); ?>>English</option>
-								<option value="ro" <?php selected( $widget['language'] ?? '', 'ro' ); ?>>Română</option>
-								<option value="de" <?php selected( $widget['language'] ?? '', 'de' ); ?>>Deutsch</option>
-								<option value="fr" <?php selected( $widget['language'] ?? '', 'fr' ); ?>>Français</option>
+								<option value=""     <?php selected( $ovebotai_widget['language'] ?? '', '' ); ?>><?php esc_html_e( 'Default', 'ovebotai' ); ?></option>
+								<option value="auto" <?php selected( $ovebotai_widget['language'] ?? '', 'auto' ); ?>><?php esc_html_e( 'Auto (browser)', 'ovebotai' ); ?></option>
+								<option value="en" <?php selected( $ovebotai_widget['language'] ?? '', 'en' ); ?>>English</option>
+								<option value="ro" <?php selected( $ovebotai_widget['language'] ?? '', 'ro' ); ?>>Română</option>
+								<option value="de" <?php selected( $ovebotai_widget['language'] ?? '', 'de' ); ?>>Deutsch</option>
+								<option value="fr" <?php selected( $ovebotai_widget['language'] ?? '', 'fr' ); ?>>Français</option>
 							</select>
 						</div>
 
 						<div class="ovebotai-field">
 							<label for="ove_side"><?php esc_html_e( 'Position', 'ovebotai' ); ?></label>
 							<select name="widget_side" id="ove_side">
-								<option value="" <?php selected( $widget['side'] ?? '', '' ); ?>><?php esc_html_e( 'Default (right)', 'ovebotai' ); ?></option>
-								<option value="right" <?php selected( $widget['side'] ?? '', 'right' ); ?>><?php esc_html_e( 'Bottom right', 'ovebotai' ); ?></option>
-								<option value="left" <?php selected( $widget['side'] ?? '', 'left' ); ?>><?php esc_html_e( 'Bottom left', 'ovebotai' ); ?></option>
+								<option value="" <?php selected( $ovebotai_widget['side'] ?? '', '' ); ?>><?php esc_html_e( 'Default (right)', 'ovebotai' ); ?></option>
+								<option value="right" <?php selected( $ovebotai_widget['side'] ?? '', 'right' ); ?>><?php esc_html_e( 'Bottom right', 'ovebotai' ); ?></option>
+								<option value="left" <?php selected( $ovebotai_widget['side'] ?? '', 'left' ); ?>><?php esc_html_e( 'Bottom left', 'ovebotai' ); ?></option>
 							</select>
 						</div>
 
 						<div class="ovebotai-field">
 							<label for="ove_subtitle"><?php esc_html_e( 'Subtitle', 'ovebotai' ); ?></label>
 							<input type="text" name="widget_subtitle" id="ove_subtitle" class="regular-text"
-								value="<?php echo esc_attr( $widget['subtitle'] ?? '' ); ?>">
+								value="<?php echo esc_attr( $ovebotai_widget['subtitle'] ?? '' ); ?>">
 						</div>
 
 						<div class="ovebotai-field">
 							<label for="ove_proactive_message"><?php esc_html_e( 'Proactive message', 'ovebotai' ); ?></label>
 							<input type="text" name="widget_proactive_message" id="ove_proactive_message" class="regular-text"
-								value="<?php echo esc_attr( $widget['proactive_message'] ?? '' ); ?>">
+								value="<?php echo esc_attr( $ovebotai_widget['proactive_message'] ?? '' ); ?>">
 						</div>
 
 						<div class="ovebotai-field ovebotai-field-short">
 							<label for="ove_proactive_delay"><?php esc_html_e( 'Proactive delay (s)', 'ovebotai' ); ?></label>
 							<input type="number" name="widget_proactive_delay" id="ove_proactive_delay" class="small-text"
-								value="<?php echo esc_attr( $widget['proactive_delay'] ?? '' ); ?>" min="0" max="300" placeholder="4">
+								value="<?php echo esc_attr( $ovebotai_widget['proactive_delay'] ?? '' ); ?>" min="0" max="300" placeholder="4">
 						</div>
 
 						<div class="ovebotai-field">
 							<label for="ove_audio_beep"><?php esc_html_e( 'Audio beep', 'ovebotai' ); ?></label>
 							<select name="widget_audio_beep" id="ove_audio_beep">
-								<option value="" <?php selected( $widget['audio_beep'] ?? '', '' ); ?>><?php esc_html_e( 'Default (play)', 'ovebotai' ); ?></option>
-								<option value="play" <?php selected( $widget['audio_beep'] ?? '', 'play' ); ?>><?php esc_html_e( 'Play', 'ovebotai' ); ?></option>
-								<option value="none" <?php selected( $widget['audio_beep'] ?? '', 'none' ); ?>><?php esc_html_e( 'None', 'ovebotai' ); ?></option>
+								<option value="" <?php selected( $ovebotai_widget['audio_beep'] ?? '', '' ); ?>><?php esc_html_e( 'Default (play)', 'ovebotai' ); ?></option>
+								<option value="play" <?php selected( $ovebotai_widget['audio_beep'] ?? '', 'play' ); ?>><?php esc_html_e( 'Play', 'ovebotai' ); ?></option>
+								<option value="none" <?php selected( $ovebotai_widget['audio_beep'] ?? '', 'none' ); ?>><?php esc_html_e( 'None', 'ovebotai' ); ?></option>
 							</select>
 						</div>
 
 						<div class="ovebotai-field ovebotai-field-short">
 							<label for="ove_offset_y"><?php esc_html_e( 'Bottom offset (px)', 'ovebotai' ); ?></label>
 							<input type="number" name="widget_offset_y" id="ove_offset_y" class="small-text"
-								value="<?php echo esc_attr( $widget['offset_y'] ?? '' ); ?>" min="0" placeholder="20">
+								value="<?php echo esc_attr( $ovebotai_widget['offset_y'] ?? '' ); ?>" min="0" placeholder="20">
 							<p class="description"><?php esc_html_e( 'Raise to sit above e.g. a WhatsApp button.', 'ovebotai' ); ?></p>
 						</div>
 

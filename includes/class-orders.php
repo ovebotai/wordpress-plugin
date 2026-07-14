@@ -38,7 +38,7 @@ class Ovebotai_Orders {
 			$given_user = $_SERVER['PHP_AUTH_USER']; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			$given_pass = $_SERVER['PHP_AUTH_PW'] ?? ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 		} else {
-			$header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+			$header = sanitize_text_field( wp_unslash( $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '' ) );
 			if ( stripos( $header, 'Basic ' ) === 0 ) {
 				$decoded = base64_decode( substr( $header, 6 ) );
 				if ( false !== $decoded && strpos( $decoded, ':' ) !== false ) {
@@ -146,6 +146,15 @@ class Ovebotai_Orders {
 		return null;
 	}
 
+	// Table names below are always $wpdb->prefix + a hardcoded literal (never
+	// user input), so this only checks existence — no value to parameterize.
+	// Direct query is unavoidable: these are third-party plugins' own custom
+	// tables, outside any WP API, and their contents aren't ours to cache.
+	private function table_exists( string $table ): bool {
+		global $wpdb;
+		return $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) === $table; // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	}
+
 	// a2z-fedex-shipping: {$wpdb->prefix}shipi_fedex_meta (order_id, meta_key,
 	// meta_value), row meta_key='values' holds a JSON array of shipments.
 	// shipi_get_meta() is a method on hitshippo_fedex_parent, not a global
@@ -153,11 +162,15 @@ class Ovebotai_Orders {
 	// side effect, so we read the table directly instead.
 	private function get_tracking_from_a2z_fedex( WC_Order $order ): ?array {
 		global $wpdb;
-		$table = $wpdb->prefix . 'shipi_fedex_meta';
-		if ( $wpdb->get_var( "SHOW TABLES LIKE '$table'" ) !== $table ) return null;
+		$table = esc_sql( $wpdb->prefix . 'shipi_fedex_meta' );
+		if ( ! $this->table_exists( $table ) ) return null;
 
+		// $table is never user input (see table_exists() above) — only the
+		// %d/%s placeholders below carry values, which prepare() does escape.
+		// Direct query is unavoidable: third-party plugin's own table, no WP API.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$raw = $wpdb->get_var( $wpdb->prepare(
-			"SELECT meta_value FROM $table WHERE order_id = %d AND meta_key = %s",
+			"SELECT meta_value FROM $table WHERE order_id = %d AND meta_key = %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$order->get_id(),
 			'values'
 		) );
@@ -186,11 +199,13 @@ class Ovebotai_Orders {
 	// parcels still exist — the table is the more reliable source.
 	private function get_tracking_from_colissimo( WC_Order $order ): ?array {
 		global $wpdb;
-		$table = $wpdb->prefix . 'lpc_outward_label';
-		if ( $wpdb->get_var( "SHOW TABLES LIKE '$table'" ) !== $table ) return null;
+		$table = esc_sql( $wpdb->prefix . 'lpc_outward_label' );
+		if ( ! $this->table_exists( $table ) ) return null;
 
+		// Direct query is unavoidable: third-party plugin's own table, no WP API.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$row = $wpdb->get_row( $wpdb->prepare(
-			"SELECT tracking_number FROM $table WHERE order_id = %d ORDER BY FIELD(label_type, 'MASTER') DESC, id DESC LIMIT 1",
+			"SELECT tracking_number FROM $table WHERE order_id = %d ORDER BY FIELD(label_type, 'MASTER') DESC, id DESC LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$order->get_id()
 		) );
 		if ( ! $row || ! $row->tracking_number ) return null;
@@ -233,17 +248,17 @@ class Ovebotai_Orders {
 	// carriers, so the name lookup only runs when it's numeric.
 	private function get_tracking_from_packeta( WC_Order $order ): ?array {
 		global $wpdb;
-		$table = $wpdb->prefix . 'packetery_order';
-		if ( $wpdb->get_var( "SHOW TABLES LIKE '$table'" ) !== $table ) return null;
+		$table = esc_sql( $wpdb->prefix . 'packetery_order' );
+		if ( ! $this->table_exists( $table ) ) return null;
 
-		$row = $wpdb->get_row( $wpdb->prepare( "SELECT packet_id, carrier_id FROM $table WHERE id = %d", $order->get_id() ) );
+		$row = $wpdb->get_row( $wpdb->prepare( "SELECT packet_id, carrier_id FROM $table WHERE id = %d", $order->get_id() ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		if ( ! $row || ! $row->packet_id ) return null;
 
 		$carrier_label = 'Packeta';
 		if ( $row->carrier_id !== null && is_numeric( $row->carrier_id ) ) {
-			$carrier_table = $wpdb->prefix . 'packetery_carrier';
-			if ( $wpdb->get_var( "SHOW TABLES LIKE '$carrier_table'" ) === $carrier_table ) {
-				$carrier_name = $wpdb->get_var( $wpdb->prepare( "SELECT name FROM $carrier_table WHERE id = %d", (int) $row->carrier_id ) );
+			$carrier_table = esc_sql( $wpdb->prefix . 'packetery_carrier' );
+			if ( $this->table_exists( $carrier_table ) ) {
+				$carrier_name = $wpdb->get_var( $wpdb->prepare( "SELECT name FROM $carrier_table WHERE id = %d", (int) $row->carrier_id ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
 				if ( $carrier_name ) {
 					$carrier_label = (string) $carrier_name;
 				}
@@ -261,11 +276,13 @@ class Ovebotai_Orders {
 	// Public tracking page confirmed by the user: sameday.ro/status-colet/.
 	private function get_tracking_from_sameday( WC_Order $order ): ?array {
 		global $wpdb;
-		$table = $wpdb->prefix . 'sameday_awb';
-		if ( $wpdb->get_var( "SHOW TABLES LIKE '$table'" ) !== $table ) return null;
+		$table = esc_sql( $wpdb->prefix . 'sameday_awb' );
+		if ( ! $this->table_exists( $table ) ) return null;
 
+		// Direct query is unavoidable: third-party plugin's own table, no WP API.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$row = $wpdb->get_row( $wpdb->prepare(
-			"SELECT awb_number FROM $table WHERE order_id = %d ORDER BY id DESC LIMIT 1",
+			"SELECT awb_number FROM $table WHERE order_id = %d ORDER BY id DESC LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$order->get_id()
 		) );
 		if ( ! $row || ! $row->awb_number ) return null;
@@ -298,11 +315,13 @@ class Ovebotai_Orders {
 	// uses — falls back to null if the merchant never configured it.
 	private function get_tracking_from_multishipping( WC_Order $order ): ?array {
 		global $wpdb;
-		$table = $wpdb->prefix . 'wms_labels';
-		if ( $wpdb->get_var( "SHOW TABLES LIKE '$table'" ) !== $table ) return null;
+		$table = esc_sql( $wpdb->prefix . 'wms_labels' );
+		if ( ! $this->table_exists( $table ) ) return null;
 
+		// Direct query is unavoidable: third-party plugin's own table, no WP API.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$row = $wpdb->get_row( $wpdb->prepare(
-			"SELECT shipping_provider, outward_tracking_number FROM $table WHERE order_id = %d AND outward_tracking_number != '' ORDER BY id DESC LIMIT 1",
+			"SELECT shipping_provider, outward_tracking_number FROM $table WHERE order_id = %d AND outward_tracking_number != '' ORDER BY id DESC LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$order->get_id()
 		) );
 		if ( ! $row || ! $row->outward_tracking_number ) return null;
@@ -334,11 +353,13 @@ class Ovebotai_Orders {
 	// admin-only note, so we don't use it here.
 	private function get_tracking_from_dpd_baltic( WC_Order $order ): ?array {
 		global $wpdb;
-		$table = $wpdb->prefix . 'dpd_barcodes';
-		if ( $wpdb->get_var( "SHOW TABLES LIKE '$table'" ) !== $table ) return null;
+		$table = esc_sql( $wpdb->prefix . 'dpd_barcodes' );
+		if ( ! $this->table_exists( $table ) ) return null;
 
+		// Direct query is unavoidable: third-party plugin's own table, no WP API.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$row = $wpdb->get_row( $wpdb->prepare(
-			"SELECT dpd_barcode FROM $table WHERE order_id = %d ORDER BY id DESC LIMIT 1",
+			"SELECT dpd_barcode FROM $table WHERE order_id = %d ORDER BY id DESC LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$order->get_id()
 		) );
 		if ( ! $row || ! $row->dpd_barcode ) return null;

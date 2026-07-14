@@ -12,11 +12,11 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 // backup of this option can't still authenticate after uninstall. Must not
 // block the local cleanup below if the request fails or times out.
 
-$access_token = get_option( 'ovebotai_access_token' );
-if ( $access_token ) {
+$ovebotai_access_token = get_option( 'ovebotai_access_token' );
+if ( $ovebotai_access_token ) {
 	wp_remote_post( 'https://api.ovebot.ai/v1/disconnect', array(
 		'headers' => array(
-			'Authorization' => 'Bearer ' . $access_token,
+			'Authorization' => 'Bearer ' . $ovebotai_access_token,
 			'Accept'        => 'application/json',
 		),
 		'timeout' => 5,
@@ -25,7 +25,7 @@ if ( $access_token ) {
 
 // ── Options ───────────────────────────────────────────────────────────────
 
-$options = array(
+$ovebotai_options = array(
 	'ovebotai_access_token',
 	'ovebotai_refresh_token',
 	'ovebotai_token_expires',
@@ -48,8 +48,8 @@ $options = array(
 	'ovebotai_days_oos_max',
 	'ovebotai_include_oos', // removed option, deleted defensively for older installs
 );
-foreach ( $options as $option ) {
-	delete_option( $option );
+foreach ( $ovebotai_options as $ovebotai_option ) {
+	delete_option( $ovebotai_option );
 }
 
 // ── Per-page knowledge-base id mapping ───────────────────────────────────
@@ -58,10 +58,12 @@ delete_post_meta_by_key( '_ovebotai_kb_id' );
 
 // ── Cached product feed pages + pending OAuth PKCE verifiers (both use a
 //    transient key with a variable suffix — version number, or per-attempt
-//    state — so match by prefix rather than tracking every value ever used)
+//    state — so match by prefix rather than tracking every value ever used).
+//    One-time cleanup on uninstall, not a runtime query — direct/no-cache is
+//    correct here, there's nothing to cache a value for right before deleting it.
 
 global $wpdb;
-$wpdb->query(
+$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	"DELETE FROM {$wpdb->options}
 	 WHERE option_name LIKE '\_transient\_ovebotai\_feed\_v%'
 	    OR option_name LIKE '\_transient\_timeout\_ovebotai\_feed\_v%'

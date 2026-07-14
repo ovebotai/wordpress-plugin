@@ -13,7 +13,8 @@ class Ovebotai {
 	}
 
 	private function __construct() {
-		load_plugin_textdomain( 'ovebotai', false, dirname( plugin_basename( OVEBOTAI_FILE ) ) . '/languages' );
+		// No load_plugin_textdomain() call needed — WordPress has auto-loaded
+		// translations for any plugin with a proper Text Domain header since 4.6.
 		$this->includes();
 		add_action( 'init', array( $this, 'init' ) );
 	}
@@ -48,7 +49,7 @@ class Ovebotai {
 			update_option( 'ovebotai_feed_hash', wp_generate_password( 32, false ), false );
 		}
 		if ( ! get_option( 'ovebotai_order_user' ) ) {
-			$host = (string) parse_url( home_url(), PHP_URL_HOST );
+			$host = (string) wp_parse_url( home_url(), PHP_URL_HOST );
 			$slug = strtolower( preg_replace( '/[^a-z0-9]+/i', '_', preg_replace( '/^www\./i', '', $host ) ) );
 			update_option( 'ovebotai_order_user', trim( $slug, '_' ) . '_' . substr( wp_generate_password( 8, false ), 0, 8 ), false );
 		}

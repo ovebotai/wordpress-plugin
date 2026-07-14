@@ -1,48 +1,48 @@
 <?php
 defined( 'ABSPATH' ) || exit;
 
-$oauth        = Ovebotai_OAuth::instance();
-$workspace    = $oauth->get_workspace();
-$is_connected = $oauth->is_connected();
+$ovebotai_oauth        = Ovebotai_OAuth::instance();
+$ovebotai_workspace    = $ovebotai_oauth->get_workspace();
+$ovebotai_is_connected = $ovebotai_oauth->is_connected();
 
 // Live product count from Ovebot.ai's side (how many products it actually has
 // indexed for this agent) — not the local feed_count, which is what we send.
 // There's no product feed at all without WooCommerce, so skip entirely.
-$wc_active      = Ovebotai::woocommerce_active();
-$products_count = 0;
-if ( $wc_active && $is_connected ) {
-	$status_result = $oauth->api_request( 'GET', '/v1/integration/status' );
-	if ( ( $status_result['status'] ?? 0 ) >= 200 && ( $status_result['status'] ?? 0 ) < 300 ) {
-		$products_count = (int) ( $status_result['body']['integration']['counts']['products'] ?? 0 );
+$ovebotai_wc_active      = Ovebotai::woocommerce_active();
+$ovebotai_products_count = 0;
+if ( $ovebotai_wc_active && $ovebotai_is_connected ) {
+	$ovebotai_status_result = $ovebotai_oauth->api_request( 'GET', '/v1/integration/status' );
+	if ( ( $ovebotai_status_result['status'] ?? 0 ) >= 200 && ( $ovebotai_status_result['status'] ?? 0 ) < 300 ) {
+		$ovebotai_products_count = (int) ( $ovebotai_status_result['body']['integration']['counts']['products'] ?? 0 );
 	}
 }
 
-$account_url  = $workspace ? 'https://' . $workspace . '.ovebot.ai' : '';
-$products_url = $workspace ? 'https://' . $workspace . '.ovebot.ai/products' : '';
-$chat_url    = add_query_arg( 'ocw-fab-open', 'true', home_url( '/' ) );
-$settings_url = add_query_arg( 'view', 'settings', admin_url( 'admin.php?page=ovebotai' ) );
+$ovebotai_account_url  = $ovebotai_workspace ? 'https://' . $ovebotai_workspace . '.ovebot.ai' : '';
+$ovebotai_products_url = $ovebotai_workspace ? 'https://' . $ovebotai_workspace . '.ovebot.ai/products' : '';
+$ovebotai_chat_url    = add_query_arg( 'ocw-fab-open', 'true', home_url( '/' ) );
+$ovebotai_settings_url = add_query_arg( 'view', 'settings', admin_url( 'admin.php?page=ovebotai' ) );
 
 // Pulled live from Ovebot.ai — this is the actual state of the agent's
 // knowledge base, not just what this site has attempted to sync.
-$kb_entries = array();
-$kb_error   = '';
+$ovebotai_kb_entries = array();
+$ovebotai_kb_error   = '';
 
-if ( $is_connected && $workspace ) {
-	$result = $oauth->api_request( 'GET', $oauth->kb_api_path() . '?per_page=100' );
-	$status = $result['status'] ?? 0;
+if ( $ovebotai_is_connected && $ovebotai_workspace ) {
+	$ovebotai_result = $ovebotai_oauth->api_request( 'GET', $ovebotai_oauth->kb_api_path() . '?per_page=100' );
+	$ovebotai_status = $ovebotai_result['status'] ?? 0;
 
-	if ( $status >= 200 && $status < 300 ) {
-		foreach ( (array) ( $result['body']['entries'] ?? array() ) as $entry ) {
-			if ( empty( $entry['id'] ) ) continue;
+	if ( $ovebotai_status >= 200 && $ovebotai_status < 300 ) {
+		foreach ( (array) ( $ovebotai_result['body']['entries'] ?? array() ) as $ovebotai_entry ) {
+			if ( empty( $ovebotai_entry['id'] ) ) continue;
 
-			$kb_entries[] = array(
-				'title'     => (string) ( $entry['title'] ?? '' ),
-				'is_active' => ! empty( $entry['is_active'] ),
-				'edit_url'  => 'https://' . $workspace . '.ovebot.ai/knowledge-base/' . (int) $entry['id'] . '/edit',
+			$ovebotai_kb_entries[] = array(
+				'title'     => (string) ( $ovebotai_entry['title'] ?? '' ),
+				'is_active' => ! empty( $ovebotai_entry['is_active'] ),
+				'edit_url'  => 'https://' . $ovebotai_workspace . '.ovebot.ai/knowledge-base/' . (int) $ovebotai_entry['id'] . '/edit',
 			);
 		}
 	} else {
-		$kb_error = __( 'Could not load knowledge base entries from Ovebot.ai.', 'ovebotai' );
+		$ovebotai_kb_error = __( 'Could not load knowledge base entries from Ovebot.ai.', 'ovebotai' );
 	}
 }
 ?>
@@ -59,35 +59,32 @@ if ( $is_connected && $workspace ) {
 	</div>
 
 	<div class="ovebotai-dashboard-cards">
-		<a class="ovebotai-dash-card" href="<?php echo esc_url( $chat_url ); ?>" target="_blank" rel="noopener noreferrer">
+		<a class="ovebotai-dash-card" href="<?php echo esc_url( $ovebotai_chat_url ); ?>" target="_blank" rel="noopener noreferrer">
 			<span class="ovebotai-dash-card-icon">💬</span>
 			<span class="ovebotai-dash-card-title"><?php esc_html_e( 'Chat with the AI agent', 'ovebotai' ); ?></span>
 		</a>
-		<a class="ovebotai-dash-card" href="<?php echo esc_url( $settings_url ); ?>">
+		<a class="ovebotai-dash-card" href="<?php echo esc_url( $ovebotai_settings_url ); ?>">
 			<span class="ovebotai-dash-card-icon">⚙️</span>
 			<span class="ovebotai-dash-card-title"><?php esc_html_e( 'Manual settings', 'ovebotai' ); ?></span>
 		</a>
-		<?php if ( $account_url ) : ?>
-		<a class="ovebotai-dash-card" href="<?php echo esc_url( $account_url ); ?>" target="_blank" rel="noopener noreferrer">
+		<?php if ( $ovebotai_account_url ) : ?>
+		<a class="ovebotai-dash-card" href="<?php echo esc_url( $ovebotai_account_url ); ?>" target="_blank" rel="noopener noreferrer">
 			<span class="ovebotai-dash-card-icon">↗</span>
 			<span class="ovebotai-dash-card-title"><?php esc_html_e( 'Ovebot.ai account', 'ovebotai' ); ?></span>
 		</a>
 		<?php endif; ?>
 	</div>
 
-	<?php if ( $wc_active ) : ?>
+	<?php if ( $ovebotai_wc_active ) : ?>
 	<div class="ovebotai-dash-card-wide">
 		<span class="ovebotai-dash-card-wide-label"><?php esc_html_e( 'Products', 'ovebotai' ); ?></span>
-		<?php
-		$count_classes = 'ovebotai-dash-card-wide-count ' . ( $products_count > 0 ? 'is-positive' : 'is-zero' );
-		$count_html    = esc_html( number_format_i18n( $products_count ) );
-		?>
-		<?php if ( $products_url ) : ?>
-		<a class="<?php echo esc_attr( $count_classes ); ?>" href="<?php echo esc_url( $products_url ); ?>" target="_blank" rel="noopener noreferrer">
-			<?php echo $count_html; ?>
+		<?php $ovebotai_count_classes = 'ovebotai-dash-card-wide-count ' . ( $ovebotai_products_count > 0 ? 'is-positive' : 'is-zero' ); ?>
+		<?php if ( $ovebotai_products_url ) : ?>
+		<a class="<?php echo esc_attr( $ovebotai_count_classes ); ?>" href="<?php echo esc_url( $ovebotai_products_url ); ?>" target="_blank" rel="noopener noreferrer">
+			<?php echo esc_html( number_format_i18n( $ovebotai_products_count ) ); ?>
 		</a>
 		<?php else : ?>
-		<span class="<?php echo esc_attr( $count_classes ); ?>"><?php echo $count_html; ?></span>
+		<span class="<?php echo esc_attr( $ovebotai_count_classes ); ?>"><?php echo esc_html( number_format_i18n( $ovebotai_products_count ) ); ?></span>
 		<?php endif; ?>
 	</div>
 	<?php endif; ?>
@@ -96,21 +93,21 @@ if ( $is_connected && $workspace ) {
 		<div class="ovebotai-fieldset-legend"><?php esc_html_e( 'Knowledge Bases', 'ovebotai' ); ?></div>
 		<div class="ovebotai-fieldset-body">
 
-			<?php if ( $kb_error ) : ?>
-			<div class="ovebotai-notice ovebotai-notice-warning"><p><?php echo esc_html( $kb_error ); ?></p></div>
-			<?php elseif ( empty( $kb_entries ) ) : ?>
+			<?php if ( $ovebotai_kb_error ) : ?>
+			<div class="ovebotai-notice ovebotai-notice-warning"><p><?php echo esc_html( $ovebotai_kb_error ); ?></p></div>
+			<?php elseif ( empty( $ovebotai_kb_entries ) ) : ?>
 			<p class="ovebotai-muted"><?php esc_html_e( 'No knowledge base entries yet.', 'ovebotai' ); ?></p>
 			<?php else : ?>
 			<div class="ovebotai-pages-list ovebotai-kb-list">
-				<?php foreach ( $kb_entries as $entry ) : ?>
+				<?php foreach ( $ovebotai_kb_entries as $ovebotai_entry ) : ?>
 				<div class="ovebotai-page-item">
 					<div class="ovebotai-page-info">
-						<span class="ovebotai-page-title"><?php echo esc_html( $entry['title'] ); ?></span>
-						<?php if ( ! $entry['is_active'] ) : ?>
+						<span class="ovebotai-page-title"><?php echo esc_html( $ovebotai_entry['title'] ); ?></span>
+						<?php if ( ! $ovebotai_entry['is_active'] ) : ?>
 						<span class="ovebotai-lock-badge"><?php esc_html_e( 'Inactive', 'ovebotai' ); ?></span>
 						<?php endif; ?>
 					</div>
-					<a href="<?php echo esc_url( $entry['edit_url'] ); ?>"
+					<a href="<?php echo esc_url( $ovebotai_entry['edit_url'] ); ?>"
 						target="_blank"
 						rel="noopener noreferrer"
 						class="ovebotai-page-url">
