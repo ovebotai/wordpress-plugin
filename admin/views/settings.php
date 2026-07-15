@@ -12,6 +12,7 @@ $ovebotai_order_url = home_url( '/wp-json/ovebotai/v1/orders' );
 $ovebotai_wc_active   = Ovebotai::woocommerce_active();
 $ovebotai_is_connected = $ovebotai_oauth->is_connected(); // false when refresh token missing/revoked
 ?>
+<hr class="wp-header-end">
 <div class="wrap ovebotai-wrap">
 
 	<div class="ovebotai-settings-header" style="margin-bottom: 10px;">

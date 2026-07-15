@@ -47,6 +47,7 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 	}
 }
 ?>
+<hr class="wp-header-end">
 <div class="wrap ovebotai-wrap">
 
 	<div class="ovebotai-settings-header">

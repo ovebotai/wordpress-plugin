@@ -24,6 +24,7 @@ if ( ! in_array( $ovebotai_initial_step, $ovebotai_steps_seq, true ) ) {
 // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 $ovebotai_oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp_unslash( $_GET['oauth_error'] ) ) : '';
 ?>
+<hr class="wp-header-end">
 <div class="wrap ovebotai-wrap">
 	<div class="ovebotai-setup-card">
 
