@@ -232,8 +232,8 @@ class Ovebotai_Admin {
 					'sync'                  => __( 'Finish setup →', 'ovebotai' ),
 					'retry'                 => __( 'Retry', 'ovebotai' ),
 					'error'                 => __( 'An error occurred. Please try again.', 'ovebotai' ),
-					'noProducts'            => __( 'No published products found.', 'ovebotai' ),
-					'productsWillBeIndexed' => __( 'products will be indexed.', 'ovebotai' ),
+					'noProducts'            => __( 'No published products found — your AI agent won\'t have any products to recommend yet.', 'ovebotai' ),
+					'productsWillBeIndexed' => __( 'products will be sent to your AI agent so it can recommend them to customers.', 'ovebotai' ),
 				),
 			) );
 		}

@@ -6,11 +6,37 @@
 
 	$(function () {
 
+		// ── Unsaved changes guard ────────────────────────────────────────────
+		// No change-tracking state to keep in sync — just diff the form's
+		// current serialization against its initial one at the moment the
+		// browser actually asks, so an edit that's later undone (typed then
+		// untyped) doesn't leave a stale "dirty" flag behind.
+
+		var $oveForm  = $('#oveSettingsForm');
+		var $oveSaveBtn = $('#oveSaveBtn');
+		var initialSerialized = $oveForm.serialize();
+
+		$(window).on('beforeunload', function (e) {
+			if ($oveForm.serialize() !== initialSerialized) {
+				e.preventDefault();
+				e.returnValue = '';
+				return '';
+			}
+		});
+
+		// Pulse the Save button while there are unsaved changes, so it's
+		// obvious there's something to do before leaving the page.
+		function updateSaveAttention() {
+			$oveSaveBtn.toggleClass('ovebotai-attn', $oveForm.serialize() !== initialSerialized);
+		}
+
+		$oveForm.on('input change', 'input, select', updateSaveAttention);
+
 		// ── Save form ────────────────────────────────────────────────────────
 
-		$('#oveSettingsForm').on('submit', function (e) {
+		$oveForm.on('submit', function (e) {
 			e.preventDefault();
-			var $btn = $('#oveSaveBtn').prop('disabled', true).text(cfg.i18n.saving);
+			var $btn = $oveSaveBtn.prop('disabled', true).removeClass('ovebotai-attn').text(cfg.i18n.saving);
 			var data = $(this).serialize() + '&action=ovebotai_save_settings&nonce=' + encodeURIComponent(cfg.nonce);
 
 			$.post(cfg.ajaxUrl, data)
@@ -23,13 +49,21 @@
 					showNotice( ! needsReconnect && resp.success, msg, needsReconnect ? 'warning' : null );
 					showWarnings( resp.success ? warnings : null );
 
+					if (resp.success) {
+						// Saved state is now the new baseline — further edits are
+						// judged against it, not the page-load snapshot.
+						initialSerialized = $oveForm.serialize();
+					}
+
 					if (resp.success && cfg.dashboardUrl) {
 						setTimeout(function () { window.location.href = cfg.dashboardUrl; }, 1200);
 					} else {
+						updateSaveAttention();
 						$btn.prop('disabled', false).text(ovebotaiSettingsText);
 					}
 				})
 				.fail(function () {
+					updateSaveAttention();
 					showNotice(false, cfg.i18n.error);
 					showWarnings(null);
 					$btn.prop('disabled', false).text(ovebotaiSettingsText);
@@ -50,12 +84,13 @@
 			var $p = $('#oveAppearancePanel');
 			var open = $p.is(':visible');
 			$p.slideToggle(180);
-			$(this).text(open ? 'Configure appearance ▾' : 'Configure appearance ▲');
+			$('#oveAppearanceToggleIcon').toggleClass('dashicons-arrow-down-alt2', open).toggleClass('dashicons-arrow-up-alt2', !open);
 		});
 
 		// Sync color picker ↔ text input.
 		$('#ove_color_picker').on('input', function () {
 			$('[name="widget_accent_color"]').val($(this).val());
+			updateSaveAttention();
 		});
 		$('[name="widget_accent_color"]').on('input', function () {
 			var v = $(this).val();

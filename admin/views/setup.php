@@ -46,17 +46,17 @@ $ovebotai_oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp
 			<div class="ovebotai-steps-nav-inner">
 			<?php
 			$ovebotai_step_labels = array(
-				1 => __( 'Connect', 'ovebotai' ),
-				2 => __( 'General Knowledge Base', 'ovebotai' ),
-				3 => __( 'Products Knowledge Base', 'ovebotai' ),
-				4 => __( 'Finish', 'ovebotai' ),
+				1 => __( 'Connect account', 'ovebotai' ),
+				2 => __( 'Website pages', 'ovebotai' ),
+				3 => __( 'Products', 'ovebotai' ),
+				4 => __( 'Go live', 'ovebotai' ),
 			);
 			$ovebotai_current_pos = array_search( $ovebotai_initial_step, $ovebotai_steps_seq, true );
 			foreach ( $ovebotai_steps_seq as $ovebotai_pos => $ovebotai_num ) : ?>
 			<div class="ovebotai-step-dot<?php echo $ovebotai_num === $ovebotai_initial_step ? ' is-active' : ''; ?><?php echo $ovebotai_pos < $ovebotai_current_pos ? ' is-done' : ''; ?>" data-step="<?php echo esc_attr( $ovebotai_num ); ?>">
 				<div class="ovebotai-dot-circle">
 					<span class="dot-num"><?php echo esc_html( $ovebotai_pos + 1 ); ?></span>
-					<span class="dot-check">✓</span>
+					<span class="dot-check dashicons dashicons-yes-alt" aria-hidden="true"></span>
 				</div>
 				<span class="ovebotai-dot-label"><?php echo esc_html( $ovebotai_step_labels[ $ovebotai_num ] ); ?></span>
 			</div>
@@ -71,7 +71,7 @@ $ovebotai_oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp
 			<div class="ovebotai-panel" data-panel="1" <?php echo 1 !== $ovebotai_initial_step ? 'style="display:none"' : ''; ?>>
 				<h2><?php esc_html_e( 'Connect your store to Ovebot.ai', 'ovebotai' ); ?></h2>
 				<p class="ovebotai-lead">
-					<?php esc_html_e( 'Log in to your Ovebot.ai account and grant access to this store. You will be redirected to ovebot.ai and back.', 'ovebotai' ); ?>
+					<?php esc_html_e( 'Log in to your Ovebot.ai account and allow this site to sync with it. You\'ll be sent to ovebot.ai to sign in, then brought straight back here to finish setting up your AI chat agent.', 'ovebotai' ); ?>
 				</p>
 
 				<?php if ( $ovebotai_oauth_error ) : ?>
@@ -98,9 +98,9 @@ $ovebotai_oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp
 
 			<!-- Step 2: Knowledge Base (pages) -->
 			<div class="ovebotai-panel" data-panel="2" <?php echo 2 !== $ovebotai_initial_step ? 'style="display:none"' : ''; ?>>
-				<h2><?php esc_html_e( 'General knowledge base', 'ovebotai' ); ?></h2>
+				<h2><?php esc_html_e( 'Teach the AI chat agent about your website', 'ovebotai' ); ?></h2>
 				<p class="ovebotai-lead">
-					<?php esc_html_e( 'The following pages will be used by the chat to provide accurate information to your customers. Select the ones you want to include.', 'ovebotai' ); ?>
+					<?php esc_html_e( 'Select the pages below (e.g. About, FAQ, Shipping & Returns). Your AI agent will read them and use that information to answer your customers\' questions accurately, live in the on-site chat.', 'ovebotai' ); ?>
 				</p>
 
 				<?php if ( empty( $pages ) ) : ?>
@@ -122,7 +122,7 @@ $ovebotai_oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp
 								class="ovebotai-page-url"
 								onclick="event.stopPropagation()">
 								<?php echo esc_html( str_replace( home_url(), '', get_permalink( $page['id'] ) ) ); ?>
-								<span class="ovebotai-ext-icon">↗</span>
+								<span class="dashicons dashicons-external ovebotai-ext-icon" aria-hidden="true"></span>
 							</a>
 						</div>
 					</label>
@@ -134,9 +134,9 @@ $ovebotai_oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp
 			<?php if ( $ovebotai_wc_active ) : ?>
 			<!-- Step 3: Products (only reachable when WooCommerce is active) -->
 			<div class="ovebotai-panel" data-panel="3" <?php echo 3 !== $ovebotai_initial_step ? 'style="display:none"' : ''; ?>>
-				<h2><?php esc_html_e( 'Products knowledge base', 'ovebotai' ); ?></h2>
+				<h2><?php esc_html_e( 'Teach the AI chat agent about your products', 'ovebotai' ); ?></h2>
 				<p class="ovebotai-lead" id="oveProductMsg">
-					<?php esc_html_e( 'Loading product counts…', 'ovebotai' ); ?>
+					<?php esc_html_e( 'Checking how many products can be sent to your AI agent…', 'ovebotai' ); ?>
 				</p>
 			</div>
 			<?php endif; ?>
@@ -144,9 +144,9 @@ $ovebotai_oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp
 			<!-- Step 4: Sync / Done -->
 			<div class="ovebotai-panel" data-panel="4" <?php echo 4 !== $ovebotai_initial_step ? 'style="display:none"' : ''; ?>>
 				<div class="ovebotai-sync-idle" id="oveSyncIdle">
-					<h2><?php esc_html_e( 'Ready to sync', 'ovebotai' ); ?></h2>
+					<h2><?php esc_html_e( 'Ready to go live', 'ovebotai' ); ?></h2>
 					<p class="ovebotai-lead">
-						<?php esc_html_e( 'Everything is set. Click the button below to send your pages and products to Ovebot.ai.', 'ovebotai' ); ?>
+						<?php esc_html_e( 'Everything is set. Click below to send the selected pages and products to Ovebot.ai — your AI chat agent will start using them right away.', 'ovebotai' ); ?>
 					</p>
 				</div>
 				<div class="ovebotai-sync-loading" id="oveSyncLoading" style="display:none">
@@ -156,16 +156,15 @@ $ovebotai_oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp
 					</div>
 				</div>
 				<div class="ovebotai-sync-done" id="oveSyncDone" style="display:none">
-					<div class="ovebotai-done-icon">✓</div>
+					<div class="ovebotai-done-icon"><span class="dashicons dashicons-yes-alt" aria-hidden="true"></span></div>
 					<h2><?php esc_html_e( 'All done!', 'ovebotai' ); ?></h2>
 					<p class="ovebotai-lead">
-						<?php esc_html_e( 'Your store is now connected to Ovebot.ai.', 'ovebotai' ); ?>
-						<?php esc_html_e( 'Your AI assistant is now live on your website, ready to help your customers.', 'ovebotai' ); ?>
+						<?php esc_html_e( 'Your store is now connected to Ovebot.ai. Your AI agent is live on your website right now, ready to chat with customers, recommend products and answer order-status questions.', 'ovebotai' ); ?>
 					</p>
 					<div class="ovebotai-notice ovebotai-notice-warning" id="oveSyncWarnings" style="display:none"></div>
 					<div class="ovebotai-done-actions">
 						<a href="<?php echo esc_url( add_query_arg( 'view', 'settings', admin_url( 'admin.php?page=ovebotai' ) ) ); ?>" class="button ovebotai-btn-muted">
-							<?php esc_html_e( 'More settings', 'ovebotai' ); ?>
+							<?php esc_html_e( 'Go to settings', 'ovebotai' ); ?>
 						</a>
 						<a href="<?php echo esc_url( add_query_arg( 'ocw-fab-open', 'true', home_url( '/' ) ) ); ?>" class="button button-primary" target="_blank" rel="noopener noreferrer">
 							<?php esc_html_e( 'Chat with the AI agent →', 'ovebotai' ); ?>

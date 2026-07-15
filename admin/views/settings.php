@@ -14,18 +14,20 @@ $ovebotai_is_connected = $ovebotai_oauth->is_connected(); // false when refresh 
 ?>
 <div class="wrap ovebotai-wrap">
 
-	<div class="ovebotai-settings-header">
+	<div class="ovebotai-settings-header" style="margin-bottom: 10px;">
 		<div class="ovebotai-logo">
 			<a href="https://ovebot.ai" target="_blank" rel="noopener noreferrer">
 				<img src="<?php echo esc_url( OVEBOTAI_URL . 'admin/img/logo.png' ); ?>" alt="Ovebot.ai" height="32">
 			</a>
 			<h1><?php esc_html_e( 'Settings', 'ovebotai' ); ?></h1>
-			<a href="<?php echo esc_url( admin_url( 'admin.php?page=ovebotai' ) ); ?>" class="ovebotai-back-link">
-				<?php esc_html_e( '← Dashboard', 'ovebotai' ); ?>
-			</a>
 		</div>
 		<?php require OVEBOTAI_DIR . 'admin/views/partials/connection-badge.php'; ?>
 	</div>
+
+	<a href="<?php echo esc_url( admin_url( 'admin.php?page=ovebotai' ) ); ?>" class="ovebotai-back-link">
+		<span class="dashicons dashicons-arrow-left-alt2" aria-hidden="true"></span>
+		<?php esc_html_e( 'Dashboard', 'ovebotai' ); ?>
+	</a>
 
 	<?php if ( ! $ovebotai_is_connected ) : ?>
 	<div class="ovebotai-notice ovebotai-notice-warning ovebotai-reconnect-banner">
@@ -43,11 +45,14 @@ $ovebotai_is_connected = $ovebotai_oauth->is_connected(); // false when refresh 
 
 		<!-- ── Chat Widget ──────────────────────────────────────────────── -->
 		<div class="ovebotai-fieldset">
-			<div class="ovebotai-fieldset-legend"><?php esc_html_e( 'On-site chat widget', 'ovebotai' ); ?></div>
+			<div class="ovebotai-fieldset-legend">
+				<span class="dashicons dashicons-format-chat" aria-hidden="true"></span>
+				<?php esc_html_e( 'On-site chat widget', 'ovebotai' ); ?>
+			</div>
 			<div class="ovebotai-fieldset-body">
 
 				<div class="ovebotai-field ovebotai-field-switch">
-					<label><?php esc_html_e( 'Chat widget status', 'ovebotai' ); ?></label>
+					<label><?php esc_html_e( 'Show the chat bubble on your site', 'ovebotai' ); ?></label>
 					<div class="ovebotai-switch-wrap">
 						<label class="ovebotai-switch">
 							<input type="checkbox" name="chat_status" id="oveChatStatus" value="1" <?php checked( get_option( 'ovebotai_chat_status' ), '1' ); ?>>
@@ -57,6 +62,7 @@ $ovebotai_is_connected = $ovebotai_oauth->is_connected(); // false when refresh 
 							<?php echo get_option( 'ovebotai_chat_status' ) === '1' ? esc_html__( 'Enabled', 'ovebotai' ) : esc_html__( 'Disabled', 'ovebotai' ); ?>
 						</span>
 					</div>
+					<p class="description"><?php esc_html_e( 'When enabled, the AI agent\'s chat bubble appears on every page of your site so customers can start a conversation.', 'ovebotai' ); ?></p>
 				</div>
 
 			</div>
@@ -66,8 +72,13 @@ $ovebotai_is_connected = $ovebotai_oauth->is_connected(); // false when refresh 
 
 		<!-- ── Product Feed ─────────────────────────────────────────────── -->
 		<div class="ovebotai-fieldset">
-			<div class="ovebotai-fieldset-legend"><?php esc_html_e( 'Product feed', 'ovebotai' ); ?></div>
+			<div class="ovebotai-fieldset-legend">
+				<span class="dashicons dashicons-rss" aria-hidden="true"></span>
+				<?php esc_html_e( 'Product feed', 'ovebotai' ); ?>
+			</div>
 			<div class="ovebotai-fieldset-body">
+
+				<p class="description ovebotai-fieldset-intro"><?php esc_html_e( 'Ovebot.ai reads this URL periodically to keep your AI agent\'s product recommendations up to date with your catalog (stock, price, availability).', 'ovebotai' ); ?></p>
 
 				<div class="ovebotai-field">
 					<label><?php esc_html_e( 'Feed URL', 'ovebotai' ); ?></label>
@@ -77,8 +88,8 @@ $ovebotai_is_connected = $ovebotai_oauth->is_connected(); // false when refresh 
 						<button type="button" class="button ovebotai-copy-btn" data-target="oveFeedUrl">
 							<?php esc_html_e( 'Copy', 'ovebotai' ); ?>
 						</button>
-						<button type="button" class="button ovebotai-regen-hash-btn" title="<?php esc_attr_e( 'Regenerate hash', 'ovebotai' ); ?>">
-							↻
+						<button type="button" class="button ovebotai-regen-hash-btn" aria-label="<?php esc_attr_e( 'Regenerate hash', 'ovebotai' ); ?>" title="<?php esc_attr_e( 'Regenerate hash', 'ovebotai' ); ?>">
+							<span class="dashicons dashicons-image-rotate" aria-hidden="true"></span>
 						</button>
 					</div>
 				</div>
@@ -95,8 +106,13 @@ $ovebotai_is_connected = $ovebotai_oauth->is_connected(); // false when refresh 
 
 		<!-- ── Order Tracking ───────────────────────────────────────────── -->
 		<div class="ovebotai-fieldset">
-			<div class="ovebotai-fieldset-legend"><?php esc_html_e( 'Order tracking API', 'ovebotai' ); ?></div>
+			<div class="ovebotai-fieldset-legend">
+				<span class="dashicons dashicons-location-alt" aria-hidden="true"></span>
+				<?php esc_html_e( 'Order tracking API', 'ovebotai' ); ?>
+			</div>
 			<div class="ovebotai-fieldset-body">
+
+				<p class="description ovebotai-fieldset-intro"><?php esc_html_e( 'Ovebot.ai calls this endpoint, authenticated with the credentials below, so your AI agent can answer "Where is my order?" questions with live tracking info.', 'ovebotai' ); ?></p>
 
 				<div class="ovebotai-field">
 					<label><?php esc_html_e( 'Endpoint URL', 'ovebotai' ); ?></label>
@@ -143,14 +159,37 @@ $ovebotai_is_connected = $ovebotai_oauth->is_connected(); // false when refresh 
 
 		<!-- ── Delivery estimate ────────────────────────────────────────── -->
 		<div class="ovebotai-fieldset">
-			<div class="ovebotai-fieldset-legend"><?php esc_html_e( 'Delivery estimate (business days, excludes Sunday)', 'ovebotai' ); ?></div>
+			<div class="ovebotai-fieldset-legend">
+				<span class="dashicons dashicons-clock" aria-hidden="true"></span>
+				<?php esc_html_e( 'Delivery estimate', 'ovebotai' ); ?>
+			</div>
 			<div class="ovebotai-fieldset-body">
+
+				<p class="description ovebotai-fieldset-intro"><?php esc_html_e( 'Your AI agent uses these ranges to answer "When will my order arrive?" - counted in business days, Sundays excluded. Set a realistic min–max range for each of the three order situations below.', 'ovebotai' ); ?></p>
 
 				<?php
 				$ovebotai_delivery_fields = array(
-					array( 'shipped',  __( 'Shipped order', 'ovebotai' ),                       __( 'Counted from the ship date.', 'ovebotai' ),                          1, 2 ),
-					array( 'instock', __( 'New / processing — all in stock', 'ovebotai' ),      __( 'Counted from the order date.', 'ovebotai' ),                         2, 4 ),
-					array( 'oos',     __( 'New / processing — some out of stock', 'ovebotai' ), __( 'Counted from the order date.', 'ovebotai' ),                         5, 10 ),
+					array(
+						'shipped',
+						__( 'Orders that have already shipped', 'ovebotai' ),
+						__( 'Counted from the day the order was shipped, until it reaches the customer.', 'ovebotai' ),
+						1,
+						2,
+					),
+					array(
+						'instock',
+						__( 'New orders - every item in stock', 'ovebotai' ),
+						__( 'Counted from the day the order was placed - nothing to wait on before it ships.', 'ovebotai' ),
+						2,
+						4,
+					),
+					array(
+						'oos',
+						__( 'New orders - at least one item out of stock', 'ovebotai' ),
+						__( 'Counted from the day the order was placed - includes the wait for restock before it can ship.', 'ovebotai' ),
+						5,
+						10,
+					),
 				);
 				foreach ( $ovebotai_delivery_fields as list( $ovebotai_key, $ovebotai_label, $ovebotai_help, $ovebotai_dmin, $ovebotai_dmax ) ) : ?>
 				<div class="ovebotai-field ovebotai-field-delivery">
@@ -173,16 +212,16 @@ $ovebotai_is_connected = $ovebotai_oauth->is_connected(); // false when refresh 
 		<?php elseif ( $ovebotai_wc_active && ! $ovebotai_is_connected ) : ?>
 		<div class="ovebotai-fieldset ovebotai-fieldset-locked">
 			<div class="ovebotai-fieldset-legend">
-				<?php esc_html_e( 'Product feed', 'ovebotai' ); ?>
-				<span class="ovebotai-lock-badge"><?php esc_html_e( 'Requires connection', 'ovebotai' ); ?></span>
+				<span class="dashicons dashicons-lock" aria-hidden="true"></span>
+				<?php esc_html_e( 'Requires connection', 'ovebotai' ); ?>
 			</div>
-			<div class="ovebotai-fieldset-legend">
-				<?php esc_html_e( 'Order tracking API', 'ovebotai' ); ?>
-				<span class="ovebotai-lock-badge"><?php esc_html_e( 'Requires connection', 'ovebotai' ); ?></span>
-			</div>
-			<div class="ovebotai-fieldset-legend">
-				<?php esc_html_e( 'Delivery estimate', 'ovebotai' ); ?>
-				<span class="ovebotai-lock-badge"><?php esc_html_e( 'Requires connection', 'ovebotai' ); ?></span>
+			<div class="ovebotai-fieldset-body">
+				<p class="description ovebotai-fieldset-intro"><?php esc_html_e( 'Reconnect your Ovebot.ai account to unlock these:', 'ovebotai' ); ?></p>
+				<ul class="ovebotai-locked-list">
+					<li><span class="dashicons dashicons-rss" aria-hidden="true"></span><?php esc_html_e( 'Product feed', 'ovebotai' ); ?></li>
+					<li><span class="dashicons dashicons-location-alt" aria-hidden="true"></span><?php esc_html_e( 'Order tracking API', 'ovebotai' ); ?></li>
+					<li><span class="dashicons dashicons-clock" aria-hidden="true"></span><?php esc_html_e( 'Delivery estimate', 'ovebotai' ); ?></li>
+				</ul>
 			</div>
 		</div>
 		<?php else : ?>
@@ -197,16 +236,22 @@ $ovebotai_is_connected = $ovebotai_oauth->is_connected(); // false when refresh 
 
 		<!-- ── Appearance ───────────────────────────────────────────────── -->
 		<div class="ovebotai-fieldset">
-			<div class="ovebotai-fieldset-legend"><?php esc_html_e( 'Appearance', 'ovebotai' ); ?></div>
+			<div class="ovebotai-fieldset-legend">
+				<span class="dashicons dashicons-admin-appearance" aria-hidden="true"></span>
+				<?php esc_html_e( 'Appearance', 'ovebotai' ); ?>
+			</div>
 			<div class="ovebotai-fieldset-body">
 
 				<div class="ovebotai-field">
 					<button type="button" class="button" id="oveAppearanceToggle">
-						<?php esc_html_e( 'Configure appearance ▾', 'ovebotai' ); ?>
+						<?php esc_html_e( 'Configure appearance', 'ovebotai' ); ?>
+						<span class="dashicons dashicons-arrow-down-alt2" id="oveAppearanceToggleIcon" aria-hidden="true"></span>
 					</button>
 				</div>
 
 				<div class="ovebotai-appearance-panel" id="oveAppearancePanel" style="display:none">
+
+					<div class="ovebotai-appearance-subhead"><?php esc_html_e( 'Look & feel', 'ovebotai' ); ?></div>
 					<div class="ovebotai-appearance-grid">
 
 						<div class="ovebotai-field">
@@ -241,33 +286,6 @@ $ovebotai_is_connected = $ovebotai_oauth->is_connected(); // false when refresh 
 						</div>
 
 						<div class="ovebotai-field">
-							<label for="ove_side"><?php esc_html_e( 'Position', 'ovebotai' ); ?></label>
-							<select name="widget_side" id="ove_side">
-								<option value="" <?php selected( $ovebotai_widget['side'] ?? '', '' ); ?>><?php esc_html_e( 'Default (right)', 'ovebotai' ); ?></option>
-								<option value="right" <?php selected( $ovebotai_widget['side'] ?? '', 'right' ); ?>><?php esc_html_e( 'Bottom right', 'ovebotai' ); ?></option>
-								<option value="left" <?php selected( $ovebotai_widget['side'] ?? '', 'left' ); ?>><?php esc_html_e( 'Bottom left', 'ovebotai' ); ?></option>
-							</select>
-						</div>
-
-						<div class="ovebotai-field">
-							<label for="ove_subtitle"><?php esc_html_e( 'Subtitle', 'ovebotai' ); ?></label>
-							<input type="text" name="widget_subtitle" id="ove_subtitle" class="regular-text"
-								value="<?php echo esc_attr( $ovebotai_widget['subtitle'] ?? '' ); ?>">
-						</div>
-
-						<div class="ovebotai-field">
-							<label for="ove_proactive_message"><?php esc_html_e( 'Proactive message', 'ovebotai' ); ?></label>
-							<input type="text" name="widget_proactive_message" id="ove_proactive_message" class="regular-text"
-								value="<?php echo esc_attr( $ovebotai_widget['proactive_message'] ?? '' ); ?>">
-						</div>
-
-						<div class="ovebotai-field ovebotai-field-short">
-							<label for="ove_proactive_delay"><?php esc_html_e( 'Proactive delay (s)', 'ovebotai' ); ?></label>
-							<input type="number" name="widget_proactive_delay" id="ove_proactive_delay" class="small-text"
-								value="<?php echo esc_attr( $ovebotai_widget['proactive_delay'] ?? '' ); ?>" min="0" max="300" placeholder="4">
-						</div>
-
-						<div class="ovebotai-field">
 							<label for="ove_audio_beep"><?php esc_html_e( 'Audio beep', 'ovebotai' ); ?></label>
 							<select name="widget_audio_beep" id="ove_audio_beep">
 								<option value="" <?php selected( $ovebotai_widget['audio_beep'] ?? '', '' ); ?>><?php esc_html_e( 'Default (play)', 'ovebotai' ); ?></option>
@@ -276,14 +294,49 @@ $ovebotai_is_connected = $ovebotai_oauth->is_connected(); // false when refresh 
 							</select>
 						</div>
 
-						<div class="ovebotai-field ovebotai-field-short">
-							<label for="ove_offset_y"><?php esc_html_e( 'Bottom offset (px)', 'ovebotai' ); ?></label>
-							<input type="number" name="widget_offset_y" id="ove_offset_y" class="small-text"
-								value="<?php echo esc_attr( $ovebotai_widget['offset_y'] ?? '' ); ?>" min="0" placeholder="20">
-							<p class="description"><?php esc_html_e( 'Raise to sit above e.g. a WhatsApp button.', 'ovebotai' ); ?></p>
-						</div>
-
 					</div><!-- /.ovebotai-appearance-grid -->
+
+					<div class="ovebotai-appearance-subhead"><?php esc_html_e( 'Position on page', 'ovebotai' ); ?></div>
+					<div class="ovebotai-field ovebotai-field-full">
+						<label for="ove_side"><?php esc_html_e( 'Widget position', 'ovebotai' ); ?></label>
+						<div class="ovebotai-combo-row">
+							<select name="widget_side" id="ove_side">
+								<option value="" <?php selected( $ovebotai_widget['side'] ?? '', '' ); ?>><?php esc_html_e( 'Default (right)', 'ovebotai' ); ?></option>
+								<option value="right" <?php selected( $ovebotai_widget['side'] ?? '', 'right' ); ?>><?php esc_html_e( 'Bottom right', 'ovebotai' ); ?></option>
+								<option value="left" <?php selected( $ovebotai_widget['side'] ?? '', 'left' ); ?>><?php esc_html_e( 'Bottom left', 'ovebotai' ); ?></option>
+							</select>
+							<div class="ovebotai-combo-sub">
+								<input type="number" name="widget_offset_y" id="ove_offset_y" class="small-text"
+									value="<?php echo esc_attr( $ovebotai_widget['offset_y'] ?? '' ); ?>" min="0" placeholder="20">
+								<span class="ovebotai-combo-suffix"><?php esc_html_e( 'px offset from bottom', 'ovebotai' ); ?></span>
+							</div>
+						</div>
+						<p class="description"><?php esc_html_e( 'Raise the offset to sit the widget above another floating button, e.g. WhatsApp.', 'ovebotai' ); ?></p>
+					</div>
+
+					<div class="ovebotai-appearance-subhead"><?php esc_html_e( 'Messages', 'ovebotai' ); ?></div>
+					<div class="ovebotai-field ovebotai-field-full">
+						<label for="ove_subtitle"><?php esc_html_e( 'Subtitle', 'ovebotai' ); ?></label>
+						<input type="text" name="widget_subtitle" id="ove_subtitle" class="regular-text"
+							value="<?php echo esc_attr( $ovebotai_widget['subtitle'] ?? '' ); ?>"
+							placeholder="<?php esc_attr_e( 'e.g. Usually replies in a few minutes', 'ovebotai' ); ?>">
+						<p class="description"><?php esc_html_e( 'Shown under the assistant\'s name in the chat header.', 'ovebotai' ); ?></p>
+					</div>
+
+					<div class="ovebotai-field ovebotai-field-full">
+						<label for="ove_proactive_message"><?php esc_html_e( 'Proactive message', 'ovebotai' ); ?></label>
+						<div class="ovebotai-combo-row">
+							<input type="text" name="widget_proactive_message" id="ove_proactive_message" class="regular-text"
+								value="<?php echo esc_attr( $ovebotai_widget['proactive_message'] ?? '' ); ?>"
+								placeholder="<?php esc_attr_e( 'e.g. Need help finding something?', 'ovebotai' ); ?>">
+							<div class="ovebotai-combo-sub">
+								<input type="number" name="widget_proactive_delay" id="ove_proactive_delay" class="small-text"
+									value="<?php echo esc_attr( $ovebotai_widget['proactive_delay'] ?? '' ); ?>" min="0" max="300" placeholder="4">
+								<span class="ovebotai-combo-suffix"><?php esc_html_e( 's after page load', 'ovebotai' ); ?></span>
+							</div>
+						</div>
+						<p class="description"><?php esc_html_e( 'A short message that pops up on its own to invite visitors to chat. Leave empty to disable.', 'ovebotai' ); ?></p>
+					</div>
 				</div><!-- /.ovebotai-appearance-panel -->
 
 			</div>

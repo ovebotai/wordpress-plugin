@@ -13,7 +13,7 @@ class Ovebotai {
 	}
 
 	private function __construct() {
-		// No load_plugin_textdomain() call needed — WordPress has auto-loaded
+		// No load_plugin_textdomain() call needed - WordPress has auto-loaded
 		// translations for any plugin with a proper Text Domain header since 4.6.
 		$this->includes();
 		add_action( 'init', array( $this, 'init' ) );
@@ -65,7 +65,7 @@ class Ovebotai {
 		// their copy of the feed/order/widget setup had gone stale for any
 		// reason while we were inactive (or the REST routes were briefly
 		// unreachable), reactivating silently leaves it stale otherwise. Only
-		// meaningful if we were already connected before this activation —
+		// meaningful if we were already connected before this activation -
 		// a brand-new install goes through the setup wizard instead.
 		if ( self::is_setup_complete() ) {
 			require_once OVEBOTAI_DIR . 'includes/class-oauth.php';
@@ -90,14 +90,14 @@ class Ovebotai {
 		return class_exists( 'WooCommerce' );
 	}
 
-	// ISO-4217 code, e.g. "RON" — required by .tasks/oauth-api.md §5 alongside
+	// ISO-4217 code, e.g. "RON" - required by .tasks/oauth-api.md §5 alongside
 	// products.enabled/feed_url when writing the products section of /setup.
 	public static function store_currency(): string {
 		return function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : 'RON';
 	}
 
 	// Builds the same PUT /setup payload shape used by both the settings-save
-	// flow and the (re)activation resync below — single source of truth so
+	// flow and the (re)activation resync below - single source of truth so
 	// the two never drift apart.
 	public static function build_setup_payload(): array {
 		$widget         = (array) get_option( 'ovebotai_widget', array() );
@@ -114,7 +114,7 @@ class Ovebotai {
 			),
 		);
 
-		// Checked live — never cached — so this always matches whether
+		// Checked live - never cached - so this always matches whether
 		// WooCommerce is actually installed right now.
 		if ( self::woocommerce_active() ) {
 			$feed_hash = (string) get_option( 'ovebotai_feed_hash', '' );

@@ -68,5 +68,7 @@ $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, Word
 	 WHERE option_name LIKE '\_transient\_ovebotai\_feed\_v%'
 	    OR option_name LIKE '\_transient\_timeout\_ovebotai\_feed\_v%'
 	    OR option_name LIKE '\_transient\_ovebotai\_pkce\_verifier\_%'
-	    OR option_name LIKE '\_transient\_timeout\_ovebotai\_pkce\_verifier\_%'"
+	    OR option_name LIKE '\_transient\_timeout\_ovebotai\_pkce\_verifier\_%'
+	    OR option_name LIKE '\_transient\_ovebotai\_orders\_fails\_%'
+	    OR option_name LIKE '\_transient\_timeout\_ovebotai\_orders\_fails\_%'"
 );

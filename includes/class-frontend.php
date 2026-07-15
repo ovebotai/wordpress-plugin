@@ -22,7 +22,10 @@ class Ovebotai_Frontend {
 		if ( is_admin() ) return;
 		if ( get_option( 'ovebotai_chat_status' ) !== '1' ) return;
 
-		$workspace = (string) get_option( 'ovebotai_workspace', '' );
+		// Routed through Ovebotai_OAuth::get_workspace() rather than a raw
+		// get_option() — it validates the slug format before we build a
+		// script-src host out of it.
+		$workspace = Ovebotai_OAuth::instance()->get_workspace();
 		if ( ! $workspace ) return;
 
 		$widget = (array) get_option( 'ovebotai_widget', array() );
@@ -72,7 +75,9 @@ class Ovebotai_Frontend {
 		$order->update_meta_data( '_ovebotai_purchase_tracked', 'yes' );
 		$order->save();
 
-		$workspace  = (string) get_option( 'ovebotai_workspace', '' );
+		$workspace = Ovebotai_OAuth::instance()->get_workspace();
+		if ( ! $workspace ) return;
+
 		$event_host = 'https://' . $workspace . '.ovebot.ai/widget/event.js';
 
 		$payload = array(

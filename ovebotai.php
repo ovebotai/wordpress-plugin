@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Ovebot.ai
  * Plugin URI:        https://ovebot.ai
- * Description:       AI chat assistant for your store: knowledge-base support, product recommendations and order delivery status. Try it for free.
+ * Description:       AI chat assistant for your store: knowledge-base support, product recommendations and orders delivery status. Try it for free!
  * Version:           1.0.0
  * Requires at least: 5.9
  * Requires PHP:      7.4

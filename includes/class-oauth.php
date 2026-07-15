@@ -168,8 +168,15 @@ class Ovebotai_OAuth {
 			update_option( 'ovebotai_refresh_token', sanitize_text_field( $resp['refresh_token'] ), false );
 		}
 
-		if ( ! empty( $resp['workspace']['slug'] ) ) {
-			update_option( 'ovebotai_workspace', sanitize_text_field( $resp['workspace']['slug'] ), false );
+		// Strict slug format only — this value gets concatenated straight into
+		// script-src hosts ('https://' . $workspace . '.ovebot.ai/...') in
+		// class-frontend.php and admin views. sanitize_text_field() alone
+		// wouldn't stop e.g. "evil.com/x", which would put "evil.com" in the
+		// host position and load an attacker's script on every page. A slug
+		// that fails this check is simply not stored, which leaves is_connected()
+		// false rather than persisting something we can't trust as a hostname part.
+		if ( ! empty( $resp['workspace']['slug'] ) && preg_match( '/^[a-z0-9-]+$/i', $resp['workspace']['slug'] ) ) {
+			update_option( 'ovebotai_workspace', $resp['workspace']['slug'], false );
 		}
 		if ( isset( $resp['agent'] ) ) {
 			update_option( 'ovebotai_agent', sanitize_text_field( $resp['agent'] ), false );
@@ -207,11 +214,15 @@ class Ovebotai_OAuth {
 	// ── Helpers ──────────────────────────────────────────────────────────────
 
 	public function is_connected(): bool {
-		return (bool) get_option( 'ovebotai_refresh_token' ) && (bool) get_option( 'ovebotai_workspace' );
+		return (bool) get_option( 'ovebotai_refresh_token' ) && '' !== $this->get_workspace();
 	}
 
+	// Re-validated on every read (not just at store_tokens() time) so a value
+	// written by an older version of this plugin, or edited directly in the
+	// database, can never reach the script-src host concatenation unchecked.
 	public function get_workspace(): string {
-		return (string) get_option( 'ovebotai_workspace', '' );
+		$workspace = (string) get_option( 'ovebotai_workspace', '' );
+		return preg_match( '/^[a-z0-9-]+$/i', $workspace ) ? $workspace : '';
 	}
 
 	public function get_agent(): string {

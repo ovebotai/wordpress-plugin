@@ -22,7 +22,35 @@ class Ovebotai_Orders {
 		} );
 	}
 
+	// Auth failures only (never successes) count against this — the shared
+	// credentials are used by Ovebot.ai's backend on behalf of every customer
+	// chatting on the site, all from the same source IP, so throttling on
+	// every request (or on ownership mismatches like a wrong email/phone,
+	// which are expected/normal traffic) would risk locking out real
+	// customers. A wrong Basic Auth pair, on the other hand, should never
+	// happen from the legitimate caller, so it's safe to throttle hard.
+	//
+	// Past the 10th failure, each further failure — including ones made
+	// while already blocked — pushes block_until another 15 minutes out
+	// from wherever it currently stands, rather than resetting a fixed
+	// 15-minute timer from "now". E.g. failure #11 blocks until +15m; if
+	// failure #12 arrives 10m later (still inside that window), the wait
+	// becomes +15m again from THAT block_until, i.e. 20m remaining at the
+	// moment of failure #12 — continuing to hammer only digs the hole
+	// deeper. Capped so a burst can't push the lockout out indefinitely.
+	const AUTH_FAIL_LIMIT      = 10;
+	const AUTH_FAIL_BLOCK_STEP = 15 * MINUTE_IN_SECONDS;
+	const AUTH_FAIL_MAX_BLOCK  = 2 * HOUR_IN_SECONDS;
+	const AUTH_FAIL_RECORD_TTL = 6 * HOUR_IN_SECONDS;
+
 	public function check_auth(): bool {
+		$ip = $this->client_ip();
+		if ( $this->is_rate_limited( $ip ) ) {
+			// Still counts as a failure — see the extension logic above.
+			$this->record_auth_failure( $ip );
+			return false;
+		}
+
 		$stored_user = (string) get_option( 'ovebotai_order_user', '' );
 		$stored_pass = (string) get_option( 'ovebotai_order_pass', '' );
 
@@ -47,7 +75,47 @@ class Ovebotai_Orders {
 			}
 		}
 
-		return hash_equals( $stored_user, $given_user ) && hash_equals( $stored_pass, $given_pass );
+		$ok = hash_equals( $stored_user, $given_user ) && hash_equals( $stored_pass, $given_pass );
+		if ( ! $ok ) {
+			$this->record_auth_failure( $ip );
+		}
+
+		return $ok;
+	}
+
+	private function client_ip(): string {
+		// REMOTE_ADDR only — headers like X-Forwarded-For are trivially
+		// spoofable and would let an attacker reset their own rate-limit
+		// bucket on every request by rotating the header value.
+		return isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+	}
+
+	private function is_rate_limited( string $ip ): bool {
+		if ( '' === $ip ) return false;
+		$rec = get_transient( 'ovebotai_orders_fails_' . md5( $ip ) );
+		return is_array( $rec ) && time() < ( $rec['block_until'] ?? 0 );
+	}
+
+	private function record_auth_failure( string $ip ): void {
+		if ( '' === $ip ) return;
+
+		$key = 'ovebotai_orders_fails_' . md5( $ip );
+		$rec = get_transient( $key );
+		if ( ! is_array( $rec ) ) {
+			$rec = array( 'count' => 0, 'block_until' => 0 );
+		}
+
+		$rec['count']++;
+
+		if ( $rec['count'] > self::AUTH_FAIL_LIMIT ) {
+			// Extend from the existing block_until if still inside it (the
+			// cumulative-penalty behaviour), otherwise start a fresh
+			// AUTH_FAIL_BLOCK_STEP from now.
+			$base              = max( time(), $rec['block_until'] );
+			$rec['block_until'] = min( $base + self::AUTH_FAIL_BLOCK_STEP, time() + self::AUTH_FAIL_MAX_BLOCK );
+		}
+
+		set_transient( $key, $rec, self::AUTH_FAIL_RECORD_TTL );
 	}
 
 	public function handle_request( WP_REST_Request $request ): WP_REST_Response {

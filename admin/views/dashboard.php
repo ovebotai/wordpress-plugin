@@ -53,23 +53,23 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 			<a href="https://ovebot.ai" target="_blank" rel="noopener noreferrer">
 				<img src="<?php echo esc_url( OVEBOTAI_URL . 'admin/img/logo.png' ); ?>" alt="Ovebot.ai" height="32">
 			</a>
-			<h1><?php esc_html_e( 'Ovebot.ai', 'ovebotai' ); ?></h1>
+			<h1><?php esc_html_e( 'Dashboard', 'ovebotai' ); ?></h1>
 		</div>
 		<?php require OVEBOTAI_DIR . 'admin/views/partials/connection-badge.php'; ?>
 	</div>
 
 	<div class="ovebotai-dashboard-cards">
 		<a class="ovebotai-dash-card" href="<?php echo esc_url( $ovebotai_chat_url ); ?>" target="_blank" rel="noopener noreferrer">
-			<span class="ovebotai-dash-card-icon">💬</span>
+			<span class="ovebotai-dash-card-icon dashicons dashicons-format-chat" aria-hidden="true"></span>
 			<span class="ovebotai-dash-card-title"><?php esc_html_e( 'Chat with the AI agent', 'ovebotai' ); ?></span>
 		</a>
 		<a class="ovebotai-dash-card" href="<?php echo esc_url( $ovebotai_settings_url ); ?>">
-			<span class="ovebotai-dash-card-icon">⚙️</span>
-			<span class="ovebotai-dash-card-title"><?php esc_html_e( 'Manual settings', 'ovebotai' ); ?></span>
+			<span class="ovebotai-dash-card-icon dashicons dashicons-admin-generic" aria-hidden="true"></span>
+			<span class="ovebotai-dash-card-title"><?php esc_html_e( 'Settings', 'ovebotai' ); ?></span>
 		</a>
 		<?php if ( $ovebotai_account_url ) : ?>
 		<a class="ovebotai-dash-card" href="<?php echo esc_url( $ovebotai_account_url ); ?>" target="_blank" rel="noopener noreferrer">
-			<span class="ovebotai-dash-card-icon">↗</span>
+			<span class="ovebotai-dash-card-icon dashicons dashicons-external" aria-hidden="true"></span>
 			<span class="ovebotai-dash-card-title"><?php esc_html_e( 'Ovebot.ai account', 'ovebotai' ); ?></span>
 		</a>
 		<?php endif; ?>
@@ -77,7 +77,10 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 
 	<?php if ( $ovebotai_wc_active ) : ?>
 	<div class="ovebotai-dash-card-wide">
-		<span class="ovebotai-dash-card-wide-label"><?php esc_html_e( 'Products', 'ovebotai' ); ?></span>
+		<span class="ovebotai-dash-card-wide-label">
+			<span class="dashicons dashicons-cart" aria-hidden="true"></span>
+			<?php esc_html_e( 'Products indexed by the AI agent', 'ovebotai' ); ?>
+		</span>
 		<?php $ovebotai_count_classes = 'ovebotai-dash-card-wide-count ' . ( $ovebotai_products_count > 0 ? 'is-positive' : 'is-zero' ); ?>
 		<?php if ( $ovebotai_products_url ) : ?>
 		<a class="<?php echo esc_attr( $ovebotai_count_classes ); ?>" href="<?php echo esc_url( $ovebotai_products_url ); ?>" target="_blank" rel="noopener noreferrer">
@@ -90,30 +93,52 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 	<?php endif; ?>
 
 	<div class="ovebotai-fieldset">
-		<div class="ovebotai-fieldset-legend"><?php esc_html_e( 'Knowledge Bases', 'ovebotai' ); ?></div>
+		<div class="ovebotai-fieldset-legend">
+			<span class="dashicons dashicons-book" aria-hidden="true"></span>
+			<?php esc_html_e( 'Knowledge Bases', 'ovebotai' ); ?>
+		</div>
 		<div class="ovebotai-fieldset-body">
+
+			<p class="description ovebotai-fieldset-intro"><?php esc_html_e( 'These are the pages your AI agent currently reads from to answer customer questions in the chat.', 'ovebotai' ); ?></p>
 
 			<?php if ( $ovebotai_kb_error ) : ?>
 			<div class="ovebotai-notice ovebotai-notice-warning"><p><?php echo esc_html( $ovebotai_kb_error ); ?></p></div>
 			<?php elseif ( empty( $ovebotai_kb_entries ) ) : ?>
-			<p class="ovebotai-muted"><?php esc_html_e( 'No knowledge base entries yet.', 'ovebotai' ); ?></p>
+			<p class="ovebotai-muted"><?php esc_html_e( 'No knowledge base entries yet — run the setup wizard to choose website pages for your AI agent.', 'ovebotai' ); ?></p>
 			<?php else : ?>
+			<?php
+			$ovebotai_kb_active_count = count( array_filter( $ovebotai_kb_entries, function( $e ) { return $e['is_active']; } ) );
+			?>
+			<p class="ovebotai-muted ovebotai-kb-summary">
+				<?php
+				printf(
+					/* translators: 1: active entries, 2: total entries */
+					esc_html__( '%1$d of %2$d entries active', 'ovebotai' ),
+					(int) $ovebotai_kb_active_count,
+					count( $ovebotai_kb_entries )
+				);
+				?>
+			</p>
 			<div class="ovebotai-pages-list ovebotai-kb-list">
 				<?php foreach ( $ovebotai_kb_entries as $ovebotai_entry ) : ?>
 				<div class="ovebotai-page-item">
 					<div class="ovebotai-page-info">
 						<span class="ovebotai-page-title"><?php echo esc_html( $ovebotai_entry['title'] ); ?></span>
-						<?php if ( ! $ovebotai_entry['is_active'] ) : ?>
-						<span class="ovebotai-lock-badge"><?php esc_html_e( 'Inactive', 'ovebotai' ); ?></span>
-						<?php endif; ?>
 					</div>
-					<a href="<?php echo esc_url( $ovebotai_entry['edit_url'] ); ?>"
-						target="_blank"
-						rel="noopener noreferrer"
-						class="ovebotai-page-url">
-						<?php esc_html_e( 'Edit on Ovebot.ai', 'ovebotai' ); ?>
-						<span class="ovebotai-ext-icon">↗</span>
-					</a>
+					<div class="ovebotai-kb-item-actions">
+						<?php if ( $ovebotai_entry['is_active'] ) : ?>
+						<span class="ovebotai-status-badge is-active" title="<?php esc_attr_e( 'Visible to your AI agent', 'ovebotai' ); ?>"><?php esc_html_e( 'Active', 'ovebotai' ); ?></span>
+						<?php else : ?>
+						<span class="ovebotai-status-badge is-inactive" title="<?php esc_attr_e( 'Not currently visible to your AI agent', 'ovebotai' ); ?>"><?php esc_html_e( 'Inactive', 'ovebotai' ); ?></span>
+						<?php endif; ?>
+						<a href="<?php echo esc_url( $ovebotai_entry['edit_url'] ); ?>"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="ovebotai-page-url">
+							<?php esc_html_e( 'Edit on Ovebot.ai', 'ovebotai' ); ?>
+							<span class="dashicons dashicons-external ovebotai-ext-icon" aria-hidden="true"></span>
+						</a>
+					</div>
 				</div>
 				<?php endforeach; ?>
 			</div>

@@ -112,7 +112,12 @@
 	transition: all 0.2s;
 }
 
-.dot-check { display: none; }
+.dot-check {
+	display: none;
+	font-size: 18px;
+	width: 18px;
+	height: 18px;
+}
 
 .ovebotai-step-dot.is-active .ovebotai-dot-circle {
 	background: #2271b1;
@@ -316,7 +321,9 @@
 }
 
 .ovebotai-ext-icon {
-	font-size: 10px;
+	font-size: 12px;
+	width: 12px;
+	height: 12px;
 	flex-shrink: 0;
 	opacity: 0.6;
 }
@@ -362,11 +369,16 @@
 	border-radius: 50%;
 	background: #00a32a;
 	color: #fff;
-	font-size: 32px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	margin: 0 auto 16px;
+}
+
+.ovebotai-done-icon .dashicons {
+	font-size: 34px;
+	width: 34px;
+	height: 34px;
 }
 
 .ovebotai-sync-done {
@@ -441,7 +453,10 @@
 
 .ovebotai-dash-card-icon {
 	font-size: 28px;
+	width: 28px;
+	height: 28px;
 	line-height: 1;
+	color: #2271b1;
 }
 
 .ovebotai-dash-card-wide {
@@ -457,9 +472,21 @@
 }
 
 .ovebotai-dash-card-wide-label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
 	font-weight: 600;
 	font-size: 14px;
 	color: #1d2327;
+}
+
+.ovebotai-dash-card-wide-label .dashicons {
+	color: #2271b1;
+}
+
+.ovebotai-kb-summary {
+	margin-top: -6px;
+	margin-bottom: 12px;
 }
 
 .ovebotai-dash-card-wide-count {
@@ -473,31 +500,75 @@
 a.ovebotai-dash-card-wide-count:hover { text-decoration: underline; }
 
 .ovebotai-dash-card-wide-count.is-positive { color: #00a32a; }
-.ovebotai-dash-card-wide-count.is-zero     { color: #d63638; }
+.ovebotai-dash-card-wide-count.is-zero     { color: #8c8f94; }
 
 /* ── Dashboard knowledge base list ───────────────────────────────────────── */
+/* Flush against the fieldset body instead of its own bordered/shaded box —
+   .ovebotai-pages-list's border+background make sense in the setup wizard
+   (a standalone checkbox picker), but nested inside a fieldset that already
+   has its own border+background, it reads as a box-within-a-box. */
+
+.ovebotai-kb-list {
+	border: none;
+	border-radius: 0;
+	background: none;
+	padding: 0;
+	max-height: none;
+	overflow-y: visible;
+	gap: 0;
+}
 
 .ovebotai-kb-list .ovebotai-page-item {
 	justify-content: space-between;
 	cursor: default;
+	border: 0;
+	border-bottom: 1px solid #f0f0f1;
+	border-radius: 0;
+	padding: 10px 4px;
+}
+
+.ovebotai-kb-list .ovebotai-page-item:last-child {
+	border-bottom: 0;
+	padding-bottom: 4px;
+}
+
+.ovebotai-kb-item-actions {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-shrink: 0;
 }
 
 .ovebotai-kb-list .ovebotai-page-item:hover {
 	background: none;
 	border-color: transparent;
+	border-bottom-color: #f0f0f1;
 }
 
 .ovebotai-notice {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
 	border-radius: 4px;
 	padding: 10px 14px;
 	margin: 12px 0;
 	font-size: 13px;
 }
 
+.ovebotai-notice::before {
+	font-family: dashicons;
+	font-size: 16px;
+	line-height: 1.4;
+	flex-shrink: 0;
+}
+
 .ovebotai-notice p { margin: 0; }
 .ovebotai-notice-error   { background: #fcf0f1; border-left: 4px solid #d63638; color: #d63638; }
+.ovebotai-notice-error::before   { content: "\f534"; }
 .ovebotai-notice-warning { background: #fff8e5; border-left: 4px solid #dba617; color: #614200; }
+.ovebotai-notice-warning::before { content: "\f534"; }
 .ovebotai-notice-success { background: #edfaef; border-left: 4px solid #00a32a; color: #1a6a26; }
+.ovebotai-notice-success::before { content: "\f147"; }
 
 /* ── Settings header ─────────────────────────────────────────────────────── */
 
@@ -520,21 +591,39 @@ a.ovebotai-dash-card-wide-count:hover { text-decoration: underline; }
 .ovebotai-back-link:focus,
 .ovebotai-back-link:focus-visible,
 .ovebotai-back-link:active {
-	font-size: 13px;
-	color: #50575e;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	line-height: normal;
+	font-size: 12px;
+	font-weight: 600;
+	color: #2271b1;
+	background: #f0f6fc;
+	border: 1px solid #c8dff5 !important;
+	border-radius: 4px;
+	padding: 4px 10px;
+	margin: -12px 0 20px;
 	text-decoration: none;
-	border: 0 !important;
-	border-color: transparent !important;
 	box-shadow: none !important;
 	outline: none !important;
-	background: none !important;
+}
+
+.ovebotai-back-link .dashicons {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 14px;
+	width: 14px;
+	height: 14px;
+	line-height: 14px;
 }
 
 .ovebotai-back-link:hover,
 .ovebotai-back-link:focus,
 .ovebotai-back-link:focus-visible {
-	color: #2271b1;
-	text-decoration: underline;
+	color: #fff;
+	background: #2271b1;
+	border-color: #2271b1 !important;
 }
 
 .ovebotai-connection-badge {
@@ -598,6 +687,9 @@ a.ovebotai-dash-card-wide-count:hover { text-decoration: underline; }
 }
 
 .ovebotai-fieldset-legend {
+	display: flex;
+	align-items: center;
+	gap: 8px;
 	font-weight: 600;
 	font-size: 13px;
 	color: #1d2327;
@@ -605,6 +697,18 @@ a.ovebotai-dash-card-wide-count:hover { text-decoration: underline; }
 	border-bottom: 1px solid #f0f0f1;
 	background: #f6f7f7;
 	border-radius: 4px 4px 0 0;
+}
+
+.ovebotai-fieldset-legend .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+	color: #2271b1;
+}
+
+.ovebotai-fieldset-intro {
+	margin-top: 0;
+	margin-bottom: 15px !important;
 }
 
 .ovebotai-fieldset-body {
@@ -635,6 +739,7 @@ a.ovebotai-dash-card-wide-count:hover { text-decoration: underline; }
 
 .ovebotai-field-switch {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
 	justify-content: space-between;
 }
@@ -702,14 +807,66 @@ a.ovebotai-dash-card-wide-count:hover { text-decoration: underline; }
 	border-top: 1px solid #f0f0f1;
 }
 
+.ovebotai-appearance-subhead {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .04em;
+	color: #8c8f94;
+	margin: 20px 0 12px;
+}
+
+.ovebotai-appearance-subhead:first-child {
+	margin-top: 0;
+}
+
 .ovebotai-appearance-grid {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 16px 24px;
 }
 
+.ovebotai-appearance-grid select {
+	width: 100%;
+}
+
 @media (max-width: 600px) {
 	.ovebotai-appearance-grid { grid-template-columns: 1fr; }
+}
+
+.ovebotai-field-full {
+	grid-column: 1 / -1;
+}
+
+.ovebotai-combo-row {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 10px 16px;
+}
+
+.ovebotai-combo-row select,
+.ovebotai-combo-row input.regular-text {
+	flex: 1 1 220px;
+	min-width: 0;
+	width: auto;
+}
+
+.ovebotai-combo-sub {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-shrink: 0;
+}
+
+.ovebotai-combo-sub .small-text {
+	width: 70px;
+}
+
+.ovebotai-combo-suffix {
+	font-size: 12px;
+	color: #787c82;
+	white-space: nowrap;
 }
 
 /* ── Color input ─────────────────────────────────────────────────────────── */
@@ -744,6 +901,34 @@ a.ovebotai-dash-card-wide-count:hover { text-decoration: underline; }
 	min-width: 0;
 }
 
+.ovebotai-regen-hash-btn {
+	display: inline-flex !important;
+	align-items: center;
+	justify-content: center;
+	padding: 0 !important;
+	width: 30px;
+	height: 30px;
+	line-height: normal !important;
+}
+
+#oveAppearanceToggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	line-height: normal;
+}
+
+.ovebotai-regen-hash-btn .dashicons,
+#oveAppearanceToggleIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+	line-height: 16px;
+}
+
 .ovebotai-readonly-url {
 	font-family: monospace;
 	font-size: 12px !important;
@@ -770,21 +955,59 @@ a.ovebotai-dash-card-wide-count:hover { text-decoration: underline; }
 .ovebotai-save-row {
 	position: sticky;
 	bottom: 0px;
-	padding: 16px;
+    padding: 10px 20px;
 	background: #fff;
+	overflow: visible;
+}
+
+/* Unsaved-changes attention pulse — a couple of expanding energy rings
+   around the Save button, so it's obvious there's something to do.
+   box-shadow spreads by the same px amount on every side regardless of
+   the button's own (wide, short) aspect ratio, unlike a transform:scale()
+   ring, which would stretch sideways more than it does up/down. */
+#oveSaveBtn.ovebotai-attn {
+	position: relative;
+	z-index: 1;
+	animation: oveSaveWave 1.8s ease-out infinite;
+}
+
+@keyframes oveSaveWave {
+	0%   { box-shadow: 0 0 0 0 rgba(34, 113, 177, 0.55), 0 0 0 0 rgba(34, 113, 177, 0.35); }
+	50%  { box-shadow: 0 0 0 10px rgba(34, 113, 177, 0), 0 0 0 0 rgba(34, 113, 177, 0.35); }
+	100% { box-shadow: 0 0 0 10px rgba(34, 113, 177, 0), 0 0 0 20px rgba(34, 113, 177, 0); }
 }
 
 /* ── Locked fieldset (needs reconnect) ───────────────────────────────────── */
 
-.ovebotai-fieldset-locked {
-	opacity: 0.55;
-	pointer-events: none;
+.ovebotai-fieldset-locked .ovebotai-fieldset-legend {
+	color: #614200;
+	background: #fff8e5;
 }
 
-.ovebotai-fieldset-locked .ovebotai-fieldset-legend {
+.ovebotai-fieldset-locked .ovebotai-fieldset-legend .dashicons {
+	color: #dba617;
+}
+
+.ovebotai-locked-list {
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.ovebotai-locked-list li {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
+	gap: 8px;
+	font-size: 13px;
+	color: #50575e;
+}
+
+.ovebotai-locked-list .dashicons {
+	color: #8c8f94;
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
 }
 
 .ovebotai-lock-badge {
@@ -797,6 +1020,29 @@ a.ovebotai-dash-card-wide-count:hover { text-decoration: underline; }
 	border: 1px solid #dba617;
 	border-radius: 10px;
 	padding: 1px 8px;
+}
+
+.ovebotai-status-badge {
+	flex-shrink: 0;
+	font-size: 10px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .04em;
+	border-radius: 10px;
+	padding: 1px 8px;
+	cursor: default;
+}
+
+.ovebotai-status-badge.is-active {
+	color: #1a6a26;
+	background: #edfaef;
+	border: 1px solid #b8e6c1;
+}
+
+.ovebotai-status-badge.is-inactive {
+	color: #614200;
+	background: #fff8e5;
+	border: 1px solid #dba617;
 }
 
 /* ── Connection badge variants ───────────────────────────────────────────── */

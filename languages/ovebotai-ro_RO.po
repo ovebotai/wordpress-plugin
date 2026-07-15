@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: Ovebot.ai 1.0.0\n"
 "Report-Msgid-Bugs-To: https://ovebot.ai\n"
 "POT-Creation-Date: 2024-01-01 00:00+0000\n"
-"PO-Revision-Date: 2024-01-01 00:00+0000\n"
+"PO-Revision-Date: 2026-07-15 00:00+0000\n"
 "Last-Translator: Ovesio <hello@ovesio.com>\n"
 "Language-Team: Romanian\n"
 "Language: ro_RO\n"
@@ -18,8 +18,8 @@ msgstr ""
 msgid "Ovebot.ai"
 msgstr "Ovebot.ai"
 
-msgid "AI chat widget, product feed and order tracking integration for Ovebot.ai."
-msgstr "Integrare widget chat AI, feed produse și tracking comenzi pentru Ovebot.ai."
+msgid "AI chat assistant for your store: knowledge-base support, product recommendations and orders delivery status. Try it for free!"
+msgstr "Chat cu Asistent AI pentru magazinul tău: bază de cunoștințe configurabilă, recomandări de produse și informare status livrare comenzi. Încearcă-l gratuit!"
 
 msgid "Permission denied."
 msgstr "Permisiune refuzată."
@@ -33,56 +33,50 @@ msgstr "Schimb de token eșuat (HTTP %d)."
 msgid "Connect your store to Ovebot.ai"
 msgstr "Conectează magazinul la Ovebot.ai"
 
-msgid "Log in to your Ovebot.ai account and grant access to this store. You will be redirected to ovebot.ai and back."
-msgstr "Autentifică-te în contul tău Ovebot.ai și acordă accesul pentru acest magazin. Vei fi redirecționat pe ovebot.ai și înapoi."
+msgid "Log in to your Ovebot.ai account and allow this site to sync with it. You'll be sent to ovebot.ai to sign in, then brought straight back here to finish setting up your AI chat agent."
+msgstr "Autentifică-te în contul tău Ovebot.ai și permite acestui site să se sincronizeze cu el. Vei fi trimis pe ovebot.ai pentru a te autentifica, apoi adus direct înapoi aici pentru a finaliza configurarea agentului tău AI de chat."
 
-msgid "Connect with Ovebot.ai →"
-msgstr "Conectează cu Ovebot.ai →"
+msgid "Connect with an existing account →"
+msgstr "Conectează-te cu un cont existent →"
 
-msgid "Don't have an account?"
-msgstr "Nu ai cont?"
+msgid "Try it for Free →"
+msgstr "Încearcă gratuit →"
 
-msgid "Create an account →"
-msgstr "Creează un cont →"
+msgid "Teach the AI chat agent about your website"
+msgstr "Învață agentul AI de chat despre site-ul tău"
 
-msgid "Select pages for the knowledge base"
-msgstr "Selectează pagini pentru baza de cunoștințe"
-
-msgid "The following pages will be used by the chat to provide accurate information to your customers. Select the ones you want to include."
-msgstr "Paginile selectate vor fi folosite de chat pentru a furniza informații corecte în interacțiunea cu clienții. Selectează-le pe cele dorite."
+msgid "Select the pages below (e.g. About, FAQ, Shipping & Returns). Your AI agent will read them and use that information to answer your customers' questions accurately, live in the on-site chat."
+msgstr "Selectează paginile de mai jos (ex. Despre noi, Întrebări frecvente, Livrare & Retur). Agentul tău AI le va citi și va folosi aceste informații pentru a răspunde corect întrebărilor clienților, direct în chat-ul de pe site."
 
 msgid "No published pages found."
 msgstr "Nu au fost găsite pagini publicate."
 
-msgid "Product catalog"
-msgstr "Catalog produse"
+msgid "Teach the AI chat agent about your products"
+msgstr "Învață agentul AI de chat despre produsele tale"
 
-msgid "Loading product counts…"
-msgstr "Se încarcă numărul de produse…"
+msgid "Checking how many products can be sent to your AI agent…"
+msgstr "Se verifică câte produse pot fi trimise agentului tău AI…"
 
-msgid "Ready to sync"
-msgstr "Pregătit pentru sincronizare"
+msgid "Ready to go live"
+msgstr "Gata de publicare"
 
-msgid "Everything is set. Click the button below to send your pages and products to Ovebot.ai."
-msgstr "Totul este configurat. Apasă butonul de mai jos pentru a trimite paginile și produsele la Ovebot.ai."
+msgid "Everything is set. Click below to send the selected pages and products to Ovebot.ai - your AI chat agent will start using them right away."
+msgstr "Totul este pregătit. Apasă mai jos pentru a trimite paginile și produsele selectate către Ovebot.ai - agentul tău AI de chat le va folosi imediat."
 
 msgid "Syncing with Ovebot.ai…"
 msgstr "Se sincronizează cu Ovebot.ai…"
 
 msgid "All done!"
-msgstr "Totul e gata!"
+msgstr "Gata!"
 
-msgid "Your store is now connected to Ovebot.ai."
-msgstr "Magazinul tău este acum conectat la Ovebot.ai."
-
-msgid "Your AI assistant is now live on your website, ready to help your customers."
-msgstr "Asistentul tău AI este acum disponibil pe site, gata să îți ajute clienții."
+msgid "Your store is now connected to Ovebot.ai. Your AI agent is live on your website right now, ready to chat with customers, recommend products and answer order-status questions."
+msgstr "Magazinul tău este acum conectat la Ovebot.ai. Agentul tău AI este activ pe site chiar acum, gata să discute cu clienții, să recomande produse și să răspundă la întrebări despre statusul comenzilor."
 
 msgid "Chat with the AI agent →"
-msgstr "Interacționează cu agentul AI →"
+msgstr "Discută cu agentul AI →"
 
-msgid "More settings"
-msgstr "Mai multe setări"
+msgid "Go to settings"
+msgstr "Mergi la setări"
 
 msgid "← Previous"
 msgstr "← Înapoi"
@@ -90,29 +84,35 @@ msgstr "← Înapoi"
 msgid "Next →"
 msgstr "Înainte →"
 
-msgid "Connect"
-msgstr "Conectare"
+msgid "Connect account"
+msgstr "Conectează contul"
 
-msgid "General Knowledge Base"
-msgstr "Bază de cunoștințe generale"
+msgid "Website pages"
+msgstr "Pagini site"
 
-msgid "Products Knowledge Base"
-msgstr "Bază de cunoștințe produse"
+msgid "Products"
+msgstr "Produse"
 
-msgid "Finish"
-msgstr "Finalizare"
-
-msgid "General knowledge base"
-msgstr "Bază de cunoștințe generale"
-
-msgid "Products knowledge base"
-msgstr "Bază de cunoștințe produse"
+msgid "Go live"
+msgstr "Publică"
 
 msgid "Finish setup →"
 msgstr "Finalizează configurarea →"
 
-msgid "products will be indexed."
-msgstr "produse vor fi indexate."
+msgid "Retry"
+msgstr "Reîncearcă"
+
+msgid "No published products found - your AI agent won't have any products to recommend yet."
+msgstr "Nu au fost găsite produse publicate - agentul tău AI nu va avea încă produse de recomandat."
+
+msgid "products will be sent to your AI agent so it can recommend them to customers."
+msgstr "produse vor fi trimise agentului tău AI, ca să le poată recomanda clienților."
+
+msgid "Skipped \"%s\" - page is not published."
+msgstr "Omis \"%s\" - pagina nu este publicată."
+
+msgid "Skipped \"%s\" - not enough text content to sync (minimum 10 characters)."
+msgstr "Omis \"%s\" - conținut text insuficient pentru sincronizare (minimum 10 caractere)."
 
 msgid "Could not update knowledge base entry for \"%s\"."
 msgstr "Intrarea din baza de cunoștințe pentru \"%s\" nu a putut fi actualizată."
@@ -123,35 +123,50 @@ msgstr "Setările feed-ului și comenzilor nu au putut fi sincronizate cu Ovebot
 msgid "Setup complete!"
 msgstr "Configurare finalizată!"
 
-msgid "Ovebot.ai Settings"
-msgstr "Setări Ovebot.ai"
-
 msgid "Settings"
 msgstr "Setări"
 
-msgid "← Dashboard"
-msgstr "← Dashboard"
+msgid "Dashboard"
+msgstr "Dashboard"
 
 msgid "Chat with the AI agent"
 msgstr "Discută cu agentul AI"
 
-msgid "Manual settings"
-msgstr "Setări manuale"
-
 msgid "Ovebot.ai account"
 msgstr "Cont Ovebot.ai"
 
-msgid "Edit on Ovebot.ai"
-msgstr "Editează pe Ovebot.ai"
+msgid "Products indexed by the AI agent"
+msgstr "Produse indexate de agentul AI"
 
-msgid "No knowledge base entries yet."
-msgstr "Nicio intrare în baza de cunoștințe încă."
+msgid "Edit on Ovebot.ai"
+msgstr "Editare în Ovebot.ai"
+
+msgid "Knowledge Bases"
+msgstr "Baze de cunoștințe"
+
+msgid "These are the pages your AI agent currently reads from to answer customer questions in the chat."
+msgstr "Acestea sunt paginile din care agentul tău AI citește în prezent pentru a răspunde întrebărilor clienților în chat."
+
+msgid "No knowledge base entries yet - run the setup wizard to choose website pages for your AI agent."
+msgstr "Nicio intrare în baza de cunoștințe încă - rulează asistentul de configurare pentru a alege pagini de pe site pentru agentul tău AI."
+
+msgid "%1$d of %2$d entries active"
+msgstr "%1$d din %2$d intrări active"
 
 msgid "Could not load knowledge base entries from Ovebot.ai."
 msgstr "Intrările din baza de cunoștințe nu au putut fi încărcate de pe Ovebot.ai."
 
+msgid "Active"
+msgstr "Activ"
+
+msgid "Visible to your AI agent"
+msgstr "Vizibil pentru agentul tău AI"
+
 msgid "Inactive"
 msgstr "Inactiv"
+
+msgid "Not currently visible to your AI agent"
+msgstr "Momentan nu e vizibil pentru agentul tău AI"
 
 msgid "Connected: %s"
 msgstr "Conectat: %s"
@@ -165,8 +180,8 @@ msgstr "Deconectezi de la Ovebot.ai? Va trebui să reconectezi și să rulezi di
 msgid "On-site chat widget"
 msgstr "Widget chat pe site"
 
-msgid "Chat widget status"
-msgstr "Status widget chat"
+msgid "Show the chat bubble on your site"
+msgstr "Afișează bula de chat pe site"
 
 msgid "Enabled"
 msgstr "Activ"
@@ -174,20 +189,14 @@ msgstr "Activ"
 msgid "Disabled"
 msgstr "Inactiv"
 
-msgid "Knowledge Bases"
-msgstr "Baze de cunoștințe"
+msgid "When enabled, the AI agent's chat bubble appears on every page of your site so customers can start a conversation."
+msgstr "Când este activată, bula de chat a agentului AI apare pe fiecare pagină a site-ului, ca vizitatorii să poată începe o conversație."
 
-msgid "The following pages are used by the chat to provide accurate information to your customers. Select the ones you want to include — pages you publish later will show up here too."
-msgstr "Paginile de mai jos sunt folosite de chat pentru a furniza informații corecte clienților. Selectează-le pe cele dorite — paginile publicate ulterior vor apărea și ele aici."
+msgid "Configure appearance"
+msgstr "Configurează aspectul"
 
-msgid "Workspace"
-msgstr "Workspace"
-
-msgid "Agent"
-msgstr "Agent"
-
-msgid "Configure appearance ▾"
-msgstr "Configurare aspect ▾"
+msgid "Look & feel"
+msgstr "Aspect vizual"
 
 msgid "Accent colour"
 msgstr "Culoare principală"
@@ -207,29 +216,11 @@ msgstr "Închis"
 msgid "Language"
 msgstr "Limbă"
 
+msgid "Default"
+msgstr "Implicit"
+
 msgid "Auto (browser)"
 msgstr "Automată (browser)"
-
-msgid "Position"
-msgstr "Poziție"
-
-msgid "Default (right)"
-msgstr "Implicit (dreapta)"
-
-msgid "Bottom right"
-msgstr "Jos dreapta"
-
-msgid "Bottom left"
-msgstr "Jos stânga"
-
-msgid "Subtitle"
-msgstr "Subtitlu"
-
-msgid "Proactive message"
-msgstr "Mesaj proactiv"
-
-msgid "Proactive delay (s)"
-msgstr "Delay mesaj proactiv (s)"
 
 msgid "Audio beep"
 msgstr "Sunet notificare"
@@ -243,14 +234,56 @@ msgstr "Cu sunet"
 msgid "None"
 msgstr "Fără sunet"
 
-msgid "Bottom offset (px)"
-msgstr "Offset față de jos (px)"
+msgid "Position on page"
+msgstr "Poziție pe pagină"
 
-msgid "Raise to sit above e.g. a WhatsApp button."
-msgstr "Mărește pentru a poziționa widgetul deasupra unui buton WhatsApp, de exemplu."
+msgid "Widget position"
+msgstr "Poziția widget-ului"
+
+msgid "Default (right)"
+msgstr "Implicit (dreapta)"
+
+msgid "Bottom right"
+msgstr "Jos dreapta"
+
+msgid "Bottom left"
+msgstr "Jos stânga"
+
+msgid "px offset from bottom"
+msgstr "px distanță de jos"
+
+msgid "Raise the offset to sit the widget above another floating button, e.g. WhatsApp."
+msgstr "Mărește distanța pentru a poziționa widgetul deasupra unui alt buton plutitor, de exemplu WhatsApp."
+
+msgid "Messages"
+msgstr "Mesaje"
+
+msgid "Subtitle"
+msgstr "Subtitlu"
+
+msgid "e.g. Usually replies in a few minutes"
+msgstr "ex. De obicei răspunde în câteva minute"
+
+msgid "Shown under the assistant's name in the chat header."
+msgstr "Afișat sub numele asistentului, în antetul chat-ului."
+
+msgid "Proactive message"
+msgstr "Mesaj proactiv"
+
+msgid "e.g. Need help finding something?"
+msgstr "ex. Ai nevoie de ajutor să găsești ceva?"
+
+msgid "s after page load"
+msgstr "s după încărcarea paginii"
+
+msgid "A short message that pops up on its own to invite visitors to chat. Leave empty to disable."
+msgstr "Un mesaj scurt care apare singur, pentru a invita vizitatorii la chat. Lasă gol pentru a-l dezactiva."
 
 msgid "Product feed"
 msgstr "Feed produse"
+
+msgid "Ovebot.ai reads this URL periodically to keep your AI agent's product recommendations up to date with your catalog (stock, price, availability)."
+msgstr "Ovebot.ai citește periodic acest URL pentru ca recomandările de produse ale agentului tău AI să rămână la zi cu catalogul tău (stoc, preț, disponibilitate)."
 
 msgid "Feed URL"
 msgstr "URL feed"
@@ -270,6 +303,9 @@ msgstr "Feed-ul este memorat în cache pentru performanță. Șterge-l după mod
 msgid "Order tracking API"
 msgstr "API tracking comenzi"
 
+msgid "Ovebot.ai calls this endpoint, authenticated with the credentials below, so your AI agent can answer \"Where is my order?\" questions with live tracking info."
+msgstr "Ovebot.ai apelează acest endpoint, autentificat cu credențialele de mai jos, ca agentul tău AI să poată răspunde la întrebări de tipul „Unde este comanda mea?” cu informații de tracking live."
+
 msgid "Endpoint URL"
 msgstr "URL endpoint"
 
@@ -285,23 +321,29 @@ msgstr "Regenerează credențiale"
 msgid "Generates a new user/password pair. The old ones will stop working immediately."
 msgstr "Generează un nou user și parolă. Credențialele vechi vor înceta să funcționeze imediat."
 
-msgid "Delivery estimate (business days, excludes Sunday)"
-msgstr "Estimare livrare (zile lucrătoare, exclude duminica)"
+msgid "Delivery estimate"
+msgstr "Estimare livrare"
 
-msgid "Shipped order"
-msgstr "Comandă expediată"
+msgid "Your AI agent uses these ranges to answer \"When will my order arrive?\" - counted in business days, Sundays excluded. Set a realistic min–max range for each of the three order situations below."
+msgstr "Agentul tău AI folosește aceste intervale pentru a răspunde la „Când ajunge comanda mea?” - calculate în zile lucrătoare, fără duminică. Setează un interval minim–maxim realist pentru fiecare din cele trei situații de comandă de mai jos."
 
-msgid "New / processing — all in stock"
-msgstr "Nouă / în procesare — toate produsele în stoc"
+msgid "Orders that have already shipped"
+msgstr "Comenzi deja expediate"
 
-msgid "New / processing — some out of stock"
-msgstr "Nouă / în procesare — unele produse lipsă din stoc"
+msgid "Counted from the day the order was shipped, until it reaches the customer."
+msgstr "Calculat din ziua în care comanda a fost expediată, până ajunge la client."
 
-msgid "Counted from the ship date."
-msgstr "Calculat de la data expedierii."
+msgid "New orders - every item in stock"
+msgstr "Comenzi noi - toate produsele sunt în stoc"
 
-msgid "Counted from the order date."
-msgstr "Calculat de la data plasării comenzii."
+msgid "Counted from the day the order was placed - nothing to wait on before it ships."
+msgstr "Calculat din ziua în care a fost plasată comanda - nu e nimic de așteptat înainte de expediere."
+
+msgid "New orders - at least one item out of stock"
+msgstr "Comenzi noi - cel puțin un produs este în lipsă din stoc"
+
+msgid "Counted from the day the order was placed - includes the wait for restock before it can ship."
+msgstr "Calculat din ziua în care a fost plasată comanda - include și timpul de așteptare până la reaprovizionare, înainte de expediere."
 
 msgid "business days"
 msgstr "zile lucrătoare"
@@ -333,6 +375,18 @@ msgstr "Copiat!"
 msgid "Settings saved locally but could not sync with Ovebot.ai."
 msgstr "Setările au fost salvate local, dar nu au putut fi sincronizate cu Ovebot.ai."
 
+msgid "Could not sync with Ovebot.ai - feed hash left unchanged."
+msgstr "Nu s-a putut sincroniza cu Ovebot.ai - hash-ul feed-ului a rămas neschimbat."
+
+msgid "Feed URL regenerated and synced with Ovebot.ai."
+msgstr "URL-ul feed-ului a fost regenerat și sincronizat cu Ovebot.ai."
+
+msgid "Could not sync with Ovebot.ai - credentials left unchanged."
+msgstr "Nu s-a putut sincroniza cu Ovebot.ai - credențialele au rămas neschimbate."
+
+msgid "Credentials regenerated and synced with Ovebot.ai."
+msgstr "Credențialele au fost regenerate și sincronizate cu Ovebot.ai."
+
 msgid "Cache cleared."
 msgstr "Cache șters."
 
@@ -346,7 +400,7 @@ msgid "Invalid order ID."
 msgstr "ID comandă invalid."
 
 msgid "Provide either email or phone, not both and not neither."
-msgstr "Furnizați fie email, fie telefon — nu ambele și nu niciunul."
+msgstr "Furnizează fie email, fie telefon - nu ambele și nu niciunul."
 
 msgid "Order not found."
 msgstr "Comanda nu a fost găsită."
@@ -366,6 +420,9 @@ msgstr "Setările widget-ului de chat pot fi salvate în continuare, dar feed-ul
 msgid "Requires connection"
 msgstr "Necesită conexiune"
 
+msgid "Reconnect your Ovebot.ai account to unlock these:"
+msgstr "Reconectează contul Ovebot.ai pentru a debloca acestea:"
+
 msgid "Not connected"
 msgstr "Neconectat"
 
@@ -373,4 +430,4 @@ msgid "Reconnect →"
 msgstr "Reconectare →"
 
 msgid "Chat settings saved. Reconnect to Ovebot.ai to sync feed and order settings."
-msgstr "Setările chat-ului au fost salvate. Reconectați-vă la Ovebot.ai pentru a sincroniza setările de feed și comenzi."
+msgstr "Setările chat-ului au fost salvate. Reconectează-te la Ovebot.ai pentru a sincroniza setările de feed și comenzi."
