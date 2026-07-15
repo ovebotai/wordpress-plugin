@@ -19,6 +19,7 @@ if ( $ovebotai_wc_active && $ovebotai_is_connected ) {
 
 $ovebotai_account_url  = $ovebotai_workspace ? 'https://' . $ovebotai_workspace . '.ovebot.ai' : '';
 $ovebotai_products_url = $ovebotai_workspace ? 'https://' . $ovebotai_workspace . '.ovebot.ai/products' : '';
+$ovebotai_kb_create_url = $ovebotai_workspace ? 'https://' . $ovebotai_workspace . '.ovebot.ai/knowledge-base/create' : '';
 $ovebotai_chat_url    = add_query_arg( 'ocw-fab-open', 'true', home_url( '/' ) );
 $ovebotai_settings_url = add_query_arg( 'view', 'settings', admin_url( 'admin.php?page=ovebotai' ) );
 
@@ -99,12 +100,24 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 		</div>
 		<div class="ovebotai-fieldset-body">
 
-			<p class="description ovebotai-fieldset-intro"><?php esc_html_e( 'These are the pages your AI agent currently reads from to answer customer questions in the chat.', 'ovebotai' ); ?></p>
+			<p class="description ovebotai-fieldset-intro"><?php esc_html_e( 'These are the resources your AI agent uses to answer customer questions in the chat. Editing one of these pages in WordPress automatically updates its entry here within a few minutes - or use "Edit on Ovebot.ai" below to change it directly.', 'ovebotai' ); ?></p>
 
 			<?php if ( $ovebotai_kb_error ) : ?>
 			<div class="ovebotai-notice ovebotai-notice-warning"><p><?php echo esc_html( $ovebotai_kb_error ); ?></p></div>
 			<?php elseif ( empty( $ovebotai_kb_entries ) ) : ?>
-			<p class="ovebotai-muted"><?php esc_html_e( 'No knowledge base entries yet — run the setup wizard to choose website pages for your AI agent.', 'ovebotai' ); ?></p>
+			<p class="ovebotai-muted">
+				<?php
+				printf(
+					/* translators: %s: "add one here" link to Ovebot.ai's knowledge-base creation page */
+					__( 'No knowledge base entries yet - %s.', 'ovebotai' ),
+					sprintf(
+						'<a href="%1$s" target="_blank" rel="noopener noreferrer">%2$s</a>',
+						esc_url( $ovebotai_kb_create_url ),
+						esc_html__( 'add one here', 'ovebotai' )
+					)
+				);
+				?>
+			</p>
 			<?php else : ?>
 			<?php
 			$ovebotai_kb_active_count = count( array_filter( $ovebotai_kb_entries, function( $e ) { return $e['is_active']; } ) );

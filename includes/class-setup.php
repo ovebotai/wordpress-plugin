@@ -15,6 +15,40 @@ class Ovebotai_Setup {
 
 	private function init() {
 		add_action( 'wp_ajax_ovebotai_sync', array( $this, 'ajax_sync' ) );
+		add_action( 'save_post_page', array( $this, 'maybe_schedule_resync' ), 10, 2 );
+		add_action( 'ovebotai_resync_single_kb_page', array( $this, 'resync_single_kb_page' ) );
+	}
+
+	// ── Auto-resync a page's KB entry after it's edited ─────────────────────
+	//
+	// sync_kb_pages() only ever ran from the setup wizard's "Finish" step, so
+	// a page picked there was otherwise a one-time snapshot — editing it in
+	// WordPress afterwards never reached Ovebot.ai. This re-pushes just that
+	// one page's content whenever it's saved, but only if it was actually
+	// selected as a KB source during setup (get_option( 'ovebotai_kb_page_ids' ))
+	// — pages never opted in are left alone.
+	//
+	// Deferred via wp-cron rather than done inline: sync_kb_pages() makes a
+	// blocking HTTP call to Ovebot.ai, and doing that synchronously inside
+	// save_post_page would make every page "Update" click wait on a
+	// third-party API before the editor finishes saving.
+
+	public function maybe_schedule_resync( int $post_id, WP_Post $post ) {
+		if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) return;
+		if ( 'publish' !== $post->post_status ) return;
+
+		$kb_page_ids = (array) get_option( 'ovebotai_kb_page_ids', array() );
+		if ( ! in_array( $post_id, $kb_page_ids, true ) ) return;
+
+		if ( ! Ovebotai_OAuth::instance()->is_connected() ) return;
+
+		if ( ! wp_next_scheduled( 'ovebotai_resync_single_kb_page', array( $post_id ) ) ) {
+			wp_schedule_single_event( time() + 5, 'ovebotai_resync_single_kb_page', array( $post_id ) );
+		}
+	}
+
+	public function resync_single_kb_page( int $post_id ) {
+		$this->sync_kb_pages( array( $post_id ), true );
 	}
 
 	/**

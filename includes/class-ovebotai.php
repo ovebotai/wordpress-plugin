@@ -24,9 +24,13 @@ class Ovebotai {
 		require_once OVEBOTAI_DIR . 'includes/class-frontend.php';
 		require_once OVEBOTAI_DIR . 'includes/class-feed.php';
 		require_once OVEBOTAI_DIR . 'includes/class-orders.php';
+		// Loaded unconditionally (not gated by is_admin()) because its
+		// save_post_page hook must also fire on the block editor's REST API
+		// saves (PUT /wp-json/wp/v2/pages/{id}), which WordPress does not
+		// treat as an admin request - is_admin() is false there.
+		require_once OVEBOTAI_DIR . 'includes/class-setup.php';
 		if ( is_admin() ) {
 			require_once OVEBOTAI_DIR . 'includes/class-admin.php';
-			require_once OVEBOTAI_DIR . 'includes/class-setup.php';
 			require_once OVEBOTAI_DIR . 'includes/class-settings.php';
 		}
 	}
@@ -35,9 +39,9 @@ class Ovebotai {
 		Ovebotai_Feed::instance()->register_routes();
 		Ovebotai_Orders::instance()->register_routes();
 		Ovebotai_Frontend::instance();
+		Ovebotai_Setup::instance();
 		if ( is_admin() ) {
 			Ovebotai_Admin::instance();
-			Ovebotai_Setup::instance();
 			Ovebotai_Settings::instance();
 		}
 	}

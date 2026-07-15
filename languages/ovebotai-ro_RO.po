@@ -144,11 +144,14 @@ msgstr "Editare în Ovebot.ai"
 msgid "Knowledge Bases"
 msgstr "Baze de cunoștințe"
 
-msgid "These are the pages your AI agent currently reads from to answer customer questions in the chat."
-msgstr "Acestea sunt paginile din care agentul tău AI citește în prezent pentru a răspunde întrebărilor clienților în chat."
+msgid "These are the resources your AI agent uses to answer customer questions in the chat. Editing one of these pages in WordPress automatically updates its entry here within a few minutes - or use \"Edit on Ovebot.ai\" below to change it directly."
+msgstr "Acestea sunt resursele pe care agentul tău AI le folosește pentru a răspunde întrebărilor clienților în chat. Editarea uneia dintre aceste pagini în WordPress îi actualizează automat conținutul resursei corelate - sau folosește „Editare în Ovebot.ai” mai jos pentru a schimba conținutul direct în platformă."
 
-msgid "No knowledge base entries yet - run the setup wizard to choose website pages for your AI agent."
-msgstr "Nicio intrare în baza de cunoștințe încă - rulează asistentul de configurare pentru a alege pagini de pe site pentru agentul tău AI."
+msgid "No knowledge base entries yet - %s."
+msgstr "Nicio intrare în baza de cunoștințe încă - %s."
+
+msgid "add one here"
+msgstr "adaugă o intrare aici"
 
 msgid "%1$d of %2$d entries active"
 msgstr "%1$d din %2$d intrări active"
