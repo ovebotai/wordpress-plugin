@@ -46,6 +46,22 @@ Yes — the chat widget and knowledge base sync work on any WordPress site. The 
 
 Settings → Ovebot.ai → Settings → Appearance.
 
+= Which shipping/courier plugins does order tracking support? =
+
+The order-tracking endpoint reads the AWB/tracking number directly from whichever of these shipping plugins you already use to generate it - no extra setup needed, it just works if one of them is active and has generated a label for the order:
+
+* FedEx Rates & Labels
+* Colissimo shipping methods for WooCommerce
+* GLS Shipping for WooCommerce
+* Packeta
+* SamedayCourier Shipping
+* SEUR Oficial
+* WCMultiShipping - Mondial Relay, Inpost & Chronopost for WooCommerce (UPS, Chronopost and Mondial Relay)
+* DPD Baltic Shipping
+* HgE: Shipping Zones for FAN Courier Romania
+
+Don't see your courier listed? Let us know at https://ovebot.ai/contact and we'll look into adding support.
+
 == Changelog ==
 
 = 1.0.0 =

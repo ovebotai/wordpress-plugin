@@ -204,6 +204,7 @@ class Ovebotai_Orders {
 			'get_tracking_from_seur',
 			'get_tracking_from_multishipping',
 			'get_tracking_from_dpd_baltic',
+			'get_tracking_from_fancourier',
 		);
 
 		foreach ( $adapters as $method ) {
@@ -443,6 +444,24 @@ class Ovebotai_Orders {
 			'awb'          => (string) $row->dpd_barcode,
 			'carrier'      => 'DPD',
 			'tracking_url' => 'https://www.dpdgroup.com/' . $country . '/mydpd/my-parcels/track?lang=' . $lang . '&parcelNumber=' . rawurlencode( $row->dpd_barcode ),
+		);
+	}
+
+	// hge-zone-de-livrare-pentru-fan-courier-romania: order meta '_hgezlpfcr_awb_number',
+	// with a legacy '_fc_awb_number' fallback for orders synced before v2.0.9.
+	// The plugin only calls FanCourier's private status API internally — it never
+	// builds a public tracking link — so we construct one ourselves.
+	private function get_tracking_from_fancourier( WC_Order $order ): ?array {
+		$awb = $order->get_meta( '_hgezlpfcr_awb_number' );
+		if ( ! $awb ) {
+			$awb = $order->get_meta( '_fc_awb_number' );
+		}
+		if ( ! $awb ) return null;
+
+		return array(
+			'awb'          => (string) $awb,
+			'carrier'      => 'FanCourier',
+			'tracking_url' => 'https://www.fancourier.ro/awb-tracking/?awb=' . rawurlencode( $awb ),
 		);
 	}
 
