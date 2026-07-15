@@ -168,27 +168,45 @@
 	margin-top: 12px;
 }
 
+.ovebotai-connect-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 14px;
+}
+
 .ovebotai-btn-connect {
 	font-size: 15px !important;
 	padding: 10px 24px !important;
 	height: auto !important;
-	background: #2271b1 !important;
-	border-color: #135e96 !important;
-	color: #fff !important;
+	background: #fff !important;
+	border-color: #2271b1 !important;
+	color: #2271b1 !important;
 }
 
 .ovebotai-btn-connect:hover {
-	background: #135e96 !important;
+	background: #f0f6fc !important;
 }
 
-.ovebotai-register-hint {
-	font-size: 13px;
-	color: #50575e;
+.ovebotai-btn-trial {
+	font-size: 16px !important;
+	font-weight: 700 !important;
+	padding: 11px 28px !important;
+	height: auto !important;
+	background: #d63638 !important;
+	border-color: #b32d2e !important;
+	color: #fff !important;
+	text-decoration: none !important;
+	box-shadow: 0 2px 6px rgba(214, 54, 56, 0.35) !important;
+	transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
 }
 
-.ovebotai-register-hint a {
-	color: #2271b1;
-	font-weight: 600;
+.ovebotai-btn-trial:hover,
+.ovebotai-btn-trial:focus {
+	background: #b32d2e !important;
+	color: #fff !important;
+	transform: translateY(-1px);
+	box-shadow: 0 4px 10px rgba(214, 54, 56, 0.45) !important;
 }
 
 /* ── Pages list ──────────────────────────────────────────────────────────── */

@@ -8,16 +8,24 @@ Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-AI chat widget, product feed and order tracking integration for Ovebot.ai.
+AI chat widget, product feed and order tracking integration for Ovebot.ai — start with a free trial in minutes.
 
 == Description ==
 
-Ovebot.ai connects your WordPress site to the Ovebot.ai AI chat assistant:
+Ovebot.ai connects your WordPress site to the Ovebot.ai AI chat assistant. New to Ovebot.ai? You can create a free trial account directly from the setup wizard — no need to sign up on the website first.
+
+The assistant, powered by your store's own data, can:
+
+* Answer customer support questions using the knowledge base you set up from your site's pages.
+* Recommend products to customers based on your live WooCommerce catalog.
+* Help customers check their order's delivery status, right from the chat.
+
+Behind the scenes, the plugin:
 
 * Adds an on-site chat widget, configurable from Settings (theme, language, position, proactive message, and more).
-* Publishes a WooCommerce product feed (with real-time stock/availability) for the assistant's product knowledge.
-* Exposes an authenticated order-tracking endpoint so the assistant can answer "where is my order?" questions.
-* Syncs selected pages into the assistant's knowledge base.
+* Publishes a WooCommerce product feed (with real-time stock/availability) so the assistant always recommends what's actually in stock.
+* Exposes an authenticated order-tracking endpoint so the assistant can answer "where is my order?" questions with real carrier/AWB data.
+* Syncs selected pages into the assistant's knowledge base for accurate support answers.
 * Connects your store to your Ovebot.ai account via OAuth — no API keys to copy/paste by hand.
 
 WooCommerce is required for the product feed and order tracking features; the chat widget and knowledge base sync work without it.
@@ -26,7 +34,7 @@ WooCommerce is required for the product feed and order tracking features; the ch
 
 1. Upload the plugin to `/wp-content/plugins/` or install it through the WordPress plugins screen.
 2. Activate the plugin.
-3. Go to Settings → Ovebot.ai and follow the setup wizard to connect your Ovebot.ai account.
+3. Go to Settings → Ovebot.ai and follow the setup wizard: connect an existing Ovebot.ai account, or start a free trial if you're new.
 
 == Frequently Asked Questions ==
 

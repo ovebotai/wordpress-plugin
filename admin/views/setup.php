@@ -81,17 +81,16 @@ $ovebotai_oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp
 				<?php endif; ?>
 
 				<div class="ovebotai-connect-box">
-					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-						<input type="hidden" name="action" value="ovebotai_connect">
-						<?php wp_nonce_field( 'ovebotai_connect' ); ?>
-						<button type="submit" class="button ovebotai-btn-connect">
-							<?php esc_html_e( 'Connect with Ovebot.ai →', 'ovebotai' ); ?>
-						</button>
-					</form>
-					<div class="ovebotai-register-hint">
-						<?php esc_html_e( "Don't have an account?", 'ovebotai' ); ?>
-						<a href="https://account.ovebot.ai/register" target="_blank" rel="noopener noreferrer">
-							<?php esc_html_e( 'Create an account →', 'ovebotai' ); ?>
+					<div class="ovebotai-connect-actions">
+						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+							<input type="hidden" name="action" value="ovebotai_connect">
+							<?php wp_nonce_field( 'ovebotai_connect' ); ?>
+							<button type="submit" class="button ovebotai-btn-connect">
+								<?php esc_html_e( 'Connect with an existing account →', 'ovebotai' ); ?>
+							</button>
+						</form>
+						<a href="https://account.ovebot.ai/register" target="_blank" rel="noopener noreferrer" class="button ovebotai-btn-trial">
+							<?php esc_html_e( 'Try it for Free →', 'ovebotai' ); ?>
 						</a>
 					</div>
 				</div>
