@@ -109,7 +109,7 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 				<?php
 				printf(
 					/* translators: %s: "add one here" link to Ovebot.ai's knowledge-base creation page */
-					__( 'No knowledge base entries yet - %s.', 'ovebotai' ),
+					wp_kses_post( __( 'No knowledge base entries yet - %s.', 'ovebotai' ) ),
 					sprintf(
 						'<a href="%1$s" target="_blank" rel="noopener noreferrer">%2$s</a>',
 						esc_url( $ovebotai_kb_create_url ),
