@@ -299,15 +299,11 @@ class Ovebotai_Orders {
 		if ( empty( $codes ) ) return null;
 
 		$tracking_number = (string) reset( $codes );
-		$settings        = get_option( 'woocommerce_gls_shipping_method_settings' );
-		$country         = is_array( $settings ) ? ( $settings['country'] ?? '' ) : '';
 
 		return array(
 			'awb'          => $tracking_number,
 			'carrier'      => 'GLS',
-			'tracking_url' => $country
-				? 'https://gls-group.eu/' . rawurlencode( $country ) . '/en/parcel-tracking/?match=' . rawurlencode( $tracking_number )
-				: null,
+			'tracking_url' => 'https://gls-group.eu/GROUP/en/parcel-tracking/?match=' . rawurlencode( $tracking_number ),
 		);
 	}
 

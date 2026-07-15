@@ -50,15 +50,15 @@ Settings → Ovebot.ai → Settings → Appearance.
 
 The order-tracking endpoint reads the AWB/tracking number directly from whichever of these shipping plugins you already use to generate it - no extra setup needed, it just works if one of them is active and has generated a label for the order:
 
-* FedEx Rates & Labels
-* Colissimo shipping methods for WooCommerce
-* GLS Shipping for WooCommerce
-* Packeta
-* SamedayCourier Shipping
-* SEUR Oficial
-* WCMultiShipping - Mondial Relay, Inpost & Chronopost for WooCommerce (UPS, Chronopost and Mondial Relay)
-* DPD Baltic Shipping
-* HgE: Shipping Zones for FAN Courier Romania
+* [FedEx Rates & Labels](https://myshipi.com/)
+* [Colissimo shipping methods for WooCommerce](https://www.colissimo.entreprise.laposte.fr/fr)
+* [GLS Shipping for WooCommerce](https://inchoo.hr)
+* [Packeta](https://www.zasilkovna.cz/)
+* [SamedayCourier Shipping](https://www.sameday.ro/contact)
+* [SEUR Oficial](http://www.seur.com/)
+* [WCMultiShipping - Mondial Relay, Inpost & Chronopost for WooCommerce](https://www.wcmultishipping.com/fr/mondial-relay-woocommerce/) (UPS, Chronopost and Mondial Relay)
+* [DPD Baltic Shipping](https://dpd.com)
+* [HgE: Shipping Zones for FAN Courier Romania](https://www.linkedin.com/in/hurubarugeorgesemanuel/)
 
 Don't see your courier listed? Let us know at https://ovebot.ai/contact and we'll look into adding support.
 
