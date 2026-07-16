@@ -10,7 +10,22 @@ $ovebotai_feed_url  = add_query_arg( 'hash', $ovebotai_feed_hash, home_url( '/wp
 $ovebotai_order_url = home_url( '/wp-json/ovebotai/v1/orders' );
 
 $ovebotai_wc_active   = Ovebotai::woocommerce_active();
-$ovebotai_is_connected = $ovebotai_oauth->is_connected(); // false when refresh token missing/revoked
+// Live check (not just local state) — this view can be reached directly
+// (bookmark) without ever making its own API call otherwise, so a lapsed
+// refresh token would never get discovered until some later action.
+$ovebotai_is_connected = $ovebotai_oauth->is_connected_live();
+
+if ( ! $ovebotai_is_connected ) {
+	// Not connected — Settings assumes a working OAuth connection throughout
+	// (KB sync, feed/order-info push, etc.), so send the user straight to the
+	// dashboard's reconnect panel instead of rendering a half-usable form.
+	?>
+	<script>
+		window.location.replace( <?php echo wp_json_encode( admin_url( 'admin.php?page=ovebotai' ) ); ?> );
+	</script>
+	<?php
+	return;
+}
 ?>
 <hr class="wp-header-end">
 <div class="wrap ovebotai-wrap">
@@ -30,19 +45,15 @@ $ovebotai_is_connected = $ovebotai_oauth->is_connected(); // false when refresh 
 		<?php esc_html_e( 'Dashboard', 'ovebotai' ); ?>
 	</a>
 
-	<?php if ( ! $ovebotai_is_connected ) : ?>
-	<div class="ovebotai-notice ovebotai-notice-warning ovebotai-reconnect-banner">
-		<p>
-			<strong><?php esc_html_e( 'Connection lost.', 'ovebotai' ); ?></strong>
-			<?php esc_html_e( 'Chat widget settings can still be saved, but product feed, order tracking and delivery estimate require an active connection.', 'ovebotai' ); ?>
-		</p>
-	</div>
-	<?php endif; ?>
-
 	<div id="oveSettingsNotice" class="ovebotai-save-notice" style="display:none"></div>
 	<div id="oveSettingsWarnings" class="ovebotai-save-notice ovebotai-notice-warning" style="display:none"></div>
 
-	<form id="oveSettingsForm">
+	<!-- onsubmit="return false" is a safety net against a native submit firing
+	     before settings.js attaches its own submit handler (no `action` set,
+	     so that would GET the current URL and drop ?page=ovebotai&view=settings
+	     from it). It never blocks the real AJAX handler, which listens for the
+	     same submit event independently. -->
+	<form id="oveSettingsForm" onsubmit="return false;">
 
 		<!-- ── Chat Widget ──────────────────────────────────────────────── -->
 		<div class="ovebotai-fieldset">
@@ -69,7 +80,7 @@ $ovebotai_is_connected = $ovebotai_oauth->is_connected(); // false when refresh 
 			</div>
 		</div>
 
-		<?php if ( $ovebotai_wc_active && $ovebotai_is_connected ) : ?>
+		<?php if ( $ovebotai_wc_active ) : ?>
 
 		<!-- ── Product Feed ─────────────────────────────────────────────── -->
 		<div class="ovebotai-fieldset">
@@ -210,21 +221,6 @@ $ovebotai_is_connected = $ovebotai_oauth->is_connected(); // false when refresh 
 			</div>
 		</div>
 
-		<?php elseif ( $ovebotai_wc_active && ! $ovebotai_is_connected ) : ?>
-		<div class="ovebotai-fieldset ovebotai-fieldset-locked">
-			<div class="ovebotai-fieldset-legend">
-				<span class="dashicons dashicons-lock" aria-hidden="true"></span>
-				<?php esc_html_e( 'Requires connection', 'ovebotai' ); ?>
-			</div>
-			<div class="ovebotai-fieldset-body">
-				<p class="description ovebotai-fieldset-intro"><?php esc_html_e( 'Reconnect your Ovebot.ai account to unlock these:', 'ovebotai' ); ?></p>
-				<ul class="ovebotai-locked-list">
-					<li><span class="dashicons dashicons-rss" aria-hidden="true"></span><?php esc_html_e( 'Product feed', 'ovebotai' ); ?></li>
-					<li><span class="dashicons dashicons-location-alt" aria-hidden="true"></span><?php esc_html_e( 'Order tracking API', 'ovebotai' ); ?></li>
-					<li><span class="dashicons dashicons-clock" aria-hidden="true"></span><?php esc_html_e( 'Delivery estimate', 'ovebotai' ); ?></li>
-				</ul>
-			</div>
-		</div>
 		<?php else : ?>
 		<div class="ovebotai-fieldset">
 			<div class="ovebotai-fieldset-body">

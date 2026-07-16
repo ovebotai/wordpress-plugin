@@ -100,33 +100,68 @@ class Ovebotai {
 		return function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : 'RON';
 	}
 
+	// Generates an order-lookup user/password pair if none is stored yet.
+	// activate() already does this on every (re)activation, so in practice
+	// this only ever fires for the rare case of the option being missing
+	// without a deactivate/reactivate cycle in between (e.g. edited directly
+	// in the DB). Never persists by itself - the caller only saves these once
+	// Ovebot.ai has actually confirmed receiving them, so a failed sync can
+	// never leave the two sides holding different credentials.
+	private static function generate_order_credentials(): array {
+		$host = (string) wp_parse_url( home_url(), PHP_URL_HOST );
+		$slug = strtolower( preg_replace( '/[^a-z0-9]+/i', '_', preg_replace( '/^www\./i', '', $host ) ) );
+		return array(
+			trim( $slug, '_' ) . '_' . substr( wp_generate_password( 8, false ), 0, 8 ),
+			wp_generate_password( 24, false ),
+		);
+	}
+
 	// Builds the same PUT /setup payload shape used by both the settings-save
 	// flow and the (re)activation resync below - single source of truth so
 	// the two never drift apart.
-	public static function build_setup_payload(): array {
+	//
+	// $order_user/$order_pass let the caller pass in freshly generated
+	// credentials before they're persisted locally (see resync_setup()); when
+	// omitted, the currently stored ones are used as-is.
+	public static function build_setup_payload( $order_user = null, $order_pass = null ): array {
 		$widget         = (array) get_option( 'ovebotai_widget', array() );
 		$widget_payload = array_filter( $widget, function( $v ) { return $v !== ''; } );
 
+		// Checked live - never cached - so this always matches whether
+		// WooCommerce is actually installed right now. Order lookup and the
+		// product feed both hard-depend on it (class-orders.php returns 503,
+		// and there simply is no feed to serve), so both sections are
+		// explicitly disabled rather than omitted when it's inactive - PUT
+		// /setup is a partial update, and omitting a section entirely would
+		// leave Ovebot.ai's copy stuck on whatever it was last set to.
+		$wc_active = self::woocommerce_active();
+
 		$payload = array(
-			'widget'     => $widget_payload ?: (object) array(),
-			'order_info' => array(
-				'enabled'       => true,
-				'api_url'       => home_url( '/wp-json/ovebotai/v1/orders' ),
-				'api_user'      => (string) get_option( 'ovebotai_order_user', '' ),
-				'api_password'  => (string) get_option( 'ovebotai_order_pass', '' ),
-				'lookup_method' => 'email',
-			),
+			'widget' => $widget_payload ?: (object) array(),
 		);
 
-		// Checked live - never cached - so this always matches whether
-		// WooCommerce is actually installed right now.
-		if ( self::woocommerce_active() ) {
+		if ( $wc_active ) {
+			$payload['order_info'] = array(
+				'enabled'       => true,
+				'api_url'       => home_url( '/wp-json/ovebotai/v1/orders' ),
+				'api_user'      => $order_user ?? (string) get_option( 'ovebotai_order_user', '' ),
+				'api_password'  => $order_pass ?? (string) get_option( 'ovebotai_order_pass', '' ),
+				'lookup_method' => 'email',
+			);
+
 			$feed_hash = (string) get_option( 'ovebotai_feed_hash', '' );
 			$payload['products'] = array(
 				'enabled'  => true,
 				'feed_url' => add_query_arg( 'hash', $feed_hash, home_url( '/wp-json/ovebotai/v1/feed' ) ),
 				'currency' => self::store_currency(),
 			);
+		} else {
+			// No api_url/api_user/api_password/feed_url/currency — there's
+			// nothing meaningful to report while WooCommerce is inactive, and
+			// this also skips generating order credentials for nothing (see
+			// resync_setup()) on every save.
+			$payload['order_info'] = array( 'enabled' => false );
+			$payload['products']   = array( 'enabled' => false );
 		}
 
 		return $payload;
@@ -134,10 +169,51 @@ class Ovebotai {
 
 	// Pushes the current local config to Ovebot.ai. Returns true on success.
 	public static function resync_setup(): bool {
-		$oauth  = Ovebotai_OAuth::instance();
-		$result = $oauth->api_request( 'PUT', $oauth->setup_api_path(), self::build_setup_payload() );
+		$oauth = Ovebotai_OAuth::instance();
+
+		$order_user = null;
+		$order_pass = null;
+		$generated  = false;
+
+		if ( self::woocommerce_active() ) {
+			$order_user = (string) get_option( 'ovebotai_order_user', '' );
+			$order_pass = (string) get_option( 'ovebotai_order_pass', '' );
+			$generated  = '' === $order_user || '' === $order_pass;
+			if ( $generated ) {
+				list( $order_user, $order_pass ) = self::generate_order_credentials();
+			}
+		}
+
+		$result = $oauth->api_request( 'PUT', $oauth->setup_api_path(), self::build_setup_payload( $order_user, $order_pass ) );
 
 		$status = $result['status'] ?? 0;
-		return $status >= 200 && $status < 300;
+		$ok     = $status >= 200 && $status < 300;
+
+		if ( $ok ) {
+			if ( $generated ) {
+				update_option( 'ovebotai_order_user', $order_user, false );
+				update_option( 'ovebotai_order_pass', $order_pass, false );
+			}
+
+			// Records whether this specific sync included WooCommerce
+			// (order_info/products enabled) or not, so admin_notices in
+			// class-admin.php can tell "WooCommerce is active right now" apart
+			// from "...and we've actually told Ovebot.ai about it yet" -
+			// installing/activating WooCommerce after setup was already done
+			// is otherwise silent until someone happens to open Settings and
+			// hit Save.
+			update_option( 'ovebotai_synced_wc_active', self::woocommerce_active() ? '1' : '0', false );
+		}
+
+		return $ok;
+	}
+
+	// True once WooCommerce is active locally but the last successful sync to
+	// Ovebot.ai predates that (or never had WooCommerce at all) - i.e. the
+	// remote order_info/products are still sitting on { enabled: false }.
+	public static function needs_woocommerce_resync(): bool {
+		return self::is_setup_complete()
+			&& self::woocommerce_active()
+			&& '1' !== get_option( 'ovebotai_synced_wc_active', '0' );
 	}
 }

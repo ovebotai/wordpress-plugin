@@ -5,7 +5,11 @@ $ovebotai_oauth = Ovebotai_OAuth::instance();
 $ovebotai_admin = Ovebotai_Admin::instance();
 
 $pages         = $ovebotai_admin->get_pages_for_kb();
-$ovebotai_is_connected  = $ovebotai_oauth->is_connected();
+// Live check (not just local state) — this view can be reached directly
+// (bookmark) without ever making its own API call otherwise, so a lapsed
+// refresh token would never get discovered until some later action, and
+// the "Connect with an existing account" step would stay hidden.
+$ovebotai_is_connected  = $ovebotai_oauth->is_connected_live();
 $ovebotai_wc_active     = Ovebotai::woocommerce_active();
 
 // Steps present in this flow — Products KB only exists when WooCommerce is active.

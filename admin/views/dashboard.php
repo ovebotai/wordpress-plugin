@@ -2,8 +2,13 @@
 defined( 'ABSPATH' ) || exit;
 
 $ovebotai_oauth        = Ovebotai_OAuth::instance();
+// Live check, not just local state — this is what actually invalidates the
+// tokens in the DB (via api_request()'s proactive refresh) when the 30-day
+// refresh token has lapsed server-side. Doing this before anything else
+// renders means a lapsed connection shows the reconnect panel on this same
+// load, instead of a dashboard full of cards/KB entries that no longer work.
+$ovebotai_is_connected = $ovebotai_oauth->is_connected_live();
 $ovebotai_workspace    = $ovebotai_oauth->get_workspace();
-$ovebotai_is_connected = $ovebotai_oauth->is_connected();
 
 // Live product count from Ovebot.ai's side (how many products it actually has
 // indexed for this agent) — not the local feed_count, which is what we send.
@@ -59,6 +64,35 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 		</div>
 		<?php require OVEBOTAI_DIR . 'admin/views/partials/connection-badge.php'; ?>
 	</div>
+
+	<?php if ( ! $ovebotai_is_connected ) : ?>
+
+	<div class="ovebotai-setup-card">
+		<div class="ovebotai-panels">
+			<div class="ovebotai-panel" data-panel="1">
+				<h2><?php esc_html_e( 'Reconnect your store to Ovebot.ai', 'ovebotai' ); ?></h2>
+				<p class="ovebotai-lead">
+					<?php esc_html_e( 'Your connection to Ovebot.ai has expired or was revoked. Your AI chat agent, product feed and order tracking may stop updating until you reconnect.', 'ovebotai' ); ?>
+				</p>
+				<div class="ovebotai-connect-box">
+					<div class="ovebotai-connect-actions">
+						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+							<input type="hidden" name="action" value="ovebotai_connect">
+							<?php wp_nonce_field( 'ovebotai_connect' ); ?>
+							<button type="submit" class="button ovebotai-btn-connect">
+								<?php esc_html_e( 'Connect with an existing account →', 'ovebotai' ); ?>
+							</button>
+						</form>
+						<a href="https://account.ovebot.ai/register" target="_blank" rel="noopener noreferrer" class="button ovebotai-btn-trial">
+							<?php esc_html_e( 'Try it for Free →', 'ovebotai' ); ?>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<?php else : ?>
 
 	<div class="ovebotai-dashboard-cards">
 		<a class="ovebotai-dash-card" href="<?php echo esc_url( $ovebotai_chat_url ); ?>" target="_blank" rel="noopener noreferrer">
@@ -160,5 +194,7 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 
 		</div>
 	</div>
+
+	<?php endif; ?>
 
 </div><!-- /.wrap -->

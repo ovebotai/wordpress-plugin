@@ -20,7 +20,39 @@ class Ovebotai_Admin {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'admin_post_ovebotai_connect',    array( $this, 'action_connect' ) );
 		add_action( 'admin_post_ovebotai_disconnect', array( $this, 'action_disconnect' ) );
+		add_action( 'admin_notices',          array( $this, 'maybe_show_woocommerce_notice' ) );
 		add_filter( 'plugin_action_links_' . plugin_basename( OVEBOTAI_FILE ), array( $this, 'plugin_action_links' ) );
+	}
+
+	// ── "WooCommerce was installed, needs a resync" notice ──────────────────
+	//
+	// Shown site-wide (not just on our own settings screen) so it's noticed
+	// even if nobody opens Settings on their own initiative — WooCommerce
+	// being activated after our setup was already completed is otherwise
+	// silent until the next manual Save (see Ovebotai::needs_woocommerce_resync()).
+
+	public function maybe_show_woocommerce_notice() {
+		if ( ! current_user_can( 'manage_options' ) ) return;
+		if ( ! Ovebotai::needs_woocommerce_resync() ) return;
+
+		$settings_url = add_query_arg( 'view', 'settings', admin_url( 'admin.php?page=ovebotai' ) );
+		?>
+		<div class="notice notice-warning">
+			<p>
+				<?php
+				printf(
+					/* translators: %s: link to the Ovebot.ai settings page */
+					wp_kses_post( __( 'WooCommerce was installed - the Ovebot.ai plugin needs additional configuration. Open its %s and click Save to enable the product feed and order tracking.', 'ovebotai' ) ),
+					sprintf(
+						'<a href="%1$s">%2$s</a>',
+						esc_url( $settings_url ),
+						esc_html__( 'settings', 'ovebotai' )
+					)
+				);
+				?>
+			</p>
+		</div>
+		<?php
 	}
 
 	// ── Plugins list "Settings" link ─────────────────────────────────────────

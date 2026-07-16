@@ -64,39 +64,20 @@ class Ovebotai_Setup {
 		$page_ids = array_map( 'absint', (array) ( $_POST['page_ids'] ?? array() ) );
 		update_option( 'ovebotai_kb_page_ids', $page_ids, false );
 
-		$oauth     = Ovebotai_OAuth::instance();
 		$kb_result = $this->sync_kb_pages( $page_ids, true );
 		$errors    = $kb_result['errors'];
 		$warnings  = $kb_result['warnings'];
 
-		// ── Setup: feed (if WooCommerce is active) + order info ──────────────
+		// ── Setup: widget + order info + feed (if WooCommerce is active) ─────
+		//
+		// Delegates to Ovebotai::resync_setup() (also used by the Settings-save
+		// flow and the reactivation resync) rather than building its own PUT
+		// payload — this used to be a separate, drifted copy that still had
+		// order_info.enabled hardcoded true and skipped it entirely disabling
+		// products when WooCommerce was inactive, and never recorded whether
+		// this sync included WooCommerce (see Ovebotai::needs_woocommerce_resync()).
 
-		$order_url = home_url( '/wp-json/ovebotai/v1/orders' );
-
-		$setup_payload = array(
-			'order_info' => array(
-				'enabled'       => true,
-				'api_url'       => $order_url,
-				'api_user'      => (string) get_option( 'ovebotai_order_user', '' ),
-				'api_password'  => (string) get_option( 'ovebotai_order_pass', '' ),
-				'lookup_method' => 'email',
-			),
-		);
-
-		// Checked live — never cached — so the setup call always matches whether
-		// WooCommerce is actually installed right now.
-		if ( Ovebotai::woocommerce_active() ) {
-			$feed_hash = (string) get_option( 'ovebotai_feed_hash', '' );
-			$setup_payload['products'] = array(
-				'enabled'  => true,
-				'feed_url' => add_query_arg( 'hash', $feed_hash, home_url( '/wp-json/ovebotai/v1/feed' ) ),
-				'currency' => Ovebotai::store_currency(),
-			);
-		}
-
-		$setup_result = $oauth->api_request( 'PUT', $oauth->setup_api_path(), $setup_payload );
-
-		if ( ( $setup_result['status'] ?? 0 ) < 200 || ( $setup_result['status'] ?? 0 ) >= 300 ) {
+		if ( ! Ovebotai::resync_setup() ) {
 			$errors[] = __( 'Could not sync feed and order settings with Ovebot.ai.', 'ovebotai' );
 		}
 

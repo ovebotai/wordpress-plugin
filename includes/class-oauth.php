@@ -104,8 +104,16 @@ class Ovebotai_OAuth {
 		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		if ( 200 !== $http_code || empty( $body['access_token'] ) ) {
-			// Refresh failed or token family revoked — require re-authentication.
-			$this->clear_tokens();
+			// Refresh failed or token family revoked. This is NOT the same as an
+			// explicit Disconnect: the storefront-facing bits (chat widget,
+			// purchase tracking) key off ovebotai_workspace/ovebotai_chat_status
+			// alone and never touch the OAuth token, so they must keep working
+			// unattended — nobody is going to log back in every time a 30-day
+			// refresh token lapses. Only the admin-side API access dies here;
+			// is_connected() (which checks the refresh token) will correctly
+			// report "disconnected" so Settings prompts for reconnect the next
+			// time someone actually opens that screen.
+			$this->expire_tokens();
 			return false;
 		}
 
@@ -116,6 +124,16 @@ class Ovebotai_OAuth {
 	// ── API requests with auto-refresh ───────────────────────────────────────
 
 	public function api_request( string $method, string $path, ?array $body = null ): array {
+		// Proactive refresh: if the 1-hour access token is already expired (or
+		// about to be, within this same request), refresh before spending a
+		// round-trip on a request we already know will 401. A failed refresh
+		// here just falls through to do_request() with the stale token, so the
+		// normal reactive-401 path below still catches it.
+		$expires = (int) get_option( 'ovebotai_token_expires', 0 );
+		if ( $expires && $expires <= time() + 60 * 5 ) { // 5 minutes
+			$this->refresh();
+		}
+
 		$result = $this->do_request( $method, $path, $body );
 
 		// On 401 attempt a token refresh and retry once.
@@ -202,19 +220,50 @@ class Ovebotai_OAuth {
 		);
 	}
 
+	// Explicit Disconnect only — wipes everything, including the bits the
+	// storefront (widget, purchase tracking) reads independently of the OAuth
+	// token, since the user is deliberately severing the connection.
 	public function clear_tokens(): void {
-		delete_option( 'ovebotai_access_token' );
-		delete_option( 'ovebotai_refresh_token' );
-		delete_option( 'ovebotai_token_expires' );
+		$this->expire_tokens();
 		delete_option( 'ovebotai_workspace' );
 		delete_option( 'ovebotai_agent' );
 		delete_option( 'ovebotai_setup_complete' );
+	}
+
+	// Implicit expiry (refresh token lapsed/revoked) — clears only the OAuth
+	// credentials themselves. Leaves ovebotai_workspace/ovebotai_agent/
+	// ovebotai_chat_status alone so the chat widget and purchase-event
+	// tracking (class-frontend.php) keep working unattended; only admin-side
+	// API calls (KB sync, settings save) start failing until reconnect.
+	public function expire_tokens(): void {
+		delete_option( 'ovebotai_access_token' );
+		delete_option( 'ovebotai_refresh_token' );
+		delete_option( 'ovebotai_token_expires' );
 	}
 
 	// ── Helpers ──────────────────────────────────────────────────────────────
 
 	public function is_connected(): bool {
 		return (bool) get_option( 'ovebotai_refresh_token' ) && '' !== $this->get_workspace();
+	}
+
+	// is_connected() only checks whether a refresh token is stored locally —
+	// it has no way to know that token was revoked/expired server-side unless
+	// something actually calls the API. Views that render the connection
+	// badge without otherwise making an API request (e.g. Settings, reached
+	// directly via a bookmark) would keep showing "Connected" from stale
+	// local state indefinitely. This forces that one lightweight check (which
+	// piggybacks on api_request()'s existing proactive-refresh logic) before
+	// answering, so a lapsed connection is caught on the very page load that
+	// displays it, not just on the next action that happens to hit the API.
+	public function is_connected_live(): bool {
+		if ( ! $this->is_connected() ) {
+			return false;
+		}
+
+		$this->api_request( 'GET', '/v1/integration/status' );
+
+		return $this->is_connected();
 	}
 
 	// Re-validated on every read (not just at store_tokens() time) so a value
