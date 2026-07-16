@@ -55,7 +55,7 @@ class Ovebotai_Frontend {
 		// wp_footer runs inject_widget() at its default priority (10), which is
 		// before core's own wp_print_footer_scripts (priority 20) — so enqueuing
 		// here still gets picked up and printed in the same footer pass.
-		wp_enqueue_script( 'ovebotai-chat-loader', $widget_host, array(), OVEBOTAI_VERSION, true );
+		wp_enqueue_script( 'ovebotai-chat-loader', $widget_host, array(), null, true );
 		wp_add_inline_script(
 			'ovebotai-chat-loader',
 			'var ovebot_ai = ovebot_ai || []; ovebot_ai.push(["chat", ' . wp_json_encode( $params ?: (object) array() ) . ']);',
@@ -88,7 +88,7 @@ class Ovebotai_Frontend {
 
 		// woocommerce_thankyou fires while the page content is rendering, well
 		// before wp_footer's wp_print_footer_scripts — safe to enqueue here.
-		wp_enqueue_script( 'ovebotai-purchase-event', $event_host, array(), OVEBOTAI_VERSION, true );
+		wp_enqueue_script( 'ovebotai-purchase-event', $event_host, array(), null, true );
 		wp_add_inline_script(
 			'ovebotai-purchase-event',
 			'var ovebot_ai = ovebot_ai || []; ovebot_ai.push(["purchase", ' . wp_json_encode( $payload ) . ']);',
