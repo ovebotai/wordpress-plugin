@@ -25,6 +25,8 @@ jobs:
 
           rsync -a ./ "${BUILD_DIR}/${PLUGIN}/" \
             --exclude '.distignore' \
+            --exclude '.gitignore' \
+            --exclude '.vscode' \
             --exclude '.git' \
             --exclude '.git/' \
             --exclude '.github' \

@@ -1,0 +1,30 @@
+# Files and directories that must never ship in the distributed plugin.
+#
+# Honored by the WordPress.org SVN deploy action (deploy-to-wporg.yml) and
+# mirrored by the rsync --exclude list in release-zip.yml. Keep the two in
+# sync when adding entries here.
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# CI / repo tooling
+.github
+.distignore
+.wordpress-org
+
+# Editor / local dev
+.vscode
+.idea
+.editorconfig
+*.code-workspace
+
+# Development scratch files — competitor reference material and working notes.
+# These are untracked locally, but are listed so an SFTP/rsync of the working
+# directory to a server can reuse this file as an exclude list.
+todo.txt
+tidio-readme.txt
+
+# Repo docs that are not plugin documentation
+SECURITY.md
