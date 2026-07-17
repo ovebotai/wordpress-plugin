@@ -1,9 +1,9 @@
-# Romanian translation for Ovebot.ai plugin
-# Copyright (C) 2024 Ovesio
-# This file is distributed under the GPL-2.0-or-later license.
+# Romanian translation for the Ovebot plugin
+# Copyright (C) 2026 Ovesio
+# This file is distributed under the MIT license.
 msgid ""
 msgstr ""
-"Project-Id-Version: Ovebot.ai 1.0.0\n"
+"Project-Id-Version: Ovebot 1.0.0\n"
 "Report-Msgid-Bugs-To: https://ovebot.ai\n"
 "POT-Creation-Date: 2024-01-01 00:00+0000\n"
 "PO-Revision-Date: 2026-07-15 00:00+0000\n"

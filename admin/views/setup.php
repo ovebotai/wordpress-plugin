@@ -51,10 +51,10 @@ $ovebotai_oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp
 			<div class="ovebotai-steps-nav-inner">
 			<?php
 			$ovebotai_step_labels = array(
-				1 => __( 'Connect account', 'ovebotai' ),
-				2 => __( 'Website pages', 'ovebotai' ),
-				3 => __( 'Products', 'ovebotai' ),
-				4 => __( 'Go live', 'ovebotai' ),
+				1 => __( 'Connect account', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+				2 => __( 'Website pages', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+				3 => __( 'Products', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+				4 => __( 'Go live', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
 			);
 			$ovebotai_current_pos = array_search( $ovebotai_initial_step, $ovebotai_steps_seq, true );
 			foreach ( $ovebotai_steps_seq as $ovebotai_pos => $ovebotai_num ) : ?>
@@ -74,9 +74,9 @@ $ovebotai_oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp
 
 			<!-- Step 1: Connect -->
 			<div class="ovebotai-panel" data-panel="1" <?php echo 1 !== $ovebotai_initial_step ? 'style="display:none"' : ''; ?>>
-				<h2><?php esc_html_e( 'Connect your store to Ovebot.ai', 'ovebotai' ); ?></h2>
+				<h2><?php esc_html_e( 'Connect your store to Ovebot.ai', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></h2>
 				<p class="ovebotai-lead">
-					<?php esc_html_e( 'Log in to your Ovebot.ai account and allow this site to sync with it. You\'ll be sent to ovebot.ai to sign in, then brought straight back here to finish setting up your AI chat agent.', 'ovebotai' ); ?>
+					<?php esc_html_e( 'Log in to your Ovebot.ai account and allow this site to sync with it. You\'ll be sent to ovebot.ai to sign in, then brought straight back here to finish setting up your AI chat agent.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
 				</p>
 
 				<?php if ( $ovebotai_oauth_error ) : ?>
@@ -91,11 +91,11 @@ $ovebotai_oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp
 							<input type="hidden" name="action" value="ovebotai_connect">
 							<?php wp_nonce_field( 'ovebotai_connect' ); ?>
 							<button type="submit" class="button ovebotai-btn-connect">
-								<?php esc_html_e( 'Connect with an existing account →', 'ovebotai' ); ?>
+								<?php esc_html_e( 'Connect with an existing account →', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
 							</button>
 						</form>
 						<a href="https://account.ovebot.ai/register" target="_blank" rel="noopener noreferrer" class="button ovebotai-btn-trial">
-							<?php esc_html_e( 'Try it for Free →', 'ovebotai' ); ?>
+							<?php esc_html_e( 'Try it for Free →', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
 						</a>
 					</div>
 				</div>
@@ -103,13 +103,13 @@ $ovebotai_oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp
 
 			<!-- Step 2: Knowledge Base (pages) -->
 			<div class="ovebotai-panel" data-panel="2" <?php echo 2 !== $ovebotai_initial_step ? 'style="display:none"' : ''; ?>>
-				<h2><?php esc_html_e( 'Teach the AI chat agent about your website', 'ovebotai' ); ?></h2>
+				<h2><?php esc_html_e( 'Teach the AI chat agent about your website', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></h2>
 				<p class="ovebotai-lead">
-					<?php esc_html_e( 'Select the pages below (e.g. About, FAQ, Shipping & Returns). Your AI agent will read them and use that information to answer your customers\' questions accurately, live in the on-site chat.', 'ovebotai' ); ?>
+					<?php esc_html_e( 'Select the pages below (e.g. About, FAQ, Shipping & Returns). Your AI agent will read them and use that information to answer your customers\' questions accurately, live in the on-site chat.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
 				</p>
 
 				<?php if ( empty( $pages ) ) : ?>
-				<p class="ovebotai-muted"><?php esc_html_e( 'No published pages found.', 'ovebotai' ); ?></p>
+				<p class="ovebotai-muted"><?php esc_html_e( 'No published pages found.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></p>
 				<?php else : ?>
 				<div class="ovebotai-pages-list">
 					<?php foreach ( $pages as $page ) : ?>
@@ -139,9 +139,9 @@ $ovebotai_oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp
 			<?php if ( $ovebotai_wc_active ) : ?>
 			<!-- Step 3: Products (only reachable when WooCommerce is active) -->
 			<div class="ovebotai-panel" data-panel="3" <?php echo 3 !== $ovebotai_initial_step ? 'style="display:none"' : ''; ?>>
-				<h2><?php esc_html_e( 'Teach the AI chat agent about your products', 'ovebotai' ); ?></h2>
+				<h2><?php esc_html_e( 'Teach the AI chat agent about your products', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></h2>
 				<p class="ovebotai-lead" id="oveProductMsg">
-					<?php esc_html_e( 'Checking how many products can be sent to your AI agent…', 'ovebotai' ); ?>
+					<?php esc_html_e( 'Checking how many products can be sent to your AI agent…', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
 				</p>
 			</div>
 			<?php endif; ?>
@@ -149,30 +149,30 @@ $ovebotai_oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp
 			<!-- Step 4: Sync / Done -->
 			<div class="ovebotai-panel" data-panel="4" <?php echo 4 !== $ovebotai_initial_step ? 'style="display:none"' : ''; ?>>
 				<div class="ovebotai-sync-idle" id="oveSyncIdle">
-					<h2><?php esc_html_e( 'Ready to go live', 'ovebotai' ); ?></h2>
+					<h2><?php esc_html_e( 'Ready to go live', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></h2>
 					<p class="ovebotai-lead">
-						<?php esc_html_e( 'Everything is set. Click below to send the selected pages and products to Ovebot.ai — your AI chat agent will start using them right away.', 'ovebotai' ); ?>
+						<?php esc_html_e( 'Everything is set. Click below to send the selected pages and products to Ovebot.ai — your AI chat agent will start using them right away.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
 					</p>
 				</div>
 				<div class="ovebotai-sync-loading" id="oveSyncLoading" style="display:none">
 					<div class="ovebotai-spinner-wrap">
 						<span class="ovebotai-spinner"></span>
-						<p id="oveSyncStatus"><?php esc_html_e( 'Syncing with Ovebot.ai…', 'ovebotai' ); ?></p>
+						<p id="oveSyncStatus"><?php esc_html_e( 'Syncing with Ovebot.ai…', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></p>
 					</div>
 				</div>
 				<div class="ovebotai-sync-done" id="oveSyncDone" style="display:none">
 					<div class="ovebotai-done-icon"><span class="dashicons dashicons-yes-alt" aria-hidden="true"></span></div>
-					<h2><?php esc_html_e( 'All done!', 'ovebotai' ); ?></h2>
+					<h2><?php esc_html_e( 'All done!', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></h2>
 					<p class="ovebotai-lead">
-						<?php esc_html_e( 'Your store is now connected to Ovebot.ai. Your AI agent is live on your website right now, ready to chat with customers, recommend products and answer order-status questions.', 'ovebotai' ); ?>
+						<?php esc_html_e( 'Your store is now connected to Ovebot.ai. Your AI agent is live on your website right now, ready to chat with customers, recommend products and answer order-status questions.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
 					</p>
 					<div class="ovebotai-notice ovebotai-notice-warning" id="oveSyncWarnings" style="display:none"></div>
 					<div class="ovebotai-done-actions">
 						<a href="<?php echo esc_url( add_query_arg( 'view', 'settings', admin_url( 'admin.php?page=ovebotai' ) ) ); ?>" class="button ovebotai-btn-muted">
-							<?php esc_html_e( 'Go to settings', 'ovebotai' ); ?>
+							<?php esc_html_e( 'Go to settings', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
 						</a>
 						<a href="<?php echo esc_url( add_query_arg( 'ocw-fab-open', 'true', home_url( '/' ) ) ); ?>" class="button button-primary" target="_blank" rel="noopener noreferrer">
-							<?php esc_html_e( 'Chat with the AI agent →', 'ovebotai' ); ?>
+							<?php esc_html_e( 'Chat with the AI agent →', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
 						</a>
 					</div>
 				</div>
@@ -186,11 +186,11 @@ $ovebotai_oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp
 		<!-- Navigation -->
 		<div class="ovebotai-setup-nav" id="oveSetupNav">
 			<button type="button" class="button" id="ovePrevBtn" style="display:none">
-				<?php esc_html_e( '← Previous', 'ovebotai' ); ?>
+				<?php esc_html_e( '← Previous', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
 			</button>
 			<?php $ovebotai_next_hidden = 1 === $ovebotai_initial_step && ! $ovebotai_is_connected; ?>
 			<button type="button" class="button button-primary" id="oveNextBtn" <?php echo $ovebotai_next_hidden ? 'style="display:none"' : ''; ?>>
-				<?php esc_html_e( 'Next →', 'ovebotai' ); ?>
+				<?php esc_html_e( 'Next →', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
 			</button>
 		</div>
 

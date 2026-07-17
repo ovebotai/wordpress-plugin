@@ -58,7 +58,7 @@ class Ovebotai_Setup {
 		check_ajax_referer( 'ovebotai_setup', 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'ovebotai' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) ) );
 		}
 
 		$page_ids = array_map( 'absint', (array) ( $_POST['page_ids'] ?? array() ) );
@@ -78,7 +78,7 @@ class Ovebotai_Setup {
 		// this sync included WooCommerce (see Ovebotai::needs_woocommerce_resync()).
 
 		if ( ! Ovebotai::resync_setup() ) {
-			$errors[] = __( 'Could not sync feed and order settings with Ovebot.ai.', 'ovebotai' );
+			$errors[] = __( 'Could not sync feed and order settings with Ovebot.ai.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' );
 		}
 
 		// ── Finalize ─────────────────────────────────────────────────────────
@@ -87,7 +87,7 @@ class Ovebotai_Setup {
 			update_option( 'ovebotai_chat_status',   '1', false );
 			update_option( 'ovebotai_setup_complete', '1', false );
 
-			$message = __( 'Setup complete!', 'ovebotai' );
+			$message = __( 'Setup complete!', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' );
 			if ( $warnings ) {
 				$message .= '<br>' . implode( '<br>', $warnings );
 			}
@@ -164,7 +164,7 @@ class Ovebotai_Setup {
 			if ( 'publish' !== $post->post_status ) {
 				$warnings[] = sprintf(
 					/* translators: %s: page title */
-					__( 'Skipped "%s" — page is not published.', 'ovebotai' ),
+					__( 'Skipped "%s" — page is not published.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
 					esc_html( get_the_title( $post ) )
 				);
 				continue;
@@ -186,7 +186,7 @@ class Ovebotai_Setup {
 			if ( mb_strlen( $body ) < 10 ) {
 				$warnings[] = sprintf(
 					/* translators: %s: page title */
-					__( 'Skipped "%s" — not enough text content to sync (minimum 10 characters).', 'ovebotai' ),
+					__( 'Skipped "%s" — not enough text content to sync (minimum 10 characters).', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
 					esc_html( $title )
 				);
 				continue;
@@ -225,7 +225,7 @@ class Ovebotai_Setup {
 			if ( ( $result['status'] ?? 0 ) < 200 || ( $result['status'] ?? 0 ) >= 300 ) {
 				$errors[] = sprintf(
 					/* translators: %s: page title */
-					__( 'Could not update knowledge base entry for "%s".', 'ovebotai' ),
+					__( 'Could not update knowledge base entry for "%s".', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
 					esc_html( $title )
 				);
 			}

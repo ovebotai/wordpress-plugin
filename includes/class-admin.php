@@ -42,11 +42,11 @@ class Ovebotai_Admin {
 				<?php
 				printf(
 					/* translators: %s: link to the Ovebot.ai settings page */
-					wp_kses_post( __( 'WooCommerce was installed - the Ovebot.ai plugin needs additional configuration. Open its %s and click Save to enable the product feed and order tracking.', 'ovebotai' ) ),
+					wp_kses_post( __( 'WooCommerce was installed - the Ovebot.ai plugin needs additional configuration. Open its %s and click Save to enable the product feed and order tracking.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) ),
 					sprintf(
 						'<a href="%1$s">%2$s</a>',
 						esc_url( $settings_url ),
-						esc_html__( 'settings', 'ovebotai' )
+						esc_html__( 'settings', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' )
 					)
 				);
 				?>
@@ -59,7 +59,7 @@ class Ovebotai_Admin {
 
 	public function plugin_action_links( array $links ): array {
 		$settings_link = '<a href="' . esc_url( admin_url( 'admin.php?page=ovebotai' ) ) . '">'
-			. esc_html__( 'Settings', 'ovebotai' ) . '</a>';
+			. esc_html__( 'Settings', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) . '</a>';
 		array_unshift( $links, $settings_link );
 		return $links;
 	}
@@ -86,8 +86,8 @@ class Ovebotai_Admin {
 		// itself (slug "ovebotai") is unchanged, so every existing
 		// admin.php?page=ovebotai link/redirect keeps working as-is.
 		add_options_page(
-			__( 'Ovebot.ai', 'ovebotai' ),
-			__( 'Ovebot.ai', 'ovebotai' ),
+			__( 'Ovebot.ai', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+			__( 'Ovebot.ai', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
 			'manage_options',
 			'ovebotai',
 			array( $this, 'render_page' )
@@ -98,7 +98,7 @@ class Ovebotai_Admin {
 
 	public function action_connect() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Permission denied.', 'ovebotai' ) );
+			wp_die( esc_html__( 'Permission denied.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) );
 		}
 		check_admin_referer( 'ovebotai_connect' );
 
@@ -146,7 +146,7 @@ class Ovebotai_Admin {
 
 	public function action_disconnect() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Permission denied.', 'ovebotai' ) );
+			wp_die( esc_html__( 'Permission denied.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) );
 		}
 		check_admin_referer( 'ovebotai_disconnect' );
 
@@ -162,7 +162,7 @@ class Ovebotai_Admin {
 
 	public function render_page() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Permission denied.', 'ovebotai' ) );
+			wp_die( esc_html__( 'Permission denied.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) );
 		}
 
 		if ( ! Ovebotai::is_setup_complete() ) {
@@ -211,14 +211,14 @@ class Ovebotai_Admin {
 					'nonce'        => wp_create_nonce( 'ovebotai_settings' ),
 					'dashboardUrl' => admin_url( 'admin.php?page=ovebotai' ),
 					'i18n'       => array(
-						'saved'             => __( 'Settings saved.', 'ovebotai' ),
-						'saving'            => __( 'Saving…', 'ovebotai' ),
-						'error'             => __( 'An error occurred. Please try again.', 'ovebotai' ),
-						'confirmRegen'      => __( 'Regenerate API credentials? The current credentials will stop working immediately.', 'ovebotai' ),
-						'confirmRegenHash'  => __( 'Regenerate feed hash? The current feed URL will stop working.', 'ovebotai' ),
-						'confirmClearCache' => __( 'Clear the product feed cache?', 'ovebotai' ),
-						'copied'            => __( 'Copied!', 'ovebotai' ),
-						'copy'              => __( 'Copy', 'ovebotai' ),
+						'saved'             => __( 'Settings saved.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+						'saving'            => __( 'Saving…', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+						'error'             => __( 'An error occurred. Please try again.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+						'confirmRegen'      => __( 'Regenerate API credentials? The current credentials will stop working immediately.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+						'confirmRegenHash'  => __( 'Regenerate feed hash? The current feed URL will stop working.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+						'confirmClearCache' => __( 'Clear the product feed cache?', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+						'copied'            => __( 'Copied!', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+						'copy'              => __( 'Copy', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
 					),
 				) );
 			}
@@ -260,12 +260,12 @@ class Ovebotai_Admin {
 				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				'oauthError'     => isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp_unslash( $_GET['oauth_error'] ) ) : '',
 				'i18n'           => array(
-					'next'                  => __( 'Next →', 'ovebotai' ),
-					'sync'                  => __( 'Finish setup →', 'ovebotai' ),
-					'retry'                 => __( 'Retry', 'ovebotai' ),
-					'error'                 => __( 'An error occurred. Please try again.', 'ovebotai' ),
-					'noProducts'            => __( 'No published products found — your AI agent won\'t have any products to recommend yet.', 'ovebotai' ),
-					'productsWillBeIndexed' => __( 'products will be sent to your AI agent so it can recommend them to customers.', 'ovebotai' ),
+					'next'                  => __( 'Next →', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+					'sync'                  => __( 'Finish setup →', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+					'retry'                 => __( 'Retry', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+					'error'                 => __( 'An error occurred. Please try again.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+					'noProducts'            => __( 'No published products found — your AI agent won\'t have any products to recommend yet.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+					'productsWillBeIndexed' => __( 'products will be sent to your AI agent so it can recommend them to customers.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
 				),
 			) );
 		}
