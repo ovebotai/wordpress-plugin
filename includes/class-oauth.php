@@ -45,7 +45,7 @@ class Ovebotai_OAuth {
 		delete_transient( 'ovebotai_pkce_verifier_' . $state );
 
 		if ( ! $verifier ) {
-			return array( 'error' => __( 'State mismatch. Please try again.', 'ovebotai' ) );
+			return array( 'error' => __( 'State mismatch. Please try again.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) );
 		}
 
 		$response = wp_remote_post(
@@ -69,7 +69,7 @@ class Ovebotai_OAuth {
 		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		if ( 200 !== $http_code || empty( $body['access_token'] ) ) {
-			return array( 'error' => sprintf( /* translators: %d: HTTP status code */ __( 'Token exchange failed (HTTP %d).', 'ovebotai' ), $http_code ) );
+			return array( 'error' => sprintf( /* translators: %d: HTTP status code */ __( 'Token exchange failed (HTTP %d).', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ), $http_code ) );
 		}
 
 		$this->store_tokens( $body );

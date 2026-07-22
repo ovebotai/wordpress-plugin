@@ -55,6 +55,13 @@ class Ovebotai_Frontend {
 		// wp_footer runs inject_widget() at its default priority (10), which is
 		// before core's own wp_print_footer_scripts (priority 20) — so enqueuing
 		// here still gets picked up and printed in the same footer pass.
+		//
+		// $ver is deliberately null: this is a remote script versioned and
+		// cache-controlled by ovebot.ai, not by us. Appending ?ver=OVEBOTAI_VERSION
+		// would key the browser cache to the plugin version — which says nothing
+		// about the loader's actual contents — and some CDN configurations skip
+		// caching for URLs carrying a query string entirely.
+		// phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
 		wp_enqueue_script( 'ovebotai-chat-loader', $widget_host, array(), null, true );
 		wp_add_inline_script(
 			'ovebotai-chat-loader',
@@ -88,6 +95,10 @@ class Ovebotai_Frontend {
 
 		// woocommerce_thankyou fires while the page content is rendering, well
 		// before wp_footer's wp_print_footer_scripts — safe to enqueue here.
+		//
+		// $ver is null for the same reason as the chat loader above: remote
+		// script, versioned by ovebot.ai rather than by this plugin.
+		// phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
 		wp_enqueue_script( 'ovebotai-purchase-event', $event_host, array(), null, true );
 		wp_add_inline_script(
 			'ovebotai-purchase-event',

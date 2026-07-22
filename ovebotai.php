@@ -1,17 +1,18 @@
 <?php
 /**
- * Plugin Name:       Ovebot.ai
+ * Plugin Name:       Ovebot – AI Chatbot, Live Chat & AI Sales Agent for WooCommerce
  * Plugin URI:        https://ovebot.ai
- * Description:       AI chat assistant for your store: knowledge-base support, product recommendations and orders delivery status. Try it for free!
+ * Description:       AI chatbot & live chat for WordPress. Your AI agent recommends products, answers support questions and tracks orders 24/7. Free trial, no card.
  * Version:           1.0.0
  * Requires at least: 5.9
  * Requires PHP:      7.4
  * Author:            Ovesio
  * Author URI:        https://ovesio.com
- * Text Domain:       ovebotai
+ * Text Domain:       ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce
  * Domain Path:       /languages
- * License:           GPL-2.0-or-later
- * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * License:           MIT
+ * License URI:       https://opensource.org/licenses/MIT
+ * Update URI:        https://wordpress.org/plugins/ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce/
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -36,7 +37,7 @@ if ( version_compare( $wp_version, OVEBOTAI_MIN_WP_VER, '<' ) || version_compare
 			'<div class="notice notice-error"><p>%s</p></div>',
 			esc_html( sprintf(
 				/* translators: 1: required WP version, 2: required PHP version, 3: current WP version, 4: current PHP version */
-				__( 'Ovebot.ai requires WordPress %1$s+ and PHP %2$s+. This site is running WordPress %3$s and PHP %4$s, so the plugin has not been loaded.', 'ovebotai' ),
+				__( 'Ovebot.ai requires WordPress %1$s+ and PHP %2$s+. This site is running WordPress %3$s and PHP %4$s, so the plugin has not been loaded.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
 				OVEBOTAI_MIN_WP_VER,
 				OVEBOTAI_MIN_PHP_VER,
 				$GLOBALS['wp_version'],
