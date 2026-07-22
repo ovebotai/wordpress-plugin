@@ -223,6 +223,14 @@ class Ovebotai_Setup {
 			}
 
 			if ( ( $result['status'] ?? 0 ) < 200 || ( $result['status'] ?? 0 ) >= 300 ) {
+				// kb_limit_reached means the workspace's knowledge-base quota is
+				// full — not a per-page failure. Stop sending further pages and
+				// don't report it as an error; whatever synced up to now stands.
+				if ( 'kb_limit_reached' === ( $result['body']['error']['code'] ?? '' ) ) {
+					$warnings[] = $result['body']['error']['message'];
+					break;
+				}
+
 				$errors[] = sprintf(
 					/* translators: %s: page title */
 					__( 'Could not update knowledge base entry for "%s".', 'ovebotai' ),
