@@ -83,7 +83,7 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 								<?php esc_html_e( 'Connect with an existing account →', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
 							</button>
 						</form>
-						<a href="https://account.ovebot.ai/register" target="_blank" rel="noopener noreferrer" class="button ovebotai-btn-trial">
+						<a href="<?php echo esc_url( add_query_arg( array( 'plan' => 'wp-freemium', 'domain' => wp_parse_url( home_url(), PHP_URL_HOST ) ), 'https://account.ovebot.ai/register' ) ); ?>" target="_blank" rel="noopener noreferrer" class="button ovebotai-btn-trial">
 							<?php esc_html_e( 'Try it for Free →', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
 						</a>
 					</div>
