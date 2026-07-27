@@ -59,7 +59,7 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 			);
 		}
 	} else {
-		$ovebotai_kb_error = __( 'Could not load knowledge base entries from Ovebot.ai.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' );
+		$ovebotai_kb_error = __( 'Could not load knowledge base entries from Ovebot.ai.', 'ovebotai' );
 	}
 }
 ?>
@@ -71,7 +71,7 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 			<a href="https://ovebot.ai" target="_blank" rel="noopener noreferrer">
 				<img src="<?php echo esc_url( OVEBOTAI_URL . 'admin/img/logo.png' ); ?>" alt="Ovebot.ai" height="32">
 			</a>
-			<h1><?php esc_html_e( 'Dashboard', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></h1>
+			<h1><?php esc_html_e( 'Dashboard', 'ovebotai' ); ?></h1>
 			<?php require OVEBOTAI_DIR . 'admin/views/partials/version-badge.php'; ?>
 		</div>
 		<?php require OVEBOTAI_DIR . 'admin/views/partials/connection-badge.php'; ?>
@@ -82,9 +82,9 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 	<div class="ovebotai-setup-card">
 		<div class="ovebotai-panels">
 			<div class="ovebotai-panel" data-panel="1">
-				<h2><?php esc_html_e( 'Reconnect your store to Ovebot.ai', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></h2>
+				<h2><?php esc_html_e( 'Reconnect your store to Ovebot.ai', 'ovebotai' ); ?></h2>
 				<p class="ovebotai-lead">
-					<?php esc_html_e( 'Your connection to Ovebot.ai has expired or was revoked. Your AI chat agent, product feed and order tracking may stop updating until you reconnect.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
+					<?php esc_html_e( 'Your connection to Ovebot.ai has expired or was revoked. Your AI chat agent, product feed and order tracking may stop updating until you reconnect.', 'ovebotai' ); ?>
 				</p>
 				<div class="ovebotai-connect-box">
 					<div class="ovebotai-connect-actions">
@@ -92,11 +92,11 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 							<input type="hidden" name="action" value="ovebotai_connect">
 							<?php wp_nonce_field( 'ovebotai_connect' ); ?>
 							<button type="submit" class="button ovebotai-btn-connect">
-								<?php esc_html_e( 'Connect with an existing account →', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
+								<?php esc_html_e( 'Connect with an existing account →', 'ovebotai' ); ?>
 							</button>
 						</form>
 						<a href="<?php echo esc_url( Ovebotai_OAuth::get_register_url() ); ?>" target="_blank" rel="noopener noreferrer" class="button ovebotai-btn-trial">
-							<?php esc_html_e( 'Start Free →', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
+							<?php esc_html_e( 'Start Free →', 'ovebotai' ); ?>
 						</a>
 					</div>
 				</div>
@@ -110,17 +110,17 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 		<?php if ( $ovebotai_account_url ) : ?>
 		<a class="ovebotai-dash-card" href="<?php echo esc_url( $ovebotai_account_url ); ?>" target="_blank" rel="noopener noreferrer">
 			<span class="ovebotai-dash-card-icon dashicons dashicons-external" aria-hidden="true"></span>
-			<span class="ovebotai-dash-card-title"><?php esc_html_e( 'Ovebot.ai account', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></span>
+			<span class="ovebotai-dash-card-title"><?php esc_html_e( 'Ovebot.ai account', 'ovebotai' ); ?></span>
 		</a>
 		<?php endif; ?>
 		<a class="ovebotai-dash-card" href="<?php echo esc_url( $ovebotai_settings_url ); ?>">
 			<span class="ovebotai-dash-card-icon dashicons dashicons-admin-generic" aria-hidden="true"></span>
-			<span class="ovebotai-dash-card-title"><?php esc_html_e( 'Settings', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></span>
+			<span class="ovebotai-dash-card-title"><?php esc_html_e( 'Settings', 'ovebotai' ); ?></span>
 		</a>
 		<?php if ( get_option( 'ovebotai_chat_status' ) === '1' ) : ?>
 		<a class="ovebotai-dash-card" href="<?php echo esc_url( $ovebotai_chat_url ); ?>" target="_blank" rel="noopener noreferrer">
 			<span class="ovebotai-dash-card-icon dashicons dashicons-format-chat" aria-hidden="true"></span>
-			<span class="ovebotai-dash-card-title"><?php esc_html_e( 'Chat with the AI agent', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></span>
+			<span class="ovebotai-dash-card-title"><?php esc_html_e( 'Chat with the AI agent', 'ovebotai' ); ?></span>
 		</a>
 		<?php else : ?>
 		<!-- Chat widget is turned off (item 11): the card links to Settings with a
@@ -128,7 +128,7 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 		     distinctly (dashed/muted) so it doesn't read as a normal live action. -->
 		<a class="ovebotai-dash-card is-disabled" href="<?php echo esc_url( add_query_arg( 'highlight', 'chat_status', $ovebotai_settings_url ) ); ?>">
 			<span class="ovebotai-dash-card-icon dashicons dashicons-format-chat" aria-hidden="true"></span>
-			<span class="ovebotai-dash-card-title"><?php esc_html_e( 'Chat is disabled, enable it in settings', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?> <span aria-hidden="true">&rarr;</span></span>
+			<span class="ovebotai-dash-card-title"><?php esc_html_e( 'Chat is disabled, enable it in settings', 'ovebotai' ); ?> <span aria-hidden="true">&rarr;</span></span>
 		</a>
 		<?php endif; ?>
 	</div>
@@ -139,10 +139,10 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 	<a class="ovebotai-recommend-panel" href="<?php echo esc_url( $ovebotai_agent_settings_url ); ?>" target="_blank" rel="noopener noreferrer">
 		<span class="ovebotai-recommend-panel-icon dashicons dashicons-admin-settings" aria-hidden="true"></span>
 		<span class="ovebotai-recommend-panel-body">
-			<span class="ovebotai-recommend-panel-title"><?php esc_html_e( 'Looking for advanced settings?', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></span>
-			<span class="ovebotai-recommend-panel-desc"><?php esc_html_e( 'Fine-tune your AI agent right from your Ovebot.ai account - that\'s where the advanced options and customizations live.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></span>
+			<span class="ovebotai-recommend-panel-title"><?php esc_html_e( 'Looking for advanced settings?', 'ovebotai' ); ?></span>
+			<span class="ovebotai-recommend-panel-desc"><?php esc_html_e( 'Fine-tune your AI agent right from your Ovebot.ai account - that\'s where the advanced options and customizations live.', 'ovebotai' ); ?></span>
 		</span>
-		<span class="ovebotai-recommend-panel-cta"><?php esc_html_e( 'Open account settings', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?> <span aria-hidden="true">&rarr;</span></span>
+		<span class="ovebotai-recommend-panel-cta"><?php esc_html_e( 'Open account settings', 'ovebotai' ); ?> <span aria-hidden="true">&rarr;</span></span>
 	</a>
 	<?php endif; ?>
 
@@ -152,7 +152,7 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 	<div class="ovebotai-dash-card-wide">
 		<span class="ovebotai-dash-card-wide-label">
 			<span class="dashicons dashicons-cart" aria-hidden="true"></span>
-			<?php esc_html_e( 'Products indexed by the AI agent', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
+			<?php esc_html_e( 'Products indexed by the AI agent', 'ovebotai' ); ?>
 		</span>
 		<?php $ovebotai_count_classes = 'ovebotai-dash-card-wide-count ' . ( $ovebotai_products_count > 0 ? 'is-positive' : 'is-zero' ); ?>
 		<?php if ( $ovebotai_products_url ) : ?>
@@ -169,13 +169,13 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 	<div class="ovebotai-status-warning">
 		<span class="dashicons dashicons-warning ovebotai-status-warning-icon" aria-hidden="true"></span>
 		<span class="ovebotai-status-warning-body">
-			<span class="ovebotai-status-warning-title"><?php esc_html_e( 'Product recommendations are turned off', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></span>
+			<span class="ovebotai-status-warning-title"><?php esc_html_e( 'Product recommendations are turned off', 'ovebotai' ); ?></span>
 			<span class="ovebotai-status-warning-desc">
 				<?php
 				printf(
 					/* translators: %s: "here" link to this site's local Ovebot.ai settings page */
-					wp_kses_post( __( 'Your AI agent is not recommending products right now. You can change the status %s.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) ),
-					sprintf( '<a href="%1$s">%2$s</a>', esc_url( add_query_arg( 'highlight', 'products_enabled', $ovebotai_settings_url ) ), esc_html__( 'here', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) )
+					wp_kses_post( __( 'Your AI agent is not recommending products right now. You can change the status %s.', 'ovebotai' ) ),
+					sprintf( '<a href="%1$s">%2$s</a>', esc_url( add_query_arg( 'highlight', 'products_enabled', $ovebotai_settings_url ) ), esc_html__( 'here', 'ovebotai' ) )
 				);
 				?>
 			</span>
@@ -189,13 +189,13 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 	<div class="ovebotai-status-warning">
 		<span class="dashicons dashicons-warning ovebotai-status-warning-icon" aria-hidden="true"></span>
 		<span class="ovebotai-status-warning-body">
-			<span class="ovebotai-status-warning-title"><?php esc_html_e( 'Order tracking is turned off', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></span>
+			<span class="ovebotai-status-warning-title"><?php esc_html_e( 'Order tracking is turned off', 'ovebotai' ); ?></span>
 			<span class="ovebotai-status-warning-desc">
 				<?php
 				printf(
 					/* translators: %s: "here" link to this site's local Ovebot.ai settings page */
-					wp_kses_post( __( 'Your AI agent can\'t answer order-status questions while order tracking is off. You can change the status %s.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) ),
-					sprintf( '<a href="%1$s">%2$s</a>', esc_url( add_query_arg( 'highlight', 'order_api_status', $ovebotai_settings_url ) ), esc_html__( 'here', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) )
+					wp_kses_post( __( 'Your AI agent can\'t answer order-status questions while order tracking is off. You can change the status %s.', 'ovebotai' ) ),
+					sprintf( '<a href="%1$s">%2$s</a>', esc_url( add_query_arg( 'highlight', 'order_api_status', $ovebotai_settings_url ) ), esc_html__( 'here', 'ovebotai' ) )
 				);
 				?>
 			</span>
@@ -208,11 +208,11 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 	<div class="ovebotai-fieldset">
 		<div class="ovebotai-fieldset-legend">
 			<span class="dashicons dashicons-book" aria-hidden="true"></span>
-			<?php esc_html_e( 'Knowledge Bases', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
+			<?php esc_html_e( 'Knowledge Bases', 'ovebotai' ); ?>
 		</div>
 		<div class="ovebotai-fieldset-body">
 
-			<p class="description ovebotai-fieldset-intro"><?php esc_html_e( 'These are the resources your AI agent uses to answer customer questions in the chat. Editing one of these pages in WordPress automatically updates its entry here within a few minutes - or use "Edit on Ovebot.ai" below to change it directly.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></p>
+			<p class="description ovebotai-fieldset-intro"><?php esc_html_e( 'These are the resources your AI agent uses to answer customer questions in the chat. Editing one of these pages in WordPress automatically updates its entry here within a few minutes - or use "Edit on Ovebot.ai" below to change it directly.', 'ovebotai' ); ?></p>
 
 			<?php if ( $ovebotai_kb_error ) : ?>
 			<div class="ovebotai-notice ovebotai-notice-warning"><p><?php echo esc_html( $ovebotai_kb_error ); ?></p></div>
@@ -221,11 +221,11 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 				<?php
 				printf(
 					/* translators: %s: "add one here" link to Ovebot.ai's knowledge-base creation page */
-					wp_kses_post( __( 'No knowledge base entries yet - %s.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) ),
+					wp_kses_post( __( 'No knowledge base entries yet - %s.', 'ovebotai' ) ),
 					sprintf(
 						'<a href="%1$s" target="_blank" rel="noopener noreferrer">%2$s</a>',
 						esc_url( $ovebotai_kb_create_url ),
-						esc_html__( 'add one here', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' )
+						esc_html__( 'add one here', 'ovebotai' )
 					)
 				);
 				?>
@@ -238,7 +238,7 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 				<?php
 				printf(
 					/* translators: 1: active entries, 2: total entries */
-					esc_html__( '%1$d of %2$d entries active', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+					esc_html__( '%1$d of %2$d entries active', 'ovebotai' ),
 					(int) $ovebotai_kb_active_count,
 					count( $ovebotai_kb_entries )
 				);
@@ -252,15 +252,15 @@ if ( $ovebotai_is_connected && $ovebotai_workspace ) {
 					</div>
 					<div class="ovebotai-kb-item-actions">
 						<?php if ( $ovebotai_entry['is_active'] ) : ?>
-						<span class="ovebotai-status-badge is-active" title="<?php esc_attr_e( 'Visible to your AI agent', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>"><?php esc_html_e( 'Active', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></span>
+						<span class="ovebotai-status-badge is-active" title="<?php esc_attr_e( 'Visible to your AI agent', 'ovebotai' ); ?>"><?php esc_html_e( 'Active', 'ovebotai' ); ?></span>
 						<?php else : ?>
-						<span class="ovebotai-status-badge is-inactive" title="<?php esc_attr_e( 'Not currently visible to your AI agent', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>"><?php esc_html_e( 'Inactive', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></span>
+						<span class="ovebotai-status-badge is-inactive" title="<?php esc_attr_e( 'Not currently visible to your AI agent', 'ovebotai' ); ?>"><?php esc_html_e( 'Inactive', 'ovebotai' ); ?></span>
 						<?php endif; ?>
 						<a href="<?php echo esc_url( $ovebotai_entry['edit_url'] ); ?>"
 							target="_blank"
 							rel="noopener noreferrer"
 							class="ovebotai-page-url">
-							<?php esc_html_e( 'Edit on Ovebot.ai', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
+							<?php esc_html_e( 'Edit on Ovebot.ai', 'ovebotai' ); ?>
 							<span class="dashicons dashicons-external ovebotai-ext-icon" aria-hidden="true"></span>
 						</a>
 					</div>

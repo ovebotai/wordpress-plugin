@@ -8,11 +8,10 @@
  * Requires PHP:      7.4
  * Author:            Ovesio
  * Author URI:        https://ovesio.com
- * Text Domain:       ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce
+ * Text Domain:       ovebotai
  * Domain Path:       /languages
  * License:           MIT
  * License URI:       https://opensource.org/licenses/MIT
- * Update URI:        https://wordpress.org/plugins/ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce/
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -37,7 +36,7 @@ if ( version_compare( $wp_version, OVEBOTAI_MIN_WP_VER, '<' ) || version_compare
 			'<div class="notice notice-error"><p>%s</p></div>',
 			esc_html( sprintf(
 				/* translators: 1: required WP version, 2: required PHP version, 3: current WP version, 4: current PHP version */
-				__( 'Ovebot.ai requires WordPress %1$s+ and PHP %2$s+. This site is running WordPress %3$s and PHP %4$s, so the plugin has not been loaded.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+				__( 'Ovebot.ai requires WordPress %1$s+ and PHP %2$s+. This site is running WordPress %3$s and PHP %4$s, so the plugin has not been loaded.', 'ovebotai' ),
 				OVEBOTAI_MIN_WP_VER,
 				OVEBOTAI_MIN_PHP_VER,
 				$GLOBALS['wp_version'],

@@ -19,7 +19,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          PLUGIN="ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce"
+          PLUGIN="ovebotai"
           BUILD_DIR="$(mktemp -d)"
           mkdir -p "${BUILD_DIR}/${PLUGIN}"
 
@@ -39,6 +39,6 @@ jobs:
       - name: Upload asset
         uses: softprops/action-gh-release@v1
         with:
-          files: ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce.zip
+          files: ovebotai.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

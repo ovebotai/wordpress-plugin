@@ -68,7 +68,7 @@ class Ovebotai_Setup {
 		check_ajax_referer( 'ovebotai_setup', 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'ovebotai' ) ) );
 		}
 
 		$page_ids = array_map( 'absint', (array) ( $_POST['page_ids'] ?? array() ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified above via check_ajax_referer
@@ -97,7 +97,7 @@ class Ovebotai_Setup {
 		check_ajax_referer( 'ovebotai_setup', 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'ovebotai' ) ) );
 		}
 
 		// The product-source choice is only committed now — the wizard keeps it
@@ -111,14 +111,14 @@ class Ovebotai_Setup {
 
 		if ( ! Ovebotai::resync_setup() ) {
 			wp_send_json_error( array(
-				'message' => __( 'Could not sync settings with Ovebot.ai.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+				'message' => __( 'Could not sync settings with Ovebot.ai.', 'ovebotai' ),
 			) );
 		}
 
 		update_option( 'ovebotai_chat_status',    '1', false );
 		update_option( 'ovebotai_setup_complete', '1', false );
 
-		wp_send_json_success( array( 'message' => __( 'Setup complete!', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) ) );
+		wp_send_json_success( array( 'message' => __( 'Setup complete!', 'ovebotai' ) ) );
 	}
 
 	/**
@@ -173,7 +173,7 @@ class Ovebotai_Setup {
 				// Only report it when activating — deactivating an unpublished page
 				// is a no-op with nothing to say.
 				if ( $active ) {
-					$failed[ $page_id ] = __( 'Page is not published.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' );
+					$failed[ $page_id ] = __( 'Page is not published.', 'ovebotai' );
 				}
 				continue;
 			}
@@ -193,7 +193,7 @@ class Ovebotai_Setup {
 			// with page builders that don't store text in post_content).
 			if ( mb_strlen( $body ) < 10 ) {
 				if ( $active ) {
-					$failed[ $page_id ] = __( 'Not enough text content to sync (minimum 10 characters).', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' );
+					$failed[ $page_id ] = __( 'Not enough text content to sync (minimum 10 characters).', 'ovebotai' );
 				}
 				continue;
 			}
@@ -244,13 +244,13 @@ class Ovebotai_Setup {
 					if ( '' === $quota_message ) {
 						$quota_message = (string) ( $result['body']['error']['message'] ?? '' );
 					}
-					$quota_blocked[ $page_id ] = __( 'Skipped — knowledge base limit reached.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' );
+					$quota_blocked[ $page_id ] = __( 'Skipped — knowledge base limit reached.', 'ovebotai' );
 					continue;
 				}
 
 				$failed[ $page_id ] = sprintf(
 					/* translators: %s: the API's error reason */
-					__( 'Sync failed: %s', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+					__( 'Sync failed: %s', 'ovebotai' ),
 					Ovebotai_OAuth::error_message( $result )
 				);
 				continue;

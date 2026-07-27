@@ -29,7 +29,7 @@ class Ovebotai_Feed {
 		if ( ! Ovebotai::chat_enabled() ) {
 			return new WP_Error(
 				'ovebotai_feed_chat_disabled',
-				__( 'The product feed is disabled while the chat is turned off.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+				__( 'The product feed is disabled while the chat is turned off.', 'ovebotai' ),
 				array( 'status' => 403 )
 			);
 		}
@@ -41,7 +41,7 @@ class Ovebotai_Feed {
 		if ( Ovebotai::products_use_own_feed() ) {
 			return new WP_Error(
 				'ovebotai_feed_disabled',
-				__( 'The automatic product feed is disabled — products are managed directly on Ovebot.ai.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+				__( 'The automatic product feed is disabled — products are managed directly on Ovebot.ai.', 'ovebotai' ),
 				array( 'status' => 403 )
 			);
 		}
@@ -52,7 +52,7 @@ class Ovebotai_Feed {
 		if ( ! Ovebotai::products_enabled() ) {
 			return new WP_Error(
 				'ovebotai_feed_products_disabled',
-				__( 'The product feed is disabled while product recommendations are turned off.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+				__( 'The product feed is disabled while product recommendations are turned off.', 'ovebotai' ),
 				array( 'status' => 403 )
 			);
 		}

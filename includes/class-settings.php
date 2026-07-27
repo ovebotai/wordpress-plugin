@@ -37,7 +37,7 @@ class Ovebotai_Settings {
 	public function ajax_save() {
 		check_ajax_referer( 'ovebotai_settings', 'nonce' );
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'ovebotai' ) ) );
 		}
 
 		// ── Always: chat on/off + widget appearance ──────────────────────────
@@ -83,7 +83,7 @@ class Ovebotai_Settings {
 
 		if ( ! $connected ) {
 			wp_send_json_success( array(
-				'message'     => __( 'Chat settings saved. Reconnect to Ovebot.ai to sync feed and order settings.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+				'message'     => __( 'Chat settings saved. Reconnect to Ovebot.ai to sync feed and order settings.', 'ovebotai' ),
 				'partial'     => true,
 				'needs_reconnect' => true,
 			) );
@@ -101,7 +101,7 @@ class Ovebotai_Settings {
 		// reported as a warning alongside the success message, not as a reason
 		// to call the save itself unsuccessful.
 		wp_send_json_success( array(
-			'message'  => __( 'Settings saved.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+			'message'  => __( 'Settings saved.', 'ovebotai' ),
 			'warnings' => $all_errors,
 		) );
 	}
@@ -115,7 +115,7 @@ class Ovebotai_Settings {
 			return '';
 		}
 
-		return __( 'Settings saved locally but could not sync with Ovebot.ai.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' );
+		return __( 'Settings saved locally but could not sync with Ovebot.ai.', 'ovebotai' );
 	}
 
 	// ── Regenerate feed hash ─────────────────────────────────────────────────
@@ -123,7 +123,7 @@ class Ovebotai_Settings {
 	public function ajax_regen_hash() {
 		check_ajax_referer( 'ovebotai_settings', 'nonce' );
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'ovebotai' ) ) );
 		}
 
 		$hash     = wp_generate_password( 32, false );
@@ -136,7 +136,7 @@ class Ovebotai_Settings {
 
 		if ( ! $synced ) {
 			wp_send_json_error( array(
-				'message' => __( 'Could not sync with Ovebot.ai — feed hash left unchanged.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+				'message' => __( 'Could not sync with Ovebot.ai — feed hash left unchanged.', 'ovebotai' ),
 			) );
 		}
 
@@ -145,7 +145,7 @@ class Ovebotai_Settings {
 		wp_send_json_success( array(
 			'hash'    => $hash,
 			'url'     => $feed_url,
-			'message' => __( 'Feed URL regenerated and synced with Ovebot.ai.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+			'message' => __( 'Feed URL regenerated and synced with Ovebot.ai.', 'ovebotai' ),
 		) );
 	}
 
@@ -154,7 +154,7 @@ class Ovebotai_Settings {
 	public function ajax_regen_creds() {
 		check_ajax_referer( 'ovebotai_settings', 'nonce' );
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'ovebotai' ) ) );
 		}
 
 		$host = (string) wp_parse_url( home_url(), PHP_URL_HOST );
@@ -169,7 +169,7 @@ class Ovebotai_Settings {
 
 		if ( ! $synced ) {
 			wp_send_json_error( array(
-				'message' => __( 'Could not sync with Ovebot.ai — credentials left unchanged.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+				'message' => __( 'Could not sync with Ovebot.ai — credentials left unchanged.', 'ovebotai' ),
 			) );
 		}
 
@@ -179,7 +179,7 @@ class Ovebotai_Settings {
 		wp_send_json_success( array(
 			'user'    => $user,
 			'pass'    => $pass,
-			'message' => __( 'Credentials regenerated and synced with Ovebot.ai.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+			'message' => __( 'Credentials regenerated and synced with Ovebot.ai.', 'ovebotai' ),
 		) );
 	}
 

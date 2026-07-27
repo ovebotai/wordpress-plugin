@@ -3,6 +3,6 @@
 // Reads the single source of truth via Ovebotai::getModuleVersion().
 defined( 'ABSPATH' ) || exit;
 ?>
-<span class="ovebotai-version-badge" title="<?php esc_attr_e( 'Plugin version', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>">
+<span class="ovebotai-version-badge" title="<?php esc_attr_e( 'Plugin version', 'ovebotai' ); ?>">
 	v<?php echo esc_html( Ovebotai::getModuleVersion() ); ?>
 </span>
