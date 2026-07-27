@@ -33,14 +33,20 @@ msgstr "Schimb de token eșuat (HTTP %d)."
 msgid "Connect your store to Ovebot.ai"
 msgstr "Conectează magazinul la Ovebot.ai"
 
-msgid "Log in to your Ovebot.ai account and allow this site to sync with it. You'll be sent to ovebot.ai to sign in, then brought straight back here to finish setting up your AI chat agent."
-msgstr "Autentifică-te în contul tău Ovebot.ai și permite acestui site să se sincronizeze cu el. Vei fi trimis pe ovebot.ai pentru a te autentifica, apoi adus direct înapoi aici pentru a finaliza configurarea agentului tău AI de chat."
+msgid "Your AI agent learns your store and answers customers 24/7, in any language."
+msgstr "Agentul tău AI învață magazinul tău și răspunde clienților 24/7, în orice limbă."
 
-msgid "Connect with an existing account →"
-msgstr "Conectează-te cu un cont existent →"
+msgid "Free forever. No credit card."
+msgstr "Gratuit pentru totdeauna. Fără card bancar."
 
-msgid "Try it for Free →"
-msgstr "Încearcă gratuit →"
+msgid "Start Free"
+msgstr "Începe gratuit"
+
+msgid "I already have an account"
+msgstr "Am deja un cont"
+
+msgid "You'll sign in on ovebot.ai and return here to finish setup."
+msgstr "Te vei autentifica pe ovebot.ai și vei reveni aici pentru a finaliza configurarea."
 
 msgid "Teach the AI chat agent about your website"
 msgstr "Învață agentul AI de chat despre site-ul tău"
@@ -57,6 +63,9 @@ msgstr "Învață agentul AI de chat despre produsele tale"
 msgid "Checking how many products can be sent to your AI agent…"
 msgstr "Se verifică câte produse pot fi trimise agentului tău AI…"
 
+msgid "Only products currently in stock are sent to Ovebot.ai."
+msgstr "Doar produsele aflate în stoc sunt trimise către Ovebot.ai."
+
 msgid "Ready to go live"
 msgstr "Gata de publicare"
 
@@ -72,17 +81,14 @@ msgstr "Gata!"
 msgid "Your store is now connected to Ovebot.ai. Your AI agent is live on your website right now, ready to chat with customers, recommend products and answer order-status questions."
 msgstr "Magazinul tău este acum conectat la Ovebot.ai. Agentul tău AI este activ pe site chiar acum, gata să discute cu clienții, să recomande produse și să răspundă la întrebări despre statusul comenzilor."
 
-msgid "Chat with the AI agent →"
-msgstr "Discută cu agentul AI →"
-
 msgid "Go to settings"
 msgstr "Mergi la setări"
 
-msgid "← Previous"
-msgstr "← Înapoi"
+msgid "Previous"
+msgstr "Înapoi"
 
-msgid "Next →"
-msgstr "Înainte →"
+msgid "Next"
+msgstr "Înainte"
 
 msgid "Connect account"
 msgstr "Conectează contul"
@@ -93,11 +99,14 @@ msgstr "Pagini site"
 msgid "Products"
 msgstr "Produse"
 
-msgid "Go live"
-msgstr "Publică"
+msgid "Go live 🎉"
+msgstr "Publică 🎉"
 
-msgid "Finish setup →"
-msgstr "Finalizează configurarea →"
+msgid "Finish setup"
+msgstr "Finalizează configurarea"
+
+msgid "Updated"
+msgstr "Actualizat"
 
 msgid "Retry"
 msgstr "Reîncearcă"
@@ -133,7 +142,7 @@ msgid "Chat with the AI agent"
 msgstr "Discută cu agentul AI"
 
 msgid "Ovebot.ai account"
-msgstr "Cont Ovebot.ai"
+msgstr "Contul Ovebot.ai"
 
 msgid "Products indexed by the AI agent"
 msgstr "Produse indexate de agentul AI"
@@ -288,6 +297,12 @@ msgstr "Feed produse"
 msgid "Ovebot.ai reads this URL periodically to keep your AI agent's product recommendations up to date with your catalog (stock, price, availability)."
 msgstr "Ovebot.ai citește periodic acest URL pentru ca recomandările de produse ale agentului tău AI să rămână la zi cu catalogul tău (stoc, preț, disponibilitate)."
 
+msgid "Recommend products"
+msgstr "Recomandă produse"
+
+msgid "When off, your AI agent stops suggesting products to customers in the chat."
+msgstr "Când e dezactivat, agentul tău AI nu va mai sugera produse clienților în chat."
+
 msgid "Feed URL"
 msgstr "URL feed"
 
@@ -297,17 +312,17 @@ msgstr "Copiază"
 msgid "Regenerate hash"
 msgstr "Regenerează hash"
 
-msgid "Clear feed cache"
-msgstr "Șterge cache feed"
-
-msgid "The feed is cached for performance. Clear it after major catalog changes."
-msgstr "Feed-ul este memorat în cache pentru performanță. Șterge-l după modificări importante în catalog."
-
 msgid "Order tracking API"
 msgstr "API tracking comenzi"
 
 msgid "Ovebot.ai calls this endpoint, authenticated with the credentials below, so your AI agent can answer \"Where is my order?\" questions with live tracking info."
 msgstr "Ovebot.ai apelează acest endpoint, autentificat cu credențialele de mai jos, ca agentul tău AI să poată răspunde la întrebări de tipul „Unde este comanda mea?” cu informații de tracking live."
+
+msgid "Enable order tracking"
+msgstr "Activează tracking-ul comenzilor"
+
+msgid "When off, your AI agent stops answering order-status questions and this endpoint returns 403."
+msgstr "Când e dezactivat, agentul tău AI nu va mai răspunde la întrebări despre statusul comenzilor, iar acest endpoint va returna 403."
 
 msgid "Endpoint URL"
 msgstr "URL endpoint"
@@ -323,33 +338,6 @@ msgstr "Regenerează credențiale"
 
 msgid "Generates a new user/password pair. The old ones will stop working immediately."
 msgstr "Generează un nou user și parolă. Credențialele vechi vor înceta să funcționeze imediat."
-
-msgid "Delivery estimate"
-msgstr "Estimare livrare"
-
-msgid "Your AI agent uses these ranges to answer \"When will my order arrive?\" - counted in business days, Sundays excluded. Set a realistic min–max range for each of the three order situations below."
-msgstr "Agentul tău AI folosește aceste intervale pentru a răspunde la „Când ajunge comanda mea?” - calculate în zile lucrătoare, fără duminică. Setează un interval minim–maxim realist pentru fiecare din cele trei situații de comandă de mai jos."
-
-msgid "Orders that have already shipped"
-msgstr "Comenzi deja expediate"
-
-msgid "Counted from the day the order was shipped, until it reaches the customer."
-msgstr "Calculat din ziua în care comanda a fost expediată, până ajunge la client."
-
-msgid "New orders - every item in stock"
-msgstr "Comenzi noi - toate produsele sunt în stoc"
-
-msgid "Counted from the day the order was placed - nothing to wait on before it ships."
-msgstr "Calculat din ziua în care a fost plasată comanda - nu e nimic de așteptat înainte de expediere."
-
-msgid "New orders - at least one item out of stock"
-msgstr "Comenzi noi - cel puțin un produs este în lipsă din stoc"
-
-msgid "Counted from the day the order was placed - includes the wait for restock before it can ship."
-msgstr "Calculat din ziua în care a fost plasată comanda - include și timpul de așteptare până la reaprovizionare, înainte de expediere."
-
-msgid "business days"
-msgstr "zile lucrătoare"
 
 msgid "Save settings"
 msgstr "Salvează setările"
@@ -369,29 +357,23 @@ msgstr "Regenerezi credențialele API? Cele actuale vor înceta să funcționeze
 msgid "Regenerate feed hash? The current feed URL will stop working."
 msgstr "Regenerezi hash-ul feed-ului? URL-ul actual va înceta să funcționeze."
 
-msgid "Clear the product feed cache?"
-msgstr "Ștergi cache-ul feed-ului de produse?"
-
 msgid "Copied!"
 msgstr "Copiat!"
 
 msgid "Settings saved locally but could not sync with Ovebot.ai."
 msgstr "Setările au fost salvate local, dar nu au putut fi sincronizate cu Ovebot.ai."
 
-msgid "Could not sync with Ovebot.ai - feed hash left unchanged."
-msgstr "Nu s-a putut sincroniza cu Ovebot.ai - hash-ul feed-ului a rămas neschimbat."
+msgid "Could not sync with Ovebot.ai — feed hash left unchanged."
+msgstr "Nu s-a putut sincroniza cu Ovebot.ai — hash-ul feed-ului a rămas neschimbat."
 
 msgid "Feed URL regenerated and synced with Ovebot.ai."
 msgstr "URL-ul feed-ului a fost regenerat și sincronizat cu Ovebot.ai."
 
-msgid "Could not sync with Ovebot.ai - credentials left unchanged."
-msgstr "Nu s-a putut sincroniza cu Ovebot.ai - credențialele au rămas neschimbate."
+msgid "Could not sync with Ovebot.ai — credentials left unchanged."
+msgstr "Nu s-a putut sincroniza cu Ovebot.ai — credențialele au rămas neschimbate."
 
 msgid "Credentials regenerated and synced with Ovebot.ai."
 msgstr "Credențialele au fost regenerate și sincronizate cu Ovebot.ai."
-
-msgid "Cache cleared."
-msgstr "Cache șters."
 
 msgid "WooCommerce is not active. Product feed and order tracking are unavailable."
 msgstr "WooCommerce nu este activ. Feed-ul de produse și tracking-ul comenzilor nu sunt disponibile."
@@ -429,8 +411,139 @@ msgstr "Reconectează contul Ovebot.ai pentru a debloca acestea:"
 msgid "Not connected"
 msgstr "Neconectat"
 
-msgid "Reconnect →"
-msgstr "Reconectare →"
+msgid "Reconnect"
+msgstr "Reconectare"
 
 msgid "Chat settings saved. Reconnect to Ovebot.ai to sync feed and order settings."
 msgstr "Setările chat-ului au fost salvate. Reconectează-te la Ovebot.ai pentru a sincroniza setările de feed și comenzi."
+
+# ── Knowledge-base sync: per-page results (wizard step "Website pages") ──
+
+msgid "Page is not published."
+msgstr "Pagina nu este publicată."
+
+msgid "Not enough text content to sync (minimum 10 characters)."
+msgstr "Conținut text insuficient pentru sincronizare (minimum 10 caractere)."
+
+msgid "Skipped — knowledge base limit reached."
+msgstr "Omis — limita bazei de cunoștințe a fost atinsă."
+
+msgid "Sync failed: %s"
+msgstr "Sincronizare eșuată: %s"
+
+msgid "HTTP %d"
+msgstr "HTTP %d"
+
+# ── Finish step ─────────────────────────────────────────────────────────
+
+msgid "Could not sync settings with Ovebot.ai."
+msgstr "Setările nu au putut fi sincronizate cu Ovebot.ai."
+
+# ── Product source choice ───────────────────────────────────────────────
+
+msgid "Use the built-in feed"
+msgstr "Folosește feed-ul integrat"
+
+msgid "I'll provide my own feed"
+msgstr "Îmi gestionez singur produsele"
+
+msgid "Set up a compatible feed URL (e.g. Google Merchant) directly in your %s."
+msgstr "Configurează un URL de feed compatibil (ex. Google Merchant) direct în %s."
+
+msgid "Set up a compatible feed URL (e.g. Google Merchant) directly in your Ovebot.ai account."
+msgstr "Configurează un URL de feed compatibil (ex. Google Merchant) direct în contul tău Ovebot.ai."
+
+msgid "here"
+msgstr "aici"
+
+msgid "Use the built-in product feed"
+msgstr "Folosește feed-ul de produse integrat"
+
+msgid "When off, our own feed URL stops working (returns Forbidden) and Ovebot.ai won't be told about it. If you have a custom feed, configure it directly at: %s"
+msgstr "Când e dezactivat, URL-ul nostru de feed nu mai funcționează (returnează Forbidden), iar Ovebot.ai nu va fi informat despre el. Dacă ai un feed propriu, configurează-l direct la: %s"
+
+msgid "When off, our own feed URL stops working (returns Forbidden) and Ovebot.ai won't be told about it. Set up a custom feed directly in your Ovebot.ai account."
+msgstr "Când e dezactivat, URL-ul nostru de feed nu mai funcționează (returnează Forbidden), iar Ovebot.ai nu va fi informat despre el. Configurează un feed propriu direct în contul tău Ovebot.ai."
+
+msgid "The automatic product feed is disabled — products are managed directly on Ovebot.ai."
+msgstr "Feed-ul automat de produse este dezactivat — produsele sunt gestionate direct în Ovebot.ai."
+
+msgid "The product feed is disabled while product recommendations are turned off."
+msgstr "Feed-ul de produse este dezactivat cât timp recomandările de produse sunt oprite."
+
+# ── Finish success tip ──────────────────────────────────────────────────
+
+msgid "Setup finished successfully - we still recommend checking the settings in your Ovebot.ai account for the selected agent, available %s. You'll also find more settings and customizations there that may be useful."
+msgstr "Configurarea s-a încheiat cu succes - îți recomandăm totuși să verifici setările din contul tău Ovebot.ai pentru agentul selectat, disponibile %s. Vei găsi acolo și alte setări și personalizări care îți pot fi utile."
+
+msgid "Setup finished successfully - we still recommend checking the settings in your Ovebot.ai account for the selected agent. You'll also find more settings and customizations there that may be useful."
+msgstr "Configurarea s-a încheiat cu succes - îți recomandăm totuși să verifici setările din contul tău Ovebot.ai pentru agentul selectat. Vei găsi acolo și alte setări și personalizări care îți pot fi utile."
+
+# ── Appearance: z-index ─────────────────────────────────────────────────
+
+msgid "Stacking order (z-index)"
+msgstr "Ordine de suprapunere (z-index)"
+
+msgid "Only change this if the chat widget appears behind another element on your site. Leave empty to use the default."
+msgstr "Modifică doar dacă widget-ul de chat apare în spatele altui element de pe site. Lasă gol pentru valoarea implicită."
+
+# ── Dashboard: chat disabled ────────────────────────────────────────────
+
+msgid "Chat is disabled, enable it in settings"
+msgstr "Chat-ul este dezactivat, activează-l din setări"
+
+# ── Missing translations sweep ───────────────────────────────────────────
+
+msgid "Appearance"
+msgstr "Aspect"
+
+msgid "Connect with an existing account →"
+msgstr "Conectează-te cu un cont existent →"
+
+msgid "Fine-tune your AI agent right from your Ovebot.ai account - that's where the advanced options and customizations live."
+msgstr "Ajustează-ți agentul AI direct din contul tău Ovebot.ai - acolo găsești opțiuni avansate și personalizări."
+
+msgid "Looking for advanced settings?"
+msgstr "Cauți setări avansate?"
+
+msgid "Open account settings"
+msgstr "Deschide setările contului"
+
+msgid "Order lookup is currently disabled."
+msgstr "Căutarea comenzilor este momentan dezactivată."
+
+msgid "Order tracking is turned off"
+msgstr "Tracking-ul comenzilor este dezactivat"
+
+msgid "Ovebot.ai requires WordPress %1$s+ and PHP %2$s+. This site is running WordPress %3$s and PHP %4$s, so the plugin has not been loaded."
+msgstr "Ovebot.ai necesită WordPress %1$s+ și PHP %2$s+. Acest site rulează WordPress %3$s și PHP %4$s, așa că plugin-ul nu a fost încărcat."
+
+msgid "Plugin version"
+msgstr "Versiune plugin"
+
+msgid "Product recommendations are turned off"
+msgstr "Recomandările de produse sunt dezactivate"
+
+msgid "Reconnect your store to Ovebot.ai"
+msgstr "Reconectează-ți magazinul la Ovebot.ai"
+
+msgid "Start Free →"
+msgstr "Începe gratuit →"
+
+msgid "The product feed is disabled while the chat is turned off."
+msgstr "Feed-ul de produse este dezactivat cât timp chat-ul este oprit."
+
+msgid "WooCommerce was installed - the Ovebot.ai plugin needs additional configuration. Open its %s and click Save to enable the product feed and order tracking."
+msgstr "WooCommerce a fost instalat - plugin-ul Ovebot.ai necesită configurare suplimentară. Deschide %s și apasă Salvează pentru a activa feed-ul de produse și tracking-ul comenzilor."
+
+msgid "settings"
+msgstr "setările"
+
+msgid "Your AI agent can't answer order-status questions while order tracking is off. You can change the status %s."
+msgstr "Agentul tău AI nu poate răspunde la întrebări despre statusul comenzilor cât timp tracking-ul comenzilor este dezactivat. Poți modifica statusul %s."
+
+msgid "Your AI agent is not recommending products right now. You can change the status %s."
+msgstr "Agentul tău AI nu recomandă produse momentan. Poți modifica statusul %s."
+
+msgid "Your connection to Ovebot.ai has expired or was revoked. Your AI chat agent, product feed and order tracking may stop updating until you reconnect."
+msgstr "Conexiunea ta la Ovebot.ai a expirat sau a fost revocată. Agentul tău AI de chat, feed-ul de produse și tracking-ul comenzilor pot înceta să se actualizeze până te reconectezi."

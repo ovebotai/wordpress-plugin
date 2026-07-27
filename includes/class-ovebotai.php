@@ -60,8 +60,16 @@ class Ovebotai {
 		if ( ! get_option( 'ovebotai_order_pass' ) ) {
 			update_option( 'ovebotai_order_pass', wp_generate_password( 24, false ), false );
 		}
-		if ( ! get_option( 'ovebotai_cache_version' ) ) {
-			update_option( 'ovebotai_cache_version', 1, false );
+		// Order-lookup API is on by default (task 5). Only seed it when the option
+		// has never been set - a stored '0' (merchant turned it off) must survive a
+		// deactivate/reactivate cycle.
+		if ( false === get_option( 'ovebotai_order_api_enabled', false ) ) {
+			update_option( 'ovebotai_order_api_enabled', '1', false );
+		}
+		// Product recommendation is on by default too; same "only seed when never
+		// set" rule so a stored '0' survives a deactivate/reactivate cycle.
+		if ( false === get_option( 'ovebotai_products_enabled', false ) ) {
+			update_option( 'ovebotai_products_enabled', '1', false );
 		}
 
 		// Safety net for deactivate → reactivate: nothing else re-pushes our
@@ -78,6 +86,66 @@ class Ovebotai {
 	}
 
 	public static function deactivate() {}
+
+	// Plugin version. Single source of truth is the OVEBOTAI_VERSION constant,
+	// which is itself derived from the "Version:" header in ovebotai.php - exposed
+	// as a method so the admin views have one call to render it in their header,
+	// instead of touching the constant (or hardcoding a number) in each template.
+	public static function getModuleVersion(): string {
+		return OVEBOTAI_VERSION;
+	}
+
+	// On-site chat widget master switch. When off, the widget isn't injected
+	// (see Ovebotai_Frontend) and - per task 3 - the product feed and the
+	// order-lookup endpoint are also served as forbidden, since neither has any
+	// purpose without a live chat to feed.
+	public static function chat_enabled(): bool {
+		return '1' === get_option( 'ovebotai_chat_status' );
+	}
+
+	// Order-lookup API master switch (task 5). Stored locally, mirrored into the
+	// remote order_info.enabled on every setup push, and reconciled back from the
+	// account on each dashboard load (see sync_settings()). Defaults to enabled.
+	public static function order_api_enabled(): bool {
+		return '1' === get_option( 'ovebotai_order_api_enabled', '1' );
+	}
+
+	// "Recommend products" master switch, paired with the Product Feed card in
+	// Settings. Stored locally, mirrored into the remote products.enabled on every
+	// setup push, and reconciled back from the account on each dashboard load (see
+	// sync_settings()). Defaults to enabled.
+	public static function products_enabled(): bool {
+		return '1' === get_option( 'ovebotai_products_enabled', '1' );
+	}
+
+	// Pulls the account's current integration status and reconciles the local
+	// order-API switch to it (task 8). The merchant may have toggled order lookup
+	// directly in their Ovebot.ai account since the last local save; the account
+	// wins on read, so a change made there must not be silently overwritten by a
+	// stale local value. Local is still what we push on Save.
+	public static function sync_settings(): void {
+		// Order lookup only carries a meaningful "the user chose this" state while
+		// WooCommerce is active. When it's inactive we ourselves push
+		// order_info=false (there's nothing to look up), so reading that back and
+		// storing it locally would flip the switch off behind the user's back and
+		// keep it off even after WooCommerce returns. Skip the reconcile in that case.
+		if ( ! self::woocommerce_active() ) {
+			return;
+		}
+
+		$integration = Ovebotai_OAuth::instance()->get_integration();
+		if ( ! is_array( $integration ) ) {
+			return;
+		}
+
+		// Only reconcile each flag when it's actually present in the response.
+		if ( array_key_exists( 'order_info', $integration ) ) {
+			update_option( 'ovebotai_order_api_enabled', $integration['order_info'] ? '1' : '0', false );
+		}
+		if ( array_key_exists( 'products', $integration ) ) {
+			update_option( 'ovebotai_products_enabled', $integration['products'] ? '1' : '0', false );
+		}
+	}
 
 	public static function is_setup_complete() {
 		return get_option( 'ovebotai_setup_complete' ) === '1'
@@ -136,11 +204,19 @@ class Ovebotai {
 		// leave Ovebot.ai's copy stuck on whatever it was last set to.
 		$wc_active = self::woocommerce_active();
 
+		// When the merchant opts to manage products directly in their Ovebot.ai
+		// account ("I'll provide my own feed"), we must not touch the products
+		// section of the remote config at all - not even to send an explicit
+		// "disabled", which would overwrite the feed URL/currency/etc. they set
+		// up on Ovebot.ai's side. The whole section is omitted from the push so
+		// the API's own copy is left completely untouched (item 10).
+		$own_feed = self::products_use_own_feed();
+
 		$payload = array(
 			'widget' => $widget_payload ?: (object) array(),
 		);
 
-		if ( $wc_active ) {
+		if ( $wc_active && self::order_api_enabled() ) {
 			$payload['order_info'] = array(
 				'enabled'       => true,
 				'api_url'       => home_url( '/wp-json/ovebotai/v1/orders' ),
@@ -148,7 +224,32 @@ class Ovebotai {
 				'api_password'  => $order_pass ?? (string) get_option( 'ovebotai_order_pass', '' ),
 				'lookup_method' => 'email',
 			);
+		} else {
+			// WooCommerce inactive, or the merchant turned order lookup off via the
+			// settings switch (task 5). Either way report it explicitly disabled
+			// rather than omitting the section - PUT /setup is a partial update, so
+			// omitting it would leave the account's copy stuck on whatever it was
+			// last set to. No api_url/api_user/api_password: nothing meaningful to
+			// send, and this also skips generating order credentials for nothing
+			// (see resync_setup()).
+			$payload['order_info'] = array( 'enabled' => false );
+		}
 
+		// "Recommend products" master switch. When off, report it disabled to the
+		// account no matter the feed source - an explicit "don't recommend" must
+		// reach Ovebot even for merchants who manage their own feed there, so this
+		// takes precedence over the own-feed omission below.
+		if ( ! self::products_enabled() ) {
+			$payload['products'] = array( 'enabled' => false );
+			return $payload;
+		}
+
+		if ( $own_feed ) {
+			// Section omitted entirely - see comment above.
+			return $payload;
+		}
+
+		if ( $wc_active ) {
 			$feed_hash = (string) get_option( 'ovebotai_feed_hash', '' );
 			$payload['products'] = array(
 				'enabled'  => true,
@@ -156,15 +257,19 @@ class Ovebotai {
 				'currency' => self::store_currency(),
 			);
 		} else {
-			// No api_url/api_user/api_password/feed_url/currency — there's
-			// nothing meaningful to report while WooCommerce is inactive, and
-			// this also skips generating order credentials for nothing (see
-			// resync_setup()) on every save.
-			$payload['order_info'] = array( 'enabled' => false );
-			$payload['products']   = array( 'enabled' => false );
+			$payload['products'] = array( 'enabled' => false );
 		}
 
 		return $payload;
+	}
+
+	// Product-source choice (wizard step "Products" + Settings): the built-in
+	// automatic feed this module serves, or the merchant's own products managed
+	// directly on Ovebot.ai. Defaults to the automatic feed. When true, the
+	// products section is omitted from the API push and the local feed endpoint
+	// is served as forbidden (see build_setup_payload() and Ovebotai_Feed).
+	public static function products_use_own_feed(): bool {
+		return 'own' === get_option( 'ovebotai_products_source', 'auto' );
 	}
 
 	// Pushes the current local config to Ovebot.ai. Returns true on success.
@@ -175,7 +280,12 @@ class Ovebotai {
 		$order_pass = null;
 		$generated  = false;
 
-		if ( self::woocommerce_active() ) {
+		// Only bother with order credentials when we're actually going to send an
+		// enabled order_info section - i.e. WooCommerce is active AND the merchant
+		// hasn't switched order lookup off (task 5). Otherwise build_setup_payload()
+		// sends { enabled: false } with no credentials, so generating (and later
+		// persisting) a fresh pair would be for nothing.
+		if ( self::woocommerce_active() && self::order_api_enabled() ) {
 			$order_user = (string) get_option( 'ovebotai_order_user', '' );
 			$order_pass = (string) get_option( 'ovebotai_order_pass', '' );
 			$generated  = '' === $order_user || '' === $order_pass;

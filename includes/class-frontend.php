@@ -43,6 +43,23 @@ class Ovebotai_Frontend {
 			}
 		}
 
+		// z_index is a numeric stacking-order option: forward it as an int when
+		// set to a number, and omit it otherwise so the loader falls back to its
+		// own default (2147483644) — same treatment as offset/delay.
+		if ( isset( $params['z_index'] ) && is_numeric( $params['z_index'] ) ) {
+			$params['z_index'] = (int) $params['z_index'];
+		} else {
+			unset( $params['z_index'] );
+		}
+
+		// Tell the loader which agent to use, but only for a non-default agent —
+		// the default agent has no id, so omitting the key lets the loader fall
+		// back to its own default (same convention as the other optional keys).
+		$agent_id = Ovebotai_OAuth::instance()->get_agent_id();
+		if ( '' !== $agent_id ) {
+			$params['agent'] = $agent_id;
+		}
+
 		// Read-only UI toggle (auto-open the widget for an admin previewing
 		// their own site) — not a state change, nothing to verify a nonce for.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -72,6 +89,10 @@ class Ovebotai_Frontend {
 
 	public function inject_purchase_event( int $order_id ) {
 		if ( ! $order_id || ! Ovebotai::is_setup_complete() ) return;
+
+		// Purchase tracking belongs with the on-site chat: only inject the event
+		// script when the chat widget is enabled (same gate as inject_widget()).
+		if ( '1' !== get_option( 'ovebotai_chat_status' ) ) return;
 
 		$order = wc_get_order( $order_id );
 		if ( ! $order ) return;

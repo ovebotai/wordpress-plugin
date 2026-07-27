@@ -11,12 +11,6 @@ class Ovebotai_Settings {
 		'offset_x', 'offset_y', 'z_index',
 	);
 
-	private static $delivery_keys = array(
-		'days_shipped_min', 'days_shipped_max',
-		'days_instock_min', 'days_instock_max',
-		'days_oos_min',     'days_oos_max',
-	);
-
 	public static function instance() {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
@@ -29,14 +23,13 @@ class Ovebotai_Settings {
 		add_action( 'wp_ajax_ovebotai_save_settings',    array( $this, 'ajax_save' ) );
 		add_action( 'wp_ajax_ovebotai_regen_hash',       array( $this, 'ajax_regen_hash' ) );
 		add_action( 'wp_ajax_ovebotai_regen_creds',      array( $this, 'ajax_regen_creds' ) );
-		add_action( 'wp_ajax_ovebotai_clear_cache',      array( $this, 'ajax_clear_cache' ) );
 	}
 
 	// ── Save settings ───────────────────────────────────────────────────────
 	//
 	// Local-only settings (chat_status + widget appearance) are always saved.
-	// Settings that require an API sync (feed, order_info, delivery days) are
-	// saved locally and synced only when the OAuth connection is valid.
+	// Settings that require an API sync (feed, order_info) are saved locally
+	// and synced only when the OAuth connection is valid.
 	// If the token is expired the handler attempts a refresh first; if that
 	// also fails it saves locally and returns a partial-success response so
 	// the UI can inform the user which sections were skipped.
@@ -51,6 +44,19 @@ class Ovebotai_Settings {
 
 		update_option( 'ovebotai_chat_status', ! empty( $_POST['chat_status'] ) ? '1' : '0', false );
 
+		// Order-lookup and product-recommendation master switches. Both live in
+		// WooCommerce-gated fieldsets, so the fields only exist on the form when WC
+		// is active - and an unchecked checkbox is indistinguishable from an absent
+		// field. Read them only when WC is active, otherwise a save on a WC-inactive
+		// site would wrongly flip both off (and keep them off after WC returns).
+		// Saved locally (they gate the /orders and /feed endpoints) and mirrored into
+		// the account's order_info.enabled / products.enabled by the resync_setup()
+		// push below, which reads these options via build_setup_payload().
+		if ( Ovebotai::woocommerce_active() ) {
+			update_option( 'ovebotai_order_api_enabled', ! empty( $_POST['order_api_status'] ) ? '1' : '0', false );
+			update_option( 'ovebotai_products_enabled', ! empty( $_POST['products_enabled'] ) ? '1' : '0', false );
+		}
+
 		$widget = array();
 		foreach ( self::$widget_keys as $key ) {
 			if ( isset( $_POST[ 'widget_' . $key ] ) ) {
@@ -58,6 +64,17 @@ class Ovebotai_Settings {
 			}
 		}
 		update_option( 'ovebotai_widget', $widget, false );
+
+		// Product source: built-in automatic feed vs. "I'll manage products on
+		// Ovebot.ai myself", now a toggle like the two switches above — same
+		// WC-gating reason applies (an unchecked checkbox is indistinguishable
+		// from an absent field). Persisted locally always (it also gates the
+		// local feed endpoint); the API push below reflects it — when "own" it
+		// omits the products section entirely so Ovebot.ai's own copy stays
+		// untouched (item 10, see Ovebotai::build_setup_payload()).
+		if ( Ovebotai::woocommerce_active() ) {
+			update_option( 'ovebotai_products_source', ! empty( $_POST['products_source_builtin'] ) ? 'auto' : 'own', false );
+		}
 
 		// ── Check OAuth before touching API-dependent settings ───────────────
 
@@ -70,14 +87,6 @@ class Ovebotai_Settings {
 				'partial'     => true,
 				'needs_reconnect' => true,
 			) );
-		}
-
-		// ── Requires OAuth: delivery days ─────────────────────────────────────
-
-		foreach ( self::$delivery_keys as $key ) {
-			if ( isset( $_POST[ $key ] ) ) {
-				update_option( 'ovebotai_' . $key, absint( $_POST[ $key ] ), false );
-			}
 		}
 
 		// Knowledge base pages are only synced from the setup wizard — this form
@@ -183,26 +192,9 @@ class Ovebotai_Settings {
 		return $status >= 200 && $status < 300;
 	}
 
-	// ── Clear product feed cache ─────────────────────────────────────────────
-
-	public function ajax_clear_cache() {
-		check_ajax_referer( 'ovebotai_settings', 'nonce' );
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) ) );
-		}
-
-		Ovebotai_Feed::instance()->invalidate_cache();
-
-		wp_send_json_success( array( 'message' => __( 'Cache cleared.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) ) );
-	}
-
 	// ── Static helpers for views ─────────────────────────────────────────────
 
 	public static function get_widget(): array {
 		return (array) get_option( 'ovebotai_widget', array() );
-	}
-
-	public static function get_delivery( string $key, int $default ): int {
-		return (int) get_option( 'ovebotai_' . $key, $default );
 	}
 }

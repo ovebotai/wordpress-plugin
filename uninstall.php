@@ -34,18 +34,19 @@ $ovebotai_options = array(
 	'ovebotai_setup_complete',
 	'ovebotai_activation_redirect',
 	'ovebotai_chat_status',
+	'ovebotai_order_api_enabled',
+	'ovebotai_products_enabled',
 	'ovebotai_widget',
 	'ovebotai_feed_hash',
 	'ovebotai_order_user',
 	'ovebotai_order_pass',
-	'ovebotai_cache_version',
 	'ovebotai_kb_page_ids',
-	'ovebotai_days_shipped_min',
-	'ovebotai_days_shipped_max',
-	'ovebotai_days_instock_min',
-	'ovebotai_days_instock_max',
-	'ovebotai_days_oos_min',
-	'ovebotai_days_oos_max',
+	'ovebotai_days_shipped_min', // removed option, deleted defensively for older installs
+	'ovebotai_days_shipped_max', // removed option, deleted defensively for older installs
+	'ovebotai_days_instock_min', // removed option, deleted defensively for older installs
+	'ovebotai_days_instock_max', // removed option, deleted defensively for older installs
+	'ovebotai_days_oos_min',     // removed option, deleted defensively for older installs
+	'ovebotai_days_oos_max',     // removed option, deleted defensively for older installs
 	'ovebotai_include_oos', // removed option, deleted defensively for older installs
 );
 foreach ( $ovebotai_options as $ovebotai_option ) {

@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Ovebot – AI Chatbot, Live Chat & AI Sales Agent for WooCommerce
  * Plugin URI:        https://ovebot.ai
- * Description:       AI chatbot & live chat for WordPress. Your AI agent recommends products, answers support questions and tracks orders 24/7. Free trial, no card.
+ * Description:       AI chatbot & live chat. Your AI agent recommends products and tracks orders 24/7. Free plan for the first 200 stores. No credit card.
  * Version:           1.0.0
  * Requires at least: 5.9
  * Requires PHP:      7.4
@@ -25,7 +25,7 @@ define( 'OVEBOTAI_DIR',         plugin_dir_path( __FILE__ ) );
 define( 'OVEBOTAI_URL',         plugin_dir_url( __FILE__ ) );
 
 // The "Requires at least"/"Requires PHP" headers above only block activation
-// from the Plugins screen on WP 5.5+ — they're silently ignored on older
+// from the Plugins screen on WP 5.5+ - they're silently ignored on older
 // core versions and on any activation path that skips that screen (WP-CLI,
 // must-use, etc). This runtime guard is the actual enforcement: it refuses
 // to load the plugin's classes at all below the minimum versions, on any

@@ -20,20 +20,43 @@ class Ovebotai_Feed {
 				'permission_callback' => array( $this, 'check_hash' ),
 			) );
 		} );
-
-		// Invalidate the feed cache whenever a product is saved (admin edit, quick
-		// edit, bulk edit, or a new product), so the feed never serves stale data.
-		add_action( 'woocommerce_update_product', array( $this, 'invalidate_cache' ) );
-		add_action( 'woocommerce_new_product', array( $this, 'invalidate_cache' ) );
 	}
 
-	public function invalidate_cache() {
-		$v = (int) get_option( 'ovebotai_cache_version', 1 ) + 1;
-		update_option( 'ovebotai_cache_version', $v, false );
-		delete_transient( 'ovebotai_feed_v' . ( $v - 1 ) );
-	}
+	public function check_hash( WP_REST_Request $request ) {
+		// Task 3: the on-site chat is the master switch. With it off, the product
+		// feed has nothing to feed, so it's served as forbidden instead of handing
+		// Ovebot.ai a live catalog it would keep polling for no reason.
+		if ( ! Ovebotai::chat_enabled() ) {
+			return new WP_Error(
+				'ovebotai_feed_chat_disabled',
+				__( 'The product feed is disabled while the chat is turned off.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+				array( 'status' => 403 )
+			);
+		}
 
-	public function check_hash( WP_REST_Request $request ): bool {
+		// The merchant chose to manage products directly on Ovebot.ai instead of
+		// this module's automatic feed — so this endpoint is intentionally not
+		// the feed Ovebot.ai reads anymore. Respond forbidden rather than serving
+		// data, so it isn't confusing leftover surface area (item 10).
+		if ( Ovebotai::products_use_own_feed() ) {
+			return new WP_Error(
+				'ovebotai_feed_disabled',
+				__( 'The automatic product feed is disabled — products are managed directly on Ovebot.ai.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		// "Recommend products" master switch off - the agent isn't supposed to
+		// recommend anything right now, so there's no reason to keep serving it
+		// a live catalog either.
+		if ( ! Ovebotai::products_enabled() ) {
+			return new WP_Error(
+				'ovebotai_feed_products_disabled',
+				__( 'The product feed is disabled while product recommendations are turned off.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+				array( 'status' => 403 )
+			);
+		}
+
 		$stored = (string) get_option( 'ovebotai_feed_hash', '' );
 		$given  = sanitize_text_field( (string) $request->get_param( 'hash' ) );
 
@@ -45,18 +68,7 @@ class Ovebotai_Feed {
 			return new WP_REST_Response( array(), 200 );
 		}
 
-		$cache_version = (int) get_option( 'ovebotai_cache_version', 1 );
-		$cache_key     = 'ovebotai_feed_v' . $cache_version;
-
-		$cached = get_transient( $cache_key );
-		if ( false !== $cached ) {
-			return new WP_REST_Response( $cached, 200 );
-		}
-
-		$data = $this->build_feed();
-		set_transient( $cache_key, $data, 15 * MINUTE_IN_SECONDS );
-
-		return new WP_REST_Response( $data, 200 );
+		return new WP_REST_Response( $this->build_feed(), 200 );
 	}
 
 	// Only products that are actually purchasable go on the feed. For managed-stock
@@ -75,8 +87,7 @@ class Ovebotai_Feed {
 			'orderby'        => 'ID',
 			'order'          => 'ASC',
 			// Filtering by stock status + price has no non-meta_query equivalent
-			// in WooCommerce's product schema; the feed itself is transient-cached
-			// (see serve_feed()), so this doesn't run on every request.
+			// in WooCommerce's product schema.
 			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 				'relation' => 'AND',
 				array( 'key' => '_stock_status', 'value' => array( 'instock', 'onbackorder' ), 'compare' => 'IN' ),

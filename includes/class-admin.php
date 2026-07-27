@@ -27,7 +27,7 @@ class Ovebotai_Admin {
 	// ── "WooCommerce was installed, needs a resync" notice ──────────────────
 	//
 	// Shown site-wide (not just on our own settings screen) so it's noticed
-	// even if nobody opens Settings on their own initiative — WooCommerce
+	// even if nobody opens Settings on their own initiative - WooCommerce
 	// being activated after our setup was already completed is otherwise
 	// silent until the next manual Save (see Ovebotai::needs_woocommerce_resync()).
 
@@ -70,7 +70,7 @@ class Ovebotai_Admin {
 		if ( ! get_option( 'ovebotai_activation_redirect' ) ) return;
 		delete_option( 'ovebotai_activation_redirect' );
 
-		// Don't redirect during bulk activation — read-only check of WP core's
+		// Don't redirect during bulk activation - read-only check of WP core's
 		// own bulk-activate flag, no state change, no nonce to verify.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['activate-multi'] ) ) return;
@@ -82,7 +82,7 @@ class Ovebotai_Admin {
 	// ── Admin menu ───────────────────────────────────────────────────────────
 
 	public function register_menu() {
-		// Under Settings rather than its own top-level menu item — the page
+		// Under Settings rather than its own top-level menu item - the page
 		// itself (slug "ovebotai") is unchanged, so every existing
 		// admin.php?page=ovebotai link/redirect keeps working as-is.
 		add_options_page(
@@ -111,7 +111,7 @@ class Ovebotai_Admin {
 
 	public function handle_oauth_return() {
 		// This is an external OAuth redirect from account.ovebot.ai, not a
-		// same-site form submission — a WP nonce can't apply here (Ovebot.ai
+		// same-site form submission - a WP nonce can't apply here (Ovebot.ai
 		// has no session to generate one from). CSRF protection is the OAuth
 		// `state` param itself, validated against our stored PKCE verifier
 		// inside exchange_code() below.
@@ -134,10 +134,10 @@ class Ovebotai_Admin {
 				'oauth_error' => rawurlencode( $result['error'] ),
 			), admin_url( 'admin.php' ) ) );
 		} else {
-			wp_safe_redirect( add_query_arg( array(
-				'page' => 'ovebotai',
-				'step' => '2',
-			), admin_url( 'admin.php' ) ) );
+			// No step hint needed: render_page() sends an already-complete setup
+			// (i.e. a reconnect) straight to the dashboard, and an unfinished one
+			// lands on step 2 because the tokens now exist.
+			wp_safe_redirect( add_query_arg( 'page', 'ovebotai', admin_url( 'admin.php' ) ) );
 		}
 		exit;
 	}
@@ -170,12 +170,19 @@ class Ovebotai_Admin {
 			return;
 		}
 
-		// Read-only view routing — no state change, no nonce to verify.
+		// Read-only view routing - no state change, no nonce to verify.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['view'] ) && 'settings' === $_GET['view'] ) {
 			require OVEBOTAI_DIR . 'admin/views/settings.php';
 			return;
 		}
+
+		// Reconcile the local order-API switch from the account before the
+		// dashboard renders (task 8) - the merchant may have toggled it directly on
+		// Ovebot.ai. The integration fetch this performs is memoized on the OAuth
+		// singleton, so the dashboard view reuses it for its product count and its
+		// recommendation / order-tracking status warnings instead of re-requesting.
+		Ovebotai::sync_settings();
 
 		require OVEBOTAI_DIR . 'admin/views/dashboard.php';
 	}
@@ -194,9 +201,9 @@ class Ovebotai_Admin {
 		);
 
 		if ( Ovebotai::is_setup_complete() ) {
-			// The dashboard is static (no form, no AJAX) — only the Manual
+			// The dashboard is static (no form, no AJAX) - only the Manual
 			// settings view needs settings.js.
-			// Read-only view routing — no state change, no nonce to verify.
+			// Read-only view routing - no state change, no nonce to verify.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['view'] ) && 'settings' === $_GET['view'] ) {
 				wp_enqueue_script(
@@ -210,15 +217,22 @@ class Ovebotai_Admin {
 					'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
 					'nonce'        => wp_create_nonce( 'ovebotai_settings' ),
 					'dashboardUrl' => admin_url( 'admin.php?page=ovebotai' ),
+					// Generic "highlight this field" deep-link target (item 12) -
+					// e.g. the dashboard's chat quick-link points here with
+					// highlight=chat_status when chat is disabled.
+					// Read-only display parameter, already sanitized - no state change.
+					// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+					'highlight'    => isset( $_GET['highlight'] ) ? sanitize_key( wp_unslash( $_GET['highlight'] ) ) : '',
 					'i18n'       => array(
 						'saved'             => __( 'Settings saved.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
 						'saving'            => __( 'Saving…', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
 						'error'             => __( 'An error occurred. Please try again.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
 						'confirmRegen'      => __( 'Regenerate API credentials? The current credentials will stop working immediately.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
 						'confirmRegenHash'  => __( 'Regenerate feed hash? The current feed URL will stop working.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
-						'confirmClearCache' => __( 'Clear the product feed cache?', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
 						'copied'            => __( 'Copied!', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
 						'copy'              => __( 'Copy', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+						'enabled'           => __( 'Enabled', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+						'disabled'          => __( 'Disabled', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
 					),
 				) );
 			}
@@ -226,15 +240,20 @@ class Ovebotai_Admin {
 			$oauth     = Ovebotai_OAuth::instance();
 			$wc_active = Ovebotai::woocommerce_active();
 
-			// Steps present in this flow — Products KB only when WooCommerce is active.
+			// Steps present in this flow - Products KB only when WooCommerce is active.
 			$steps_seq = $wc_active ? array( 1, 2, 3, 4 ) : array( 1, 2, 4 );
 
-			// Read-only view routing — no state change, no nonce to verify.
-			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$initial_step = isset( $_GET['step'] ) ? (int) $_GET['step'] : ( $oauth->is_connected() ? 2 : 1 );
-			if ( ! in_array( $initial_step, $steps_seq, true ) ) {
-				$initial_step = $steps_seq[0];
-			}
+			// Entry step is derived from connection state alone - never from the
+			// URL. render_page() has already sent finished setups to the
+			// dashboard, so reaching this view means setup is unfinished and the
+			// only two meaningful entry points are "connect" and "pick pages".
+			//
+			// Must be the *live* check, matching setup.php: setup.js re-renders
+			// this step on load, so a cheaper local-only check here would jump
+			// past the connect panel that the view rendered for a lapsed token,
+			// leaving no way to reconnect. The API call behind it is memoized,
+			// so the view's own call reuses this one.
+			$initial_step = $oauth->is_connected_live() ? 2 : 1;
 
 			// Product counts for step 3.
 			$product_counts = $this->get_product_counts();
@@ -256,15 +275,19 @@ class Ovebotai_Admin {
 				'stepsSequence'  => $steps_seq,
 				'isConnected'    => $oauth->is_connected() ? 1 : 0,
 				'productCounts'  => $product_counts,
-				// Read-only error message display, already sanitized — no state change.
+				// Read-only error message display, already sanitized - no state change.
 				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				'oauthError'     => isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp_unslash( $_GET['oauth_error'] ) ) : '',
 				'i18n'           => array(
-					'next'                  => __( 'Next →', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
-					'sync'                  => __( 'Finish setup →', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+					// Arrows are appended by setup.js itself (as real Unicode
+					// characters, since .text() would render an HTML entity
+					// literally) - kept out of the translatable strings (item 1).
+					'next'                  => __( 'Next', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+					'sync'                  => __( 'Finish setup', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
 					'retry'                 => __( 'Retry', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+					'updated'               => __( 'Updated', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
 					'error'                 => __( 'An error occurred. Please try again.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
-					'noProducts'            => __( 'No published products found — your AI agent won\'t have any products to recommend yet.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+					'noProducts'            => __( 'No published products found - your AI agent won\'t have any products to recommend yet.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
 					'productsWillBeIndexed' => __( 'products will be sent to your AI agent so it can recommend them to customers.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
 				),
 			) );
@@ -284,7 +307,7 @@ class Ovebotai_Admin {
 
 		// Direct queries: a DISTINCT+JOIN aggregate count like this isn't
 		// expressible through get_posts()/WP_Query without pulling every
-		// matching row into PHP just to count them — and it's a live,
+		// matching row into PHP just to count them - and it's a live,
 		// dashboard-only figure, not something worth caching.
 		global $wpdb;
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -331,7 +354,9 @@ class Ovebotai_Admin {
 			}
 			$result[] = array(
 				'id'      => $page->ID,
-				'title'   => $page->post_title,
+				// Decode HTML entities so the template's own escaping step doesn't
+				// double-encode a title stored as e.g. "About &amp; FAQ" (item 10).
+				'title'   => html_entity_decode( $page->post_title, ENT_QUOTES | ENT_HTML5, 'UTF-8' ),
 				'checked' => $checked,
 			);
 		}

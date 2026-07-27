@@ -163,6 +163,10 @@
 	margin: 0 0 20px;
 }
 
+#oveProductMsg {
+	transition: opacity 0.2s ease;
+}
+
 /* ── Connect box ─────────────────────────────────────────────────────────── */
 
 .ovebotai-connect-box {
@@ -173,11 +177,40 @@
 	margin-top: 12px;
 }
 
+/* Stacked so a single button (Start Free) dominates, with the secondary
+   action reading as a plain link underneath it. */
 .ovebotai-connect-actions {
 	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 14px;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 10px;
+}
+
+/* Secondary action: a <button> (it posts the OAuth connect form) that has to
+   look like a text link, so every native button style is stripped. */
+.ovebotai-btn-signin {
+	appearance: none;
+	background: none;
+	border: 0;
+	padding: 0;
+	margin: 0;
+	font-size: 13px;
+	line-height: 1.6;
+	color: #2271b1;
+	cursor: pointer;
+}
+
+.ovebotai-btn-signin:hover,
+.ovebotai-btn-signin:focus {
+	color: #135e96;
+	text-decoration: underline;
+}
+
+/* Spacing above comes from .ovebotai-connect-box's gap. */
+.ovebotai-connect-hint {
+	margin: 0;
+	font-size: 12px;
+	color: #787c82;
 }
 
 .ovebotai-btn-connect {
@@ -194,6 +227,7 @@
 }
 
 .ovebotai-btn-trial {
+	line-height: 1 !important;
 	font-size: 16px !important;
 	font-weight: 700 !important;
 	padding: 11px 28px !important;
@@ -253,6 +287,7 @@
 }
 
 .ovebotai-checkbox-mark {
+	box-sizing: border-box;
 	flex-shrink: 0;
 	display: inline-block;
 	width: 18px;
@@ -503,7 +538,7 @@ a.ovebotai-dash-card-wide-count:hover { text-decoration: underline; }
 .ovebotai-dash-card-wide-count.is-zero     { color: #8c8f94; }
 
 /* ── Dashboard knowledge base list ───────────────────────────────────────── */
-/* Flush against the fieldset body instead of its own bordered/shaded box —
+/* Flush against the fieldset body instead of its own bordered/shaded box -
    .ovebotai-pages-list's border+background make sense in the setup wizard
    (a standalone checkbox picker), but nested inside a fieldset that already
    has its own border+background, it reads as a box-within-a-box. */
@@ -669,7 +704,7 @@ a.ovebotai-dash-card-wide-count:hover { text-decoration: underline; }
 
 /* ── Save notice ─────────────────────────────────────────────────────────── */
 
-/* No "display: none" here on purpose — the markup starts with an inline
+/* No "display: none" here on purpose - the markup starts with an inline
    style="display:none" instead. jQuery's .slideDown()/.show() clear that
    inline style rather than replacing it with "block", so this flex layout
    (icon beside text, not stacked above it) is what takes over once shown. */
@@ -753,12 +788,26 @@ a.ovebotai-dash-card-wide-count:hover { text-decoration: underline; }
 .ovebotai-field-switch {
 	display: flex;
 	flex-wrap: wrap;
-	align-items: center;
+	align-items: flex-start;
 	justify-content: space-between;
+	gap: 8px 16px;
 }
 
 .ovebotai-field-switch > label {
+	/* Nudges the label down so its own line sits vertically centered
+	   against the switch (22px tall) next to it, instead of both just
+	   sharing a flex-start top edge. */
+	padding-top: 3px;
 	margin-bottom: 0;
+}
+
+.ovebotai-field-switch .ovebotai-switch-wrap {
+	flex-shrink: 0;
+}
+
+.ovebotai-field-switch > .description {
+	flex-basis: 100%;
+	margin: 0;
 }
 
 .ovebotai-field-info code {
@@ -949,20 +998,6 @@ a.ovebotai-dash-card-wide-count:hover { text-decoration: underline; }
 	background: #f6f7f7 !important;
 }
 
-/* ── Delivery fields ─────────────────────────────────────────────────────── */
-
-.ovebotai-field-delivery { margin-bottom: 12px; }
-
-.ovebotai-delivery-inputs {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	margin-top: 4px;
-}
-
-.ovebotai-dash { color: #787c82; }
-.ovebotai-unit { font-size: 12px; color: #787c82; }
-
 /* ── Save row ────────────────────────────────────────────────────────────── */
 
 .ovebotai-save-row {
@@ -973,7 +1008,7 @@ a.ovebotai-dash-card-wide-count:hover { text-decoration: underline; }
 	overflow: visible;
 }
 
-/* Unsaved-changes attention pulse — a couple of expanding energy rings
+/* Unsaved-changes attention pulse - a couple of expanding energy rings
    around the Save button, so it's obvious there's something to do.
    box-shadow spreads by the same px amount on every side regardless of
    the button's own (wide, short) aspect ratio, unlike a transform:scale()
@@ -1029,4 +1064,287 @@ a.ovebotai-dash-card-wide-count:hover { text-decoration: underline; }
 }
 
 .ovebotai-reconnect-btn:hover { text-decoration: underline !important; }
+
+/* ── Inline per-page KB sync result (setup wizard, step 2) ───────────────── */
+
+/* The item must be a positioning context for the corner message. */
+.ovebotai-page-item {
+	position: relative;
+}
+
+.ovebotai-page-msg {
+	position: absolute;
+	top: 4px;
+	right: 8px;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1.2;
+	max-width: 55%;
+	text-align: right;
+	pointer-events: none;
+}
+
+.ovebotai-page-msg:empty {
+	display: none;
+}
+
+.ovebotai-page-msg.is-error { color: #d63638; }
+.ovebotai-page-msg.is-ok    { color: #00a32a; }
+
+/* ── Radio list (product source choice) ─────────────────────────────────── */
+
+.ovebotai-radio-list {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.ovebotai-radio-item {
+	position: relative;
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	cursor: pointer;
+	padding: 12px 14px;
+	border: 1px solid #c3c4c7;
+	border-radius: 6px;
+	transition: border-color 0.15s, background 0.15s;
+}
+
+.ovebotai-radio-item:hover {
+	background: #f0f6fc;
+	border-color: #c8dff5;
+}
+
+/* min-width has to be reset too: wp-admin sets min-width:1rem on radios, which
+   would otherwise keep the "hidden" input 16px wide. */
+.ovebotai-radio-item input[type="radio"] {
+	position: absolute;
+	opacity: 0;
+	width: 0;
+	height: 0;
+	min-width: 0;
+	margin: 0;
+	pointer-events: none;
+}
+
+/* box-sizing is explicit: wp-admin has no global border-box reset, so without
+   it the border would grow the mark to 22px and throw the dot off-centre. */
+.ovebotai-radio-mark {
+	box-sizing: border-box;
+	flex-shrink: 0;
+	margin-top: 2px;
+	display: inline-block;
+	width: 18px;
+	height: 18px;
+	min-width: 18px;
+	border: 2px solid #8c8f94;
+	border-radius: 50%;
+	background: #fff;
+	position: relative;
+	transition: border-color 0.15s;
+}
+
+.ovebotai-radio-item input[type="radio"]:checked + .ovebotai-radio-mark {
+	border-color: #2271b1;
+}
+
+/* Centred by transform rather than fixed offsets, so the dot stays put if the
+   mark's size or border width ever changes. */
+.ovebotai-radio-item input[type="radio"]:checked + .ovebotai-radio-mark::after {
+	content: '';
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: #2271b1;
+}
+
+.ovebotai-radio-info {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 0;
+}
+
+.ovebotai-radio-title {
+	font-size: 14px;
+	font-weight: 500;
+	color: #1d2327;
+	line-height: 1.3;
+}
+
+.ovebotai-radio-info .description {
+	margin: 0;
+}
+
+/* ── Finish screen: prominent "check your Ovebot.ai settings" tip ────────── */
+
+.ovebotai-done-tip {
+	font-weight: 700;
+	font-size: 15px;
+}
+
+/* ── Disabled dashboard chat card (chat widget turned off) ───────────────── */
+
+.ovebotai-dash-card.is-disabled {
+	border-style: dashed;
+	background: #f6f7f7;
+	color: #787c82;
+	font-weight: 500;
+}
+
+.ovebotai-dash-card.is-disabled .ovebotai-dash-card-icon {
+	color: #8c8f94;
+}
+
+.ovebotai-dash-card.is-disabled:hover {
+	border-color: #2271b1;
+	color: #2271b1;
+	box-shadow: none;
+}
+
+/* ── "Highlight this field" deep-link pulse (settings) ───────────────────── */
+
+.ovebotai-pulse {
+	animation: ovebotai-pulse-ring 0.9s ease-out 3;
+	border-radius: 6px;
+}
+
+@keyframes ovebotai-pulse-ring {
+	0%   { box-shadow: 0 0 0 0 rgba(34, 113, 177, 0.5); }
+	70%  { box-shadow: 0 0 0 10px rgba(34, 113, 177, 0); }
+	100% { box-shadow: 0 0 0 0 rgba(34, 113, 177, 0); }
+}
+
+/* ── Version badge (admin header, task 1) ────────────────────────────────── */
+
+.ovebotai-version-badge {
+	display: inline-block;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1;
+	color: #615ED6;
+	background: #f0efff;
+	border: 1px solid #d6d3f5;
+	border-radius: 10px;
+	padding: 3px 8px;
+	vertical-align: middle;
+}
+
+/* ── "Advanced settings" recommend panel (dashboard, task 2) ─────────────── */
+
+.ovebotai-recommend-panel {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 16px 20px;
+	margin: 0 0 28px;
+	background: linear-gradient(135deg, #f5f4ff 0%, #eef0ff 100%);
+	border: 1px solid #615ED6;
+	border-left-width: 4px;
+	border-radius: 6px;
+	text-decoration: none;
+	color: #1d2327;
+	box-shadow: 0 1px 4px rgba(97, 94, 214, 0.12);
+	transition: box-shadow 0.15s ease, transform 0.12s ease;
+}
+
+.ovebotai-recommend-panel:hover {
+	color: #1d2327;
+	box-shadow: 0 4px 12px rgba(97, 94, 214, 0.22);
+	transform: translateY(-1px);
+}
+
+.ovebotai-recommend-panel-icon {
+	font-size: 26px;
+	width: 26px;
+	height: 26px;
+	color: #615ED6;
+	flex-shrink: 0;
+}
+
+.ovebotai-recommend-panel-body {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.ovebotai-recommend-panel-title {
+	font-size: 15px;
+	font-weight: 700;
+	color: #1d2327;
+}
+
+.ovebotai-recommend-panel-desc {
+	font-size: 13px;
+	color: #50575e;
+}
+
+.ovebotai-recommend-panel-cta {
+	flex-shrink: 0;
+	font-size: 13px;
+	font-weight: 600;
+	color: #615ED6;
+	white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+	.ovebotai-recommend-panel {
+		flex-wrap: wrap;
+	}
+	.ovebotai-recommend-panel-cta {
+		width: 100%;
+	}
+}
+
+/* ── Status warnings: recommendation / order tracking off (tasks 9 + 10) ──── */
+
+.ovebotai-status-warning {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	padding: 16px 20px;
+	margin: 0 0 28px;
+	background: #fff8e5;
+	border: 1px solid #dba617;
+	border-left-width: 4px;
+	border-radius: 6px;
+}
+
+.ovebotai-status-warning-icon {
+	font-size: 20px;
+	width: 20px;
+	height: 20px;
+	color: #dba617;
+	flex-shrink: 0;
+}
+
+.ovebotai-status-warning-body {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	min-width: 0;
+}
+
+.ovebotai-status-warning-title {
+	font-size: 14px;
+	font-weight: 700;
+	color: #614200;
+}
+
+.ovebotai-status-warning-desc {
+	font-size: 13px;
+	color: #614200;
+}
+
+.ovebotai-status-warning-desc a {
+	color: #8a5a00;
+	font-weight: 600;
+}
 

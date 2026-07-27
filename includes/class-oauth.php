@@ -5,6 +5,13 @@ class Ovebotai_OAuth {
 
 	private static $instance = null;
 
+	// Per-request memo for GET /v1/integration/status (task 8). false = not yet
+	// fetched this request; after the first call it holds the integration array
+	// or null (fetched but failed). A single dashboard load reads it several times
+	// (product count, recommendation status, order-API status, the live-connection
+	// check) - this collapses all of that into one HTTP round-trip.
+	private $integration_cache = false;
+
 	const SCOPES = 'workspaces:read setup:widget:write setup:products:write setup:order-info:write kb:write';
 
 	public static function instance() {
@@ -72,8 +79,76 @@ class Ovebotai_OAuth {
 			return array( 'error' => sprintf( /* translators: %d: HTTP status code */ __( 'Token exchange failed (HTTP %d).', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ), $http_code ) );
 		}
 
+		// Capture the previously-stored agent BEFORE store_tokens() gets a chance
+		// to write a new one, so resolve_agent_after_connect() can tell a genuine
+		// agent switch apart from a reconnect to the same agent. Reading it after
+		// the write would compare the new value against itself and never detect a
+		// change (item 7).
+		$previous_agent = (string) get_option( 'ovebotai_agent', '' );
+
 		$this->store_tokens( $body );
+
+		// The token response's `agent` is unreliable (null both for "default
+		// agent picked" and "not reported"), so confirm the actually-connected
+		// agent via GET /v1/me and react if it differs from before.
+		$this->resolve_agent_after_connect( $previous_agent );
+
 		return array( 'success' => true );
+	}
+
+	// ── Resolve the connected agent via GET /v1/me, react to an agent switch ──
+	//
+	// Best-effort: a failed/unexpected lookup must not fail the whole OAuth flow,
+	// so any non-2xx / missing-agent case just returns early, leaving whatever
+	// store_tokens() already set in place.
+	private function resolve_agent_after_connect( string $previous_agent ): void {
+		$result = $this->api_request( 'GET', '/v1/me' );
+		$status = $result['status'] ?? 0;
+		if ( $status < 200 || $status >= 300 ) {
+			return;
+		}
+
+		$body = $result['body'] ?? array();
+		// No `agent` key at all → couldn't determine it; leave things as-is.
+		if ( ! is_array( $body ) || ! array_key_exists( 'agent', $body ) ) {
+			return;
+		}
+
+		$agent = $body['agent'];
+		// Object with a public id → that id; anything else (notably null for the
+		// default agent) → '' (never the literal "default"; that's a display-only
+		// label produced by get_agent()).
+		$resolved = is_array( $agent )
+			? sanitize_text_field( (string) ( $agent['public_id'] ?? $agent['id'] ?? '' ) )
+			: '';
+
+		update_option( 'ovebotai_agent', $resolved, false );
+
+		// A different agent than last time → the local, per-agent state set up
+		// for the previous agent is now stale/wrong (item 7).
+		if ( $resolved !== $previous_agent ) {
+			$this->reset_agent_local_state();
+		}
+	}
+
+	// Wipes state that only makes sense for one specific agent, so reconnecting
+	// with a different agent starts clean instead of showing the previous
+	// agent's configuration.
+	private function reset_agent_local_state(): void {
+		// Re-run the setup wizard for the new agent rather than silently showing
+		// a dashboard pointed at another agent's configuration.
+		update_option( 'ovebotai_setup_complete', '0', false );
+
+		// The saved page-selection ("only these pages") belongs to the old agent;
+		// clearing it resets the wizard to its "everything selected by default"
+		// starting point, same as a first-ever connection.
+		delete_option( 'ovebotai_kb_page_ids' );
+
+		// Our local "content page id → remote KB entry id" mapping points into
+		// the previous agent's knowledge base; those ids are meaningless under a
+		// new agent. sync_kb_pages() self-heals a stale id, but clear it outright
+		// so nothing lingers.
+		delete_post_meta_by_key( '_ovebotai_kb_id' );
 	}
 
 	// ── Token refresh (with rotation) ────────────────────────────────────────
@@ -196,9 +271,22 @@ class Ovebotai_OAuth {
 		if ( ! empty( $resp['workspace']['slug'] ) && preg_match( '/^[a-z0-9-]+$/i', $resp['workspace']['slug'] ) ) {
 			update_option( 'ovebotai_workspace', $resp['workspace']['slug'], false );
 		}
-		if ( isset( $resp['agent'] ) ) {
-			update_option( 'ovebotai_agent', sanitize_text_field( $resp['agent'] ), false );
+		// Align the token-response agent to the same '' = default convention the
+		// /v1/me resolution uses, so the two write-paths can never disagree
+		// (never persist the literal "default"; see resolve_agent_after_connect()).
+		if ( array_key_exists( 'agent', $resp ) ) {
+			update_option( 'ovebotai_agent', $this->normalize_agent( $resp['agent'] ), false );
 		}
+	}
+
+	// Object with a public id → that id; the string "default" or anything else
+	// non-object → '' (the default agent has no id of its own).
+	private function normalize_agent( $agent ): string {
+		if ( is_array( $agent ) ) {
+			return sanitize_text_field( (string) ( $agent['public_id'] ?? $agent['id'] ?? '' ) );
+		}
+		$id = sanitize_text_field( (string) $agent );
+		return 'default' === $id ? '' : $id;
 	}
 
 	// Best-effort: revokes the token (and its OAuth family) on Ovebot's side.
@@ -220,14 +308,20 @@ class Ovebotai_OAuth {
 		);
 	}
 
-	// Explicit Disconnect only — wipes everything, including the bits the
-	// storefront (widget, purchase tracking) reads independently of the OAuth
-	// token, since the user is deliberately severing the connection.
+	// Explicit Disconnect. Only the OAuth credentials themselves are cleared.
+	// Per-agent state (workspace, agent id, KB id map, page selection,
+	// setup_complete) is deliberately kept intact so that:
+	//  - reconnecting to the same agent routes straight back to the already
+	//    configured dashboard instead of pointlessly re-running the wizard, and
+	//  - the next connect can compare the still-stored agent against the freshly
+	//    resolved one to detect a real agent switch (see
+	//    resolve_agent_after_connect()). Clearing the agent here would make every
+	//    reconnect look like an agent change, since there'd be nothing to compare
+	//    against.
+	// Only an actual agent switch (detected on the next connect) resets that
+	// per-agent state.
 	public function clear_tokens(): void {
 		$this->expire_tokens();
-		delete_option( 'ovebotai_workspace' );
-		delete_option( 'ovebotai_agent' );
-		delete_option( 'ovebotai_setup_complete' );
 	}
 
 	// Implicit expiry (refresh token lapsed/revoked) — clears only the OAuth
@@ -261,9 +355,36 @@ class Ovebotai_OAuth {
 			return false;
 		}
 
-		$this->api_request( 'GET', '/v1/integration/status' );
+		// Reuses the memoized integration fetch so the badge check and the
+		// dashboard's own status/count reads share one request instead of each
+		// firing their own GET /v1/integration/status.
+		$this->get_integration();
 
 		return $this->is_connected();
+	}
+
+	// ── Integration status (memoized) ────────────────────────────────────────
+	//
+	// GET /v1/integration/status for the token's own workspace/agent. Returns the
+	// `integration` object - { products: bool, feed_url: string|null,
+	// order_info: bool, widget_language: string, counts: { products, knowledge_base } }
+	// - or null when the call fails or isn't 2xx. Cached per request (task 8);
+	// pass $force to bypass the memo and re-fetch.
+	public function get_integration( bool $force = false ): ?array {
+		if ( ! $force && false !== $this->integration_cache ) {
+			return $this->integration_cache;
+		}
+
+		$result = $this->api_request( 'GET', '/v1/integration/status' );
+		$status = $result['status'] ?? 0;
+
+		if ( $status < 200 || $status >= 300 || ! is_array( $result['body']['integration'] ?? null ) ) {
+			$this->integration_cache = null;
+			return null;
+		}
+
+		$this->integration_cache = $result['body']['integration'];
+		return $this->integration_cache;
 	}
 
 	// Re-validated on every read (not just at store_tokens() time) so a value
@@ -274,8 +395,85 @@ class Ovebotai_OAuth {
 		return preg_match( '/^[a-z0-9-]+$/i', $workspace ) ? $workspace : '';
 	}
 
+	// Display/path form: the default agent (stored as '') surfaces as the literal
+	// "default", used both in the API path and the connection badge. The '' →
+	// "default" translation happens only here, never in the persisted value.
 	public function get_agent(): string {
-		return (string) get_option( 'ovebotai_agent', 'default' );
+		$agent = (string) get_option( 'ovebotai_agent', '' );
+		return '' === $agent ? 'default' : $agent;
+	}
+
+	// Raw stored id: '' for the default agent (which has no id of its own),
+	// otherwise the agent's public id. Callers that must distinguish "default"
+	// from a real agent (storefront config, badge) read this, not get_agent().
+	public function get_agent_id(): string {
+		return (string) get_option( 'ovebotai_agent', '' );
+	}
+
+	// The account's setup page on Ovebot.ai. Empty string when there's no
+	// workspace to build a host from. Always the plain /setup path — never
+	// agent-specific — regardless of which agent is connected.
+	public function get_agent_settings_url(): string {
+		$workspace = $this->get_workspace();
+		if ( '' === $workspace ) {
+			return '';
+		}
+		return 'https://' . $workspace . '.ovebot.ai/setup';
+	}
+
+	// Sign-up link for the "Start Free" button. `plan` carries the platform's
+	// freemium slug — account.ovebot.ai checks it is an open plan and falls
+	// back to plain registration (with its own notice) when it isn't, so
+	// there is nothing to verify on this side.
+	public static function get_register_url(): string {
+		return 'https://' . OVEBOTAI_ACCOUNT_HOST . '/register?' . http_build_query( array(
+			'plan'   => 'wp-freemium',
+			'domain' => (string) wp_parse_url( home_url(), PHP_URL_HOST ),
+		) );
+	}
+
+	// Extracts a human-readable message from an api_request() result's error
+	// shape — { error: { message, fields: { field: [msgs] } } }, a bare
+	// { error: "..." } / { message: "..." }, including field-level validation
+	// messages — falling back to "HTTP <status>" when nothing usable is present.
+	public static function error_message( array $result ): string {
+		$status = (int) ( $result['status'] ?? 0 );
+		$body   = $result['body'] ?? array();
+		$msg    = '';
+
+		if ( is_array( $body ) ) {
+			$error = $body['error'] ?? null;
+			if ( is_array( $error ) ) {
+				$msg = (string) ( $error['message'] ?? '' );
+
+				// Field-level validation messages, if the API included any.
+				$fields = $error['fields'] ?? ( $error['errors'] ?? array() );
+				if ( is_array( $fields ) ) {
+					$parts = array();
+					foreach ( $fields as $field_msgs ) {
+						foreach ( (array) $field_msgs as $field_msg ) {
+							if ( '' !== (string) $field_msg ) {
+								$parts[] = (string) $field_msg;
+							}
+						}
+					}
+					if ( $parts ) {
+						$msg = trim( $msg . ' ' . implode( ' ', $parts ) );
+					}
+				}
+			} elseif ( is_string( $error ) && '' !== $error ) {
+				$msg = $error;
+			} elseif ( ! empty( $body['message'] ) ) {
+				$msg = (string) $body['message'];
+			}
+		}
+
+		$msg = trim( $msg );
+		if ( '' === $msg ) {
+			/* translators: %d: HTTP status code */
+			$msg = sprintf( __( 'HTTP %d', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ), $status );
+		}
+		return $msg;
 	}
 
 	public function setup_api_path(): string {

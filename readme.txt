@@ -8,7 +8,7 @@ Stable tag: 1.0.0
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
-AI chatbot & live chat for WordPress. Your AI agent recommends products, answers support questions and tracks orders 24/7. Free trial, no card.
+AI chatbot & live chat. Your AI agent recommends products and tracks orders 24/7. Free plan for the first 200 stores. No credit card.
 
 == Description ==
 
@@ -16,7 +16,7 @@ AI chatbot & live chat for WordPress. Your AI agent recommends products, answers
 
 Most chat plugins give you a box. Ovebot gives you an **AI sales agent** — one that has read your product catalog, your policies and your pages, and can hold a real conversation about them at 3 AM while you sleep.
 
-Install the plugin, click **Start free trial**, and in a couple of minutes your WordPress site has a live chat widget backed by an AI chatbot that answers customer questions, recommends products that are actually in stock, and tells shoppers exactly where their order is — with the real courier tracking number.
+Install the plugin, click **Start Free**, and in a couple of minutes your WordPress site has a live chat widget backed by an AI chatbot that answers customer questions, recommends products that are actually in stock, and tells shoppers exactly where their order is — with the real courier tracking number.
 
 No API keys. No copy-pasting scripts. No credit card to start.
 
@@ -115,9 +115,11 @@ Ovebot was built with EU privacy rules in the design, not bolted on:
 
 The widget loads from a single lightweight script. Your WordPress stays fast, your Core Web Vitals stay happy.
 
-## 🆓 Start Free — No Credit Card
+## 🆓 Free Plan — Early Access, First 200 Stores
 
-Click **Start free trial** in the setup wizard and you're running. Full access for the whole trial, **no card required, no automatic renewal, no charge**. Nothing to cancel if you walk away.
+Ovebot is in early access: the free plan is limited to the first 200 stores. It includes 100 AI replies per month, free forever. No credit card, no time limit, nothing to cancel.
+
+Click **Start Free** in the setup wizard and you're running in minutes.
 
 Want to see it before you even install? Paste your website URL at [demo.ovebot.ai](https://demo.ovebot.ai) and in about a minute you'll be chatting with an AI agent trained on your own site. No signup.
 
@@ -128,7 +130,7 @@ Hit your monthly message limit and the chat **does not shut off**. The widget sw
 ## 🚀 Get Started in Minutes
 
 1. Install and activate the plugin
-2. Start a free trial from the setup wizard — or connect your existing Ovebot account with one click
+2. Start free from the setup wizard — or connect your existing Ovebot account with one click
 3. Pick your pages for the knowledge base, style your widget, and go live
 
 Your AI sales agent is on duty tonight. Install Ovebot and stop losing the customers you already paid to bring to your site.
@@ -139,7 +141,7 @@ See all plans and pricing on the [Ovebot.ai website](https://ovebot.ai).
 
 1. Upload the plugin to `/wp-content/plugins/` or install it through the WordPress plugins screen.
 2. Activate the plugin.
-3. Go to **Settings → Ovebot.ai** and follow the setup wizard: connect an existing Ovebot.ai account, or start a free trial if you're new — no credit card needed.
+3. Go to **Settings → Ovebot.ai** and follow the setup wizard: connect an existing Ovebot.ai account, or start on the free plan if you're new — no credit card needed.
 4. Choose the pages to sync into your knowledge base, customize the widget, and you're live.
 
 The connection uses OAuth — there are no API keys to copy and paste by hand.
@@ -148,11 +150,11 @@ The connection uses OAuth — there are no API keys to copy and paste by hand.
 
 = Do I need an Ovebot.ai account? =
 
-Yes, but you can create one without leaving WordPress. The setup wizard lets you start a **free trial** directly — no credit card, no separate signup on the website.
+Yes, but you can create one without leaving WordPress. The setup wizard lets you start on the **free plan** directly — no credit card, no separate signup on the website.
 
 = Does Ovebot cost anything to try? =
 
-No. The free trial gives you full access for a fixed number of days, requires no card, and **does not renew automatically**. You're never charged unless you choose a plan yourself.
+No. The free plan is free forever and includes 100 AI replies per month, with no credit card and no time limit. Early access: the free plan is available to the first 200 stores. Paid plans with higher limits are available anytime at ovebot.ai.
 
 = Does this work without WooCommerce? =
 

@@ -6,6 +6,40 @@
 
 	$(function () {
 
+		// ── "Highlight this field" deep-link (item 12) ───────────────────────
+		// Generic, keyed by any field identifier: a caller (e.g. the dashboard's
+		// chat quick-link) links here with ?highlight=<field>. We point a short
+		// finite pulse at the nearest visible control — not the whole field row —
+		// and only scroll if it isn't already on screen. The parameter is left in
+		// the URL as-is afterwards.
+		if (cfg.highlight) {
+			var target = document.querySelector('[name="' + cfg.highlight + '"]') ||
+				document.getElementById(cfg.highlight);
+			if (target) {
+				// The clickable control itself (e.g. the switch), not its label/
+				// description block.
+				var wrap = target.closest('.ovebotai-switch') ||
+					target.closest('.ovebotai-field') || target;
+
+				var rect = wrap.getBoundingClientRect();
+				var vh   = window.innerHeight || document.documentElement.clientHeight;
+				// The fixed #wpadminbar (32px, 46px on mobile) sits on top of the
+				// viewport in every wp-admin screen — without this, a field just
+				// below it reads as "in viewport" by rect math while actually
+				// being covered by the bar, so the pulse would fire off-screen.
+				var adminBar  = document.getElementById('wpadminbar');
+				var topOffset = adminBar ? adminBar.getBoundingClientRect().bottom : 0;
+				if (rect.top < topOffset || rect.bottom > vh) {
+					wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+				}
+
+				// Finite pulse (CSS caps it at 3 repetitions); remove afterwards so
+				// it can be retriggered and doesn't linger as state.
+				wrap.classList.add('ovebotai-pulse');
+				setTimeout(function () { wrap.classList.remove('ovebotai-pulse'); }, 3000);
+			}
+		}
+
 		// ── Unsaved changes guard ────────────────────────────────────────────
 		// No change-tracking state to keep in sync — just diff the form's
 		// current serialization against its initial one at the moment the
@@ -75,7 +109,36 @@
 		// ── Toggle chat status label ─────────────────────────────────────────
 
 		$('#oveChatStatus').on('change', function () {
-			$('#oveChatStatusLbl').text($(this).is(':checked') ? 'Enabled' : 'Disabled');
+			$('#oveChatStatusLbl').text($(this).is(':checked') ? cfg.i18n.enabled : cfg.i18n.disabled);
+		});
+
+		// ── Toggle order-API status label (task 5) ───────────────────────────
+
+		$('#oveOrderApiStatus').on('change', function () {
+			$('#oveOrderApiStatusLbl').text($(this).is(':checked') ? cfg.i18n.enabled : cfg.i18n.disabled);
+		});
+
+		// ── Toggle product-recommendation status label ───────────────────────
+
+		$('#oveProductsEnabled').on('change', function () {
+			$('#oveProductsEnabledLbl').text($(this).is(':checked') ? cfg.i18n.enabled : cfg.i18n.disabled);
+		});
+
+		// ── Toggle built-in product-feed status label + Feed URL visibility ──
+
+		var $oveFeedUrlField = $('#oveFeedUrlField');
+		if (!$('#oveProductsSourceBuiltin').is(':checked')) {
+			$oveFeedUrlField.hide();
+		}
+
+		$('#oveProductsSourceBuiltin').on('change', function () {
+			var checked = $(this).is(':checked');
+			$('#oveProductsSourceBuiltinLbl').text(checked ? cfg.i18n.enabled : cfg.i18n.disabled);
+			if (checked) {
+				$oveFeedUrlField.fadeIn(200);
+			} else {
+				$oveFeedUrlField.fadeOut(200);
+			}
 		});
 
 		// ── Appearance panel toggle ──────────────────────────────────────────
@@ -148,18 +211,6 @@
 					} else {
 						showNotice(false, (resp.data && resp.data.message) || cfg.i18n.error);
 					}
-				})
-				.always(function () { $btn.prop('disabled', false); });
-		});
-
-		// ── Clear feed cache ─────────────────────────────────────────────────
-
-		$('.ovebotai-clear-cache-btn').on('click', function () {
-			if (!confirm(cfg.i18n.confirmClearCache)) return;
-			var $btn = $(this).prop('disabled', true);
-			$.post(cfg.ajaxUrl, { action: 'ovebotai_clear_cache', nonce: cfg.nonce })
-				.done(function (resp) {
-					showNotice(resp.success, resp.data && resp.data.message ? resp.data.message : cfg.i18n.error);
 				})
 				.always(function () { $btn.prop('disabled', false); });
 		});

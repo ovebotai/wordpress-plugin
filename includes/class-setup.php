@@ -14,7 +14,13 @@ class Ovebotai_Setup {
 	}
 
 	private function init() {
-		add_action( 'wp_ajax_ovebotai_sync', array( $this, 'ajax_sync' ) );
+		// Wizard "Website pages" step — syncs the checked pages to the knowledge
+		// base on its own "Next", reporting per-page results (item 10).
+		add_action( 'wp_ajax_ovebotai_sync_kb', array( $this, 'ajax_sync_kb' ) );
+		// Wizard "Finish" step — pushes the remaining config (widget, product
+		// source, order-lookup credentials) and marks setup complete. No longer
+		// re-syncs the knowledge base, which the page step now handles (item 10).
+		add_action( 'wp_ajax_ovebotai_sync', array( $this, 'ajax_finish' ) );
 		add_action( 'save_post_page', array( $this, 'maybe_schedule_resync' ), 10, 2 );
 		add_action( 'ovebotai_resync_single_kb_page', array( $this, 'resync_single_kb_page' ) );
 	}
@@ -52,121 +58,123 @@ class Ovebotai_Setup {
 	}
 
 	/**
-	 * Step 4: send pages to knowledge-base + PUT setup, mark complete.
+	 * Wizard "Website pages" step: sync the currently-checked pages to the
+	 * knowledge base and report the outcome per page, so the wizard can
+	 * auto-uncheck anything that didn't go active and show an inline message at
+	 * that item (item 10). Always an HTTP-level success — the sync ran; the
+	 * per-page detail in the payload is what the UI reacts to.
 	 */
-	public function ajax_sync() {
+	public function ajax_sync_kb() {
 		check_ajax_referer( 'ovebotai_setup', 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) ) );
 		}
 
-		$page_ids = array_map( 'absint', (array) ( $_POST['page_ids'] ?? array() ) );
+		$page_ids = array_map( 'absint', (array) ( $_POST['page_ids'] ?? array() ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified above via check_ajax_referer
 		update_option( 'ovebotai_kb_page_ids', $page_ids, false );
 
-		$kb_result = $this->sync_kb_pages( $page_ids, true );
-		$errors    = $kb_result['errors'];
-		$warnings  = $kb_result['warnings'];
+		$result = $this->sync_kb_pages( $page_ids, true );
 
-		// ── Setup: widget + order info + feed (if WooCommerce is active) ─────
-		//
-		// Delegates to Ovebotai::resync_setup() (also used by the Settings-save
-		// flow and the reactivation resync) rather than building its own PUT
-		// payload — this used to be a separate, drifted copy that still had
-		// order_info.enabled hardcoded true and skipped it entirely disabling
-		// products when WooCommerce was inactive, and never recorded whether
-		// this sync included WooCommerce (see Ovebotai::needs_woocommerce_resync()).
+		$clean = empty( $result['failed'] ) && empty( $result['quota_blocked'] );
 
-		if ( ! Ovebotai::resync_setup() ) {
-			$errors[] = __( 'Could not sync feed and order settings with Ovebot.ai.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' );
-		}
-
-		// ── Finalize ─────────────────────────────────────────────────────────
-
-		if ( empty( $errors ) ) {
-			update_option( 'ovebotai_chat_status',   '1', false );
-			update_option( 'ovebotai_setup_complete', '1', false );
-
-			$message = __( 'Setup complete!', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' );
-			if ( $warnings ) {
-				$message .= '<br>' . implode( '<br>', $warnings );
-			}
-
-			wp_send_json_success( array( 'message' => $message, 'warnings' => $warnings ) );
-		} else {
-			$message = implode( '<br>', array_merge( $errors, $warnings ) );
-			wp_send_json_error( array(
-				'message'  => $message,
-				'errors'   => $errors,
-				'warnings' => $warnings,
-			) );
-		}
+		wp_send_json_success( array(
+			'clean'         => $clean,
+			'ok'            => array_map( 'strval', array_keys( $result['ok'] ) ),
+			'failed'        => $result['failed'],        // page_id => inline message
+			'quota_blocked' => $result['quota_blocked'], // page_id => static "limit reached" message
+			'quota_message' => $result['quota_message'], // raw API quota text, for the summary notice
+		) );
 	}
 
 	/**
-	 * Create/update ($active = true) or soft-deactivate ($active = false) the
-	 * KB entry for each given page. We always fetch the current remote entry
-	 * list first (both on first connect and on every later save) and validate
-	 * against it:
-	 *  - a page with a local _ovebotai_kb_id whose id is no longer present
-	 *    remotely is treated as never-synced (the mapping is stale — e.g. the
-	 *    entry was deleted on Ovebot's side) and falls through to creation;
-	 *  - a page with no local id (mapping never saved, or just invalidated
-	 *    above) is matched against a remote entry with an identical title
-	 *    before creating a new one, so a title collision is treated as the
-	 *    same entry even without a locally stored id.
-	 * Either way, a resolved id is PUT to instead of re-created, so re-running
-	 * setup/reconnect (or an unrelated settings save) never duplicates entries.
-	 *
-	 * Ovebot's API has no DELETE for knowledge-base entries — only an
-	 * `is_active` flag (.tasks/oauth-api.md §5) — so unchecking a page
-	 * deactivates its entry rather than removing it. The _ovebotai_kb_id
-	 * mapping is kept either way, so re-checking the page later reactivates
-	 * the same entry instead of creating a duplicate.
-	 *
-	 * Returns array( 'errors' => [...], 'warnings' => [...] ) — human-readable
-	 * strings. 'errors' are actual sync failures (API call rejected); 'warnings'
-	 * are pages that were intentionally skipped (unpublished / not enough text)
-	 * and shouldn't block the overall save from being reported as a success.
+	 * Wizard "Finish" step: push the remaining configuration (widget appearance/
+	 * language, the product-source choice, order-lookup credentials + feed) in a
+	 * single call and mark setup complete. Knowledge-base syncing already happened
+	 * on the "Website pages" step, so it is not repeated here (item 10).
 	 */
-	public function sync_kb_pages( array $page_ids, bool $active = true ): array {
-		if ( ! $page_ids ) return array( 'errors' => array(), 'warnings' => array() );
+	public function ajax_finish() {
+		check_ajax_referer( 'ovebotai_setup', 'nonce' );
 
-		$oauth    = Ovebotai_OAuth::instance();
-		$errors   = array();
-		$warnings = array();
-
-		$remote_entries = $this->fetch_remote_kb_entries();
-		$remote_by_id    = array(); // id    => title
-		$remote_by_title = array(); // title => id
-		foreach ( $remote_entries as $entry ) {
-			if ( ! isset( $entry['id'], $entry['title'] ) ) continue;
-			$remote_by_id[ (int) $entry['id'] ]          = (string) $entry['title'];
-			$remote_by_title[ (string) $entry['title'] ] = (int) $entry['id'];
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) ) );
 		}
 
+		// The product-source choice is only committed now — the wizard keeps it
+		// local while stepping through, pushing nothing before Finish.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified above via check_ajax_referer
+		if ( isset( $_POST['products_source'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified above via check_ajax_referer
+			$source = 'own' === sanitize_text_field( wp_unslash( $_POST['products_source'] ) ) ? 'own' : 'auto';
+			update_option( 'ovebotai_products_source', $source, false );
+		}
+
+		if ( ! Ovebotai::resync_setup() ) {
+			wp_send_json_error( array(
+				'message' => __( 'Could not sync settings with Ovebot.ai.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+			) );
+		}
+
+		update_option( 'ovebotai_chat_status',    '1', false );
+		update_option( 'ovebotai_setup_complete', '1', false );
+
+		wp_send_json_success( array( 'message' => __( 'Setup complete!', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) ) );
+	}
+
+	/**
+	 * Create/update ($active = true) or soft-deactivate ($active = false) the KB
+	 * entry for each given page, keyed by a deterministic slug 'page-{post_id}'
+	 * (item 6).
+	 *
+	 * The API does NOT upsert by slug on create, so we pull the agent's whole KB
+	 * once (fetch_remote_slug_map()) and match locally: a page whose slug already
+	 * exists remotely is PUT to that id; a page with no match is POSTed with the
+	 * slug set, so the next sync matches it. No local _ovebotai_kb_id map is kept.
+	 *
+	 * source_url is the page's public permalink (item 7), so the entry links back
+	 * to the live page on the website.
+	 *
+	 * Returns a per-page breakdown:
+	 *   array(
+	 *     'ok'            => array( page_id => title ),   // successfully synced
+	 *     'failed'        => array( page_id => message ), // hard API error OR an
+	 *                                                     // intentional skip
+	 *                                                     // (unpublished / too short)
+	 *     'quota_blocked' => array( page_id => message ), // rejected purely by the
+	 *                                                     // KB quota on a create
+	 *     'quota_message' => string,                      // the API's own quota
+	 *                                                     // message, once, verbatim
+	 *   )
+	 * The caller treats anything not in 'ok' uniformly — auto-unchecking it and
+	 * showing its message inline. An update to an existing entry does not consume
+	 * quota, so kb_limit_reached only ever surfaces for genuinely new entries; the
+	 * batch is never aborted early (item 8).
+	 */
+	public function sync_kb_pages( array $page_ids, bool $active = true ): array {
+		$empty = array( 'ok' => array(), 'failed' => array(), 'quota_blocked' => array(), 'quota_message' => '' );
+		if ( ! $page_ids ) return $empty;
+
+		$oauth         = Ovebotai_OAuth::instance();
+		$ok            = array();
+		$failed        = array();
+		$quota_blocked = array();
+		$quota_message = '';
+
+		// The API does NOT upsert by slug on create, so we resolve existing entries
+		// ourselves: pull the agent's whole knowledge base once, index it by slug,
+		// then update the matching id in place or insert a fresh entry (item 6).
+		$remote_by_slug = $this->fetch_remote_slug_map();
+
 		foreach ( $page_ids as $page_id ) {
-			$kb_id = (int) get_post_meta( $page_id, '_ovebotai_kb_id', true );
-
-			// Locally mapped id no longer exists remotely — stale mapping,
-			// treat the page as never-synced.
-			if ( $kb_id && ! isset( $remote_by_id[ $kb_id ] ) ) {
-				$kb_id = 0;
-			}
-
-			// Never synced (or just invalidated above) and now being
-			// unchecked — nothing to deactivate.
-			if ( ! $active && ! $kb_id ) continue;
-
 			$post = get_post( $page_id );
 			if ( ! $post ) continue;
 
 			if ( 'publish' !== $post->post_status ) {
-				$warnings[] = sprintf(
-					/* translators: %s: page title */
-					__( 'Skipped "%s" — page is not published.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
-					esc_html( get_the_title( $post ) )
-				);
+				// Only report it when activating — deactivating an unpublished page
+				// is a no-op with nothing to say.
+				if ( $active ) {
+					$failed[ $page_id ] = __( 'Page is not published.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' );
+				}
 				continue;
 			}
 
@@ -184,79 +192,85 @@ class Ovebotai_Setup {
 			// too little text (e.g. a short title and no plain-text content, common
 			// with page builders that don't store text in post_content).
 			if ( mb_strlen( $body ) < 10 ) {
-				$warnings[] = sprintf(
-					/* translators: %s: page title */
-					__( 'Skipped "%s" — not enough text content to sync (minimum 10 characters).', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
-					esc_html( $title )
-				);
+				if ( $active ) {
+					$failed[ $page_id ] = __( 'Not enough text content to sync (minimum 10 characters).', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' );
+				}
 				continue;
 			}
 
-			// No usable id — check for a remote entry with the same title
-			// before creating a new one.
-			if ( $active && ! $kb_id && isset( $remote_by_title[ $title ] ) ) {
-				$kb_id = $remote_by_title[ $title ];
-				update_post_meta( $page_id, '_ovebotai_kb_id', $kb_id );
-			}
-
-			$payload = array(
-				'title'     => $title,
-				'body'      => $body,
-				'is_active' => $active,
+			// Deterministic slug from the resource id (item 6); source_url = the
+			// public permalink (item 7).
+			$slug = 'page-' . (int) $page_id;
+			$base = array(
+				'title'      => $title,
+				'body'       => $body,
+				'source_url' => get_permalink( $page_id ),
+				'is_active'  => $active,
 			);
-			$result = null;
 
-			if ( $kb_id ) {
-				$result = $oauth->api_request( 'PUT', $oauth->kb_api_path() . '/' . $kb_id, $payload );
-				// Entry gone on Ovebot's side — recreate it below (only when activating).
+			$existing_id = isset( $remote_by_slug[ $slug ] ) ? (int) $remote_by_slug[ $slug ] : 0;
+
+			// Never synced and now being unchecked — nothing to deactivate.
+			if ( ! $active && ! $existing_id ) continue;
+
+			$result    = null;
+			$is_create = false;
+
+			if ( $existing_id ) {
+				// Update in place — target the id, no need to resend the slug.
+				$result = $oauth->api_request( 'PUT', $oauth->kb_api_path() . '/' . $existing_id, $base );
+				// Entry gone on Ovebot's side — fall through to a create (when activating).
 				if ( $active && 404 === ( $result['status'] ?? 0 ) ) {
-					$kb_id = 0;
+					$existing_id = 0;
 				}
 			}
 
-			if ( $active && ! $kb_id ) {
-				$result = $oauth->api_request( 'POST', $oauth->kb_api_path(), $payload );
-				$new_id = $this->extract_kb_id( $result['body'] ?? array() );
+			if ( $active && ! $existing_id ) {
+				// Insert — send the slug so future syncs match this entry.
+				$is_create = true;
+				$result    = $oauth->api_request( 'POST', $oauth->kb_api_path(), $base + array( 'slug' => $slug ) );
+				$new_id    = isset( $result['body']['id'] ) ? (int) $result['body']['id'] : 0;
 				if ( $new_id ) {
-					update_post_meta( $page_id, '_ovebotai_kb_id', $new_id );
+					$remote_by_slug[ $slug ] = $new_id;
 				}
 			}
 
 			if ( ( $result['status'] ?? 0 ) < 200 || ( $result['status'] ?? 0 ) >= 300 ) {
-				// kb_limit_reached means the workspace's knowledge-base quota is
-				// full — not a per-page failure. Stop sending further pages and
-				// don't report it as an error; whatever synced up to now stands.
-				if ( 'kb_limit_reached' === ( $result['body']['error']['code'] ?? '' ) ) {
-					$warnings[] = $result['body']['error']['message'];
-					break;
+				// A create blocked purely by the KB quota is surfaced separately so
+				// the wizard can show the account's own quota message. An update to an
+				// existing entry never consumes quota, so this only fires for genuine
+				// creates; the batch keeps going regardless (item 8).
+				if ( $is_create && 'kb_limit_reached' === ( $result['body']['error']['code'] ?? '' ) ) {
+					if ( '' === $quota_message ) {
+						$quota_message = (string) ( $result['body']['error']['message'] ?? '' );
+					}
+					$quota_blocked[ $page_id ] = __( 'Skipped — knowledge base limit reached.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' );
+					continue;
 				}
 
-				$errors[] = sprintf(
-					/* translators: %s: page title */
-					__( 'Could not update knowledge base entry for "%s".', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
-					esc_html( $title )
+				$failed[ $page_id ] = sprintf(
+					/* translators: %s: the API's error reason */
+					__( 'Sync failed: %s', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+					Ovebotai_OAuth::error_message( $result )
 				);
+				continue;
 			}
+
+			$ok[ $page_id ] = $title;
 		}
 
-		return array( 'errors' => $errors, 'warnings' => $warnings );
+		return array( 'ok' => $ok, 'failed' => $failed, 'quota_blocked' => $quota_blocked, 'quota_message' => $quota_message );
 	}
 
-	// Per .tasks/oauth-api.md §5: POST .../knowledge-base responds with the
-	// created entry at the top level, e.g. {"id": 12, "slug": "...", ...}.
-	private function extract_kb_id( array $body ): int {
-		return isset( $body['id'] ) ? (int) $body['id'] : 0;
-	}
-
-	// Pages through GET .../knowledge-base (paginated, max per_page=100 per
-	// .tasks/oauth-api.md §5) and returns every remote entry (id + title),
-	// so callers can validate local ids and match on title.
-	private function fetch_remote_kb_entries(): array {
-		$oauth     = Ovebotai_OAuth::instance();
-		$all       = array();
-		$page      = 1;
-		$fetched   = 0;
-		$total     = 0;
+	// Pulls the agent's whole knowledge base (paginated, max per_page=100) and
+	// returns a slug => id map, so sync_kb_pages() can update an existing entry in
+	// place instead of creating a duplicate (the API does not upsert by slug).
+	private function fetch_remote_slug_map(): array {
+		$oauth   = Ovebotai_OAuth::instance();
+		$map     = array();
+		$page    = 1;
+		$fetched = 0;
+		$total   = 0;
 
 		do {
 			$result = $oauth->api_request( 'GET', $oauth->kb_api_path() . '?' . http_build_query( array(
@@ -267,13 +281,17 @@ class Ovebotai_Setup {
 			if ( ( $result['status'] ?? 0 ) < 200 || ( $result['status'] ?? 0 ) >= 300 ) break;
 
 			$entries = (array) ( $result['body']['entries'] ?? array() );
-			$all     = array_merge( $all, $entries );
+			foreach ( $entries as $entry ) {
+				if ( isset( $entry['slug'], $entry['id'] ) ) {
+					$map[ (string) $entry['slug'] ] = (int) $entry['id'];
+				}
+			}
 
 			$total    = (int) ( $result['body']['total'] ?? 0 );
 			$fetched += count( $entries );
 			$page++;
 		} while ( $entries && $fetched < $total );
 
-		return $all;
+		return $map;
 	}
 }

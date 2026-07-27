@@ -15,6 +15,11 @@ $ovebotai_wc_active   = Ovebotai::woocommerce_active();
 // refresh token would never get discovered until some later action.
 $ovebotai_is_connected = $ovebotai_oauth->is_connected_live();
 
+// Product-source choice + the connected agent's settings page on Ovebot.ai
+// (linked from the "own feed" option).
+$ovebotai_products_source    = get_option( 'ovebotai_products_source', 'auto' );
+$ovebotai_agent_settings_url = $ovebotai_oauth->get_agent_settings_url();
+
 if ( ! $ovebotai_is_connected ) {
 	// Not connected — Settings assumes a working OAuth connection throughout
 	// (KB sync, feed/order-info push, etc.), so send the user straight to the
@@ -36,6 +41,7 @@ if ( ! $ovebotai_is_connected ) {
 				<img src="<?php echo esc_url( OVEBOTAI_URL . 'admin/img/logo.png' ); ?>" alt="Ovebot.ai" height="32">
 			</a>
 			<h1><?php esc_html_e( 'Settings', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></h1>
+			<?php require OVEBOTAI_DIR . 'admin/views/partials/version-badge.php'; ?>
 		</div>
 		<?php require OVEBOTAI_DIR . 'admin/views/partials/connection-badge.php'; ?>
 	</div>
@@ -90,9 +96,57 @@ if ( ! $ovebotai_is_connected ) {
 			</div>
 			<div class="ovebotai-fieldset-body">
 
-				<p class="description ovebotai-fieldset-intro"><?php esc_html_e( 'Ovebot.ai reads this URL periodically to keep your AI agent\'s product recommendations up to date with your catalog (stock, price, availability).', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></p>
+				<!-- Product-recommendation master switch. Saved locally and mirrored
+				     into the account's products.enabled on Save; also reconciled back
+				     from the account on each dashboard load (sync_settings()). -->
+				<div class="ovebotai-field ovebotai-field-switch">
+					<label><?php esc_html_e( 'Recommend products', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></label>
+					<div class="ovebotai-switch-wrap">
+						<label class="ovebotai-switch">
+							<input type="checkbox" name="products_enabled" id="oveProductsEnabled" value="1" <?php checked( Ovebotai::products_enabled() ); ?>>
+							<span class="ovebotai-switch-slider"></span>
+						</label>
+						<span class="ovebotai-switch-lbl" id="oveProductsEnabledLbl">
+							<?php echo Ovebotai::products_enabled() ? esc_html__( 'Enabled', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) : esc_html__( 'Disabled', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
+						</span>
+					</div>
+					<p class="description"><?php esc_html_e( 'When off, your AI agent stops suggesting products to customers in the chat.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></p>
+				</div>
 
-				<div class="ovebotai-field">
+				<!-- Product source (item 10): built-in automatic feed vs. products
+				     managed directly on Ovebot.ai. When off, the products section
+				     is omitted from the API push entirely (leaving Ovebot.ai's copy
+				     untouched) and the local feed endpoint is served as forbidden. -->
+				<div class="ovebotai-field ovebotai-field-switch">
+					<label><?php esc_html_e( 'Use the built-in product feed', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></label>
+					<div class="ovebotai-switch-wrap">
+						<label class="ovebotai-switch">
+							<input type="checkbox" name="products_source_builtin" id="oveProductsSourceBuiltin" value="1" <?php checked( 'own' !== $ovebotai_products_source ); ?>>
+							<span class="ovebotai-switch-slider"></span>
+						</label>
+						<span class="ovebotai-switch-lbl" id="oveProductsSourceBuiltinLbl">
+							<?php echo 'own' !== $ovebotai_products_source ? esc_html__( 'Enabled', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) : esc_html__( 'Disabled', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
+						</span>
+					</div>
+					<p class="description">
+						<?php
+						if ( $ovebotai_agent_settings_url ) {
+							printf(
+								/* translators: %s: link to the agent's product settings on Ovebot.ai, shown as the raw URL */
+								wp_kses_post( __( 'When off, our own feed URL stops working (returns Forbidden) and Ovebot.ai won\'t be told about it. If you have a custom feed, configure it directly at: %s', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) ),
+								sprintf(
+									'<a href="%1$s" target="_blank" rel="noopener noreferrer">%1$s</a>',
+									esc_url( $ovebotai_agent_settings_url )
+								)
+							);
+						} else {
+							esc_html_e( 'When off, our own feed URL stops working (returns Forbidden) and Ovebot.ai won\'t be told about it. Set up a custom feed directly in your Ovebot.ai account.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' );
+						}
+						?>
+					</p>
+				</div>
+
+				<div class="ovebotai-field" id="oveFeedUrlField">
 					<label><?php esc_html_e( 'Feed URL', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></label>
 					<div class="ovebotai-url-row">
 						<input type="text" class="regular-text ovebotai-readonly-url" id="oveFeedUrl"
@@ -104,13 +158,7 @@ if ( ! $ovebotai_is_connected ) {
 							<span class="dashicons dashicons-image-rotate" aria-hidden="true"></span>
 						</button>
 					</div>
-				</div>
-
-				<div class="ovebotai-field">
-					<button type="button" class="button ovebotai-clear-cache-btn">
-						<?php esc_html_e( 'Clear feed cache', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
-					</button>
-					<p class="description"><?php esc_html_e( 'The feed is cached for performance. Clear it after major catalog changes.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Ovebot.ai reads this URL periodically to keep your AI agent\'s product recommendations up to date with your catalog (stock, price, availability).', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></p>
 				</div>
 
 			</div>
@@ -125,6 +173,22 @@ if ( ! $ovebotai_is_connected ) {
 			<div class="ovebotai-fieldset-body">
 
 				<p class="description ovebotai-fieldset-intro"><?php esc_html_e( 'Ovebot.ai calls this endpoint, authenticated with the credentials below, so your AI agent can answer "Where is my order?" questions with live tracking info.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></p>
+
+				<!-- Order-lookup master switch (task 5). Saved locally and mirrored
+				     into the account's order_info.enabled on Save. -->
+				<div class="ovebotai-field ovebotai-field-switch">
+					<label><?php esc_html_e( 'Enable order tracking', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></label>
+					<div class="ovebotai-switch-wrap">
+						<label class="ovebotai-switch">
+							<input type="checkbox" name="order_api_status" id="oveOrderApiStatus" value="1" <?php checked( Ovebotai::order_api_enabled() ); ?>>
+							<span class="ovebotai-switch-slider"></span>
+						</label>
+						<span class="ovebotai-switch-lbl" id="oveOrderApiStatusLbl">
+							<?php echo Ovebotai::order_api_enabled() ? esc_html__( 'Enabled', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ) : esc_html__( 'Disabled', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
+						</span>
+					</div>
+					<p class="description"><?php esc_html_e( 'When off, your AI agent stops answering order-status questions and this endpoint returns 403.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></p>
+				</div>
 
 				<div class="ovebotai-field">
 					<label><?php esc_html_e( 'Endpoint URL', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></label>
@@ -169,58 +233,6 @@ if ( ! $ovebotai_is_connected ) {
 			</div>
 		</div>
 
-		<!-- ── Delivery estimate ────────────────────────────────────────── -->
-		<div class="ovebotai-fieldset">
-			<div class="ovebotai-fieldset-legend">
-				<span class="dashicons dashicons-clock" aria-hidden="true"></span>
-				<?php esc_html_e( 'Delivery estimate', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?>
-			</div>
-			<div class="ovebotai-fieldset-body">
-
-				<p class="description ovebotai-fieldset-intro"><?php esc_html_e( 'Your AI agent uses these ranges to answer "When will my order arrive?" - counted in business days, Sundays excluded. Set a realistic min–max range for each of the three order situations below.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></p>
-
-				<?php
-				$ovebotai_delivery_fields = array(
-					array(
-						'shipped',
-						__( 'Orders that have already shipped', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
-						__( 'Counted from the day the order was shipped, until it reaches the customer.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
-						1,
-						2,
-					),
-					array(
-						'instock',
-						__( 'New orders - every item in stock', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
-						__( 'Counted from the day the order was placed - nothing to wait on before it ships.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
-						2,
-						4,
-					),
-					array(
-						'oos',
-						__( 'New orders - at least one item out of stock', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
-						__( 'Counted from the day the order was placed - includes the wait for restock before it can ship.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
-						5,
-						10,
-					),
-				);
-				foreach ( $ovebotai_delivery_fields as list( $ovebotai_key, $ovebotai_label, $ovebotai_help, $ovebotai_dmin, $ovebotai_dmax ) ) : ?>
-				<div class="ovebotai-field ovebotai-field-delivery">
-					<label><?php echo esc_html( $ovebotai_label ); ?></label>
-					<div class="ovebotai-delivery-inputs">
-						<input type="number" name="days_<?php echo esc_attr( $ovebotai_key ); ?>_min" class="small-text"
-							value="<?php echo esc_attr( Ovebotai_Settings::get_delivery( 'days_' . $ovebotai_key . '_min', $ovebotai_dmin ) ); ?>" min="0" max="60">
-						<span class="ovebotai-dash">&ndash;</span>
-						<input type="number" name="days_<?php echo esc_attr( $ovebotai_key ); ?>_max" class="small-text"
-							value="<?php echo esc_attr( Ovebotai_Settings::get_delivery( 'days_' . $ovebotai_key . '_max', $ovebotai_dmax ) ); ?>" min="0" max="60">
-						<span class="ovebotai-unit"><?php esc_html_e( 'business days', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></span>
-					</div>
-					<p class="description"><?php echo esc_html( $ovebotai_help ); ?></p>
-				</div>
-				<?php endforeach; ?>
-
-			</div>
-		</div>
-
 		<?php else : ?>
 		<div class="ovebotai-fieldset">
 			<div class="ovebotai-fieldset-body">
@@ -254,10 +266,13 @@ if ( ! $ovebotai_is_connected ) {
 						<div class="ovebotai-field">
 							<label for="ove_accent_color"><?php esc_html_e( 'Accent colour', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></label>
 							<div class="ovebotai-color-wrap">
-								<input type="color" id="ove_color_picker" value="<?php echo esc_attr( $ovebotai_widget['accent_color'] ?? '#2271B1' ); ?>">
+								<!-- Task 4: when no accent colour is set, both the swatch and the
+								     text placeholder show Ovebot's default brand colour (#615ED6),
+								     which is what the widget itself falls back to. -->
+								<input type="color" id="ove_color_picker" value="<?php echo esc_attr( $ovebotai_widget['accent_color'] ?? '#615ED6' ); ?>">
 								<input type="text" name="widget_accent_color" id="ove_accent_color" class="regular-text"
 									value="<?php echo esc_attr( $ovebotai_widget['accent_color'] ?? '' ); ?>"
-									placeholder="#2271B1" maxlength="7">
+									placeholder="#615ED6" maxlength="7">
 							</div>
 						</div>
 
@@ -309,6 +324,13 @@ if ( ! $ovebotai_is_connected ) {
 							</div>
 						</div>
 						<p class="description"><?php esc_html_e( 'Raise the offset to sit the widget above another floating button, e.g. WhatsApp.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></p>
+					</div>
+
+					<div class="ovebotai-field ovebotai-field-full">
+						<label for="ove_z_index"><?php esc_html_e( 'Stacking order (z-index)', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></label>
+						<input type="number" name="widget_z_index" id="ove_z_index" class="regular-text"
+							value="<?php echo esc_attr( $ovebotai_widget['z_index'] ?? '' ); ?>" placeholder="2147483644">
+						<p class="description"><?php esc_html_e( 'Only change this if the chat widget appears behind another element on your site. Leave empty to use the default.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></p>
 					</div>
 
 					<div class="ovebotai-appearance-subhead"><?php esc_html_e( 'Messages', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ); ?></div>

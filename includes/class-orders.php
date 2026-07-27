@@ -43,7 +43,20 @@ class Ovebotai_Orders {
 	const AUTH_FAIL_MAX_BLOCK  = 2 * HOUR_IN_SECONDS;
 	const AUTH_FAIL_RECORD_TTL = 6 * HOUR_IN_SECONDS;
 
-	public function check_auth(): bool {
+	public function check_auth() {
+		// Task 3 + task 5: order lookup sits behind two master switches - the
+		// on-site chat (off => the whole integration is dormant) and the dedicated
+		// order-API switch. Either being off returns an explicit 403, kept apart
+		// from the auth-failure path below (which stays a plain false and feeds the
+		// rate limiter). No point spending a bucket slot on a feature that's off.
+		if ( ! Ovebotai::chat_enabled() || ! Ovebotai::order_api_enabled() ) {
+			return new WP_Error(
+				'ovebotai_orders_disabled',
+				__( 'Order lookup is currently disabled.', 'ovebot-ai-chatbot-live-chat-ai-sales-agent-for-woocommerce' ),
+				array( 'status' => 403 )
+			);
+		}
+
 		$ip = $this->client_ip();
 		if ( $this->is_rate_limited( $ip ) ) {
 			// Still counts as a failure — see the extension logic above.
@@ -461,56 +474,11 @@ class Ovebotai_Orders {
 		);
 	}
 
+	// Delivery estimate ranges were removed (item 11) - the merchant-configured
+	// business-day windows never matched reality closely enough to be useful,
+	// so this now just tells the AI agent there's no estimate to give.
 	private function get_estimated_delivery( WC_Order $order ): ?string {
-		$status = $order->get_status();
-
-		$date_created = $order->get_date_created();
-		if ( ! $date_created ) return null;
-		$date_str = $date_created->format( 'Y-m-d H:i:s' );
-
-		if ( in_array( $status, array( 'completed', 'shipped' ), true ) ) {
-			$min = (int) get_option( 'ovebotai_days_shipped_min', 1 );
-			$max = (int) get_option( 'ovebotai_days_shipped_max', 2 );
-			$from = $this->add_business_days( $date_str, $min );
-			$to   = $this->add_business_days( $date_str, $max );
-			return $from === $to ? $from : $from . ' - ' . $to;
-		}
-
-		if ( in_array( $status, array( 'processing', 'on-hold' ), true ) ) {
-			$has_oos = false;
-			foreach ( $order->get_items() as $item ) {
-				$product = $item->get_product();
-				if ( $product && ! $product->is_in_stock() ) {
-					$has_oos = true;
-					break;
-				}
-			}
-
-			if ( $has_oos ) {
-				$min = (int) get_option( 'ovebotai_days_oos_min', 5 );
-				$max = (int) get_option( 'ovebotai_days_oos_max', 10 );
-			} else {
-				$min = (int) get_option( 'ovebotai_days_instock_min', 2 );
-				$max = (int) get_option( 'ovebotai_days_instock_max', 4 );
-			}
-
-			$from = $this->add_business_days( $date_str, $min );
-			$to   = $this->add_business_days( $date_str, $max );
-			return $from === $to ? $from : $from . ' - ' . $to;
-		}
-
 		return null;
-	}
-
-	private function add_business_days( string $date, int $days ): string {
-		$dt = new DateTime( $date );
-		while ( $days > 0 ) {
-			$dt->modify( '+1 day' );
-			if ( (int) $dt->format( 'N' ) !== 7 ) { // Skip Sunday.
-				$days--;
-			}
-		}
-		return $dt->format( 'Y-m-d' );
 	}
 
 	private function normalize_phone( string $phone ): string {
