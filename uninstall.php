@@ -36,6 +36,8 @@ $ovebotai_options = array(
 	'ovebotai_chat_status',
 	'ovebotai_order_api_enabled',
 	'ovebotai_products_enabled',
+	'ovebotai_order_api_confirmed',
+	'ovebotai_products_confirmed',
 	'ovebotai_widget',
 	'ovebotai_feed_hash',
 	'ovebotai_order_user',

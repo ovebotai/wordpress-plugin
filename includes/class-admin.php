@@ -17,6 +17,7 @@ class Ovebotai_Admin {
 		add_action( 'admin_menu',            array( $this, 'register_menu' ) );
 		add_action( 'admin_init',            array( $this, 'maybe_redirect_after_activation' ) );
 		add_action( 'admin_init',            array( $this, 'handle_oauth_return' ) );
+		add_action( 'admin_init',            array( $this, 'maybe_redirect_settings_view' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'admin_post_ovebotai_connect',    array( $this, 'action_connect' ) );
 		add_action( 'admin_post_ovebotai_disconnect', array( $this, 'action_disconnect' ) );
@@ -42,11 +43,11 @@ class Ovebotai_Admin {
 				<?php
 				printf(
 					/* translators: %s: link to the Ovebot.ai settings page */
-					wp_kses_post( __( 'WooCommerce was installed - the Ovebot.ai plugin needs additional configuration. Open its %s and click Save to enable the product feed and order tracking.', 'ovebotai' ) ),
+					wp_kses_post( __( 'WooCommerce was installed - the Ovebot.ai plugin needs additional configuration. Open its %s and click Save to enable the product feed and order tracking.', 'ovebot-ai-chatbot-sales-agent' ) ),
 					sprintf(
 						'<a href="%1$s">%2$s</a>',
 						esc_url( $settings_url ),
-						esc_html__( 'settings', 'ovebotai' )
+						esc_html__( 'settings', 'ovebot-ai-chatbot-sales-agent' )
 					)
 				);
 				?>
@@ -59,7 +60,7 @@ class Ovebotai_Admin {
 
 	public function plugin_action_links( array $links ): array {
 		$settings_link = '<a href="' . esc_url( admin_url( 'admin.php?page=ovebotai' ) ) . '">'
-			. esc_html__( 'Settings', 'ovebotai' ) . '</a>';
+			. esc_html__( 'Settings', 'ovebot-ai-chatbot-sales-agent' ) . '</a>';
 		array_unshift( $links, $settings_link );
 		return $links;
 	}
@@ -79,6 +80,39 @@ class Ovebotai_Admin {
 		exit;
 	}
 
+	// ── Settings view guard ──────────────────────────────────────────────────
+	//
+	// The Settings screen assumes a working OAuth connection throughout (feed /
+	// order-info push, credential regeneration), so a lapsed connection has to
+	// land on the dashboard's reconnect panel instead of a half-usable form.
+	// Handled here rather than inside the view: at admin_init nothing has been
+	// output yet, so this is a real HTTP redirect - from inside the template the
+	// only option left would be printing a <script>location.replace()</script>,
+	// which is exactly the kind of inline output that should never be emitted
+	// by hand.
+	//
+	// is_connected_live() costs one API call, but it's memoized on the OAuth
+	// singleton for the rest of the request, so the view and the connection
+	// badge reuse this one instead of firing their own.
+
+	public function maybe_redirect_settings_view() {
+		// Read-only view routing - no state change, no nonce to verify.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( empty( $_GET['page'] ) || 'ovebotai' !== $_GET['page'] ) return;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( empty( $_GET['view'] ) || 'settings' !== $_GET['view'] ) return;
+		if ( ! current_user_can( 'manage_options' ) ) return;
+
+		// Setup not finished yet - render_page() sends this to the wizard on its
+		// own, and the wizard has its own connect panel. Nothing to redirect.
+		if ( ! Ovebotai::is_setup_complete() ) return;
+
+		if ( Ovebotai_OAuth::instance()->is_connected_live() ) return;
+
+		wp_safe_redirect( add_query_arg( 'page', 'ovebotai', admin_url( 'admin.php' ) ) );
+		exit;
+	}
+
 	// ── Admin menu ───────────────────────────────────────────────────────────
 
 	public function register_menu() {
@@ -86,8 +120,8 @@ class Ovebotai_Admin {
 		// itself (slug "ovebotai") is unchanged, so every existing
 		// admin.php?page=ovebotai link/redirect keeps working as-is.
 		add_options_page(
-			__( 'Ovebot.ai', 'ovebotai' ),
-			__( 'Ovebot.ai', 'ovebotai' ),
+			__( 'Ovebot.ai', 'ovebot-ai-chatbot-sales-agent' ),
+			__( 'Ovebot.ai', 'ovebot-ai-chatbot-sales-agent' ),
 			'manage_options',
 			'ovebotai',
 			array( $this, 'render_page' )
@@ -98,7 +132,7 @@ class Ovebotai_Admin {
 
 	public function action_connect() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Permission denied.', 'ovebotai' ) );
+			wp_die( esc_html__( 'Permission denied.', 'ovebot-ai-chatbot-sales-agent' ) );
 		}
 		check_admin_referer( 'ovebotai_connect' );
 
@@ -146,7 +180,7 @@ class Ovebotai_Admin {
 
 	public function action_disconnect() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Permission denied.', 'ovebotai' ) );
+			wp_die( esc_html__( 'Permission denied.', 'ovebot-ai-chatbot-sales-agent' ) );
 		}
 		check_admin_referer( 'ovebotai_disconnect' );
 
@@ -162,7 +196,7 @@ class Ovebotai_Admin {
 
 	public function render_page() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Permission denied.', 'ovebotai' ) );
+			wp_die( esc_html__( 'Permission denied.', 'ovebot-ai-chatbot-sales-agent' ) );
 		}
 
 		if ( ! Ovebotai::is_setup_complete() ) {
@@ -224,15 +258,15 @@ class Ovebotai_Admin {
 					// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 					'highlight'    => isset( $_GET['highlight'] ) ? sanitize_key( wp_unslash( $_GET['highlight'] ) ) : '',
 					'i18n'       => array(
-						'saved'             => __( 'Settings saved.', 'ovebotai' ),
-						'saving'            => __( 'Saving…', 'ovebotai' ),
-						'error'             => __( 'An error occurred. Please try again.', 'ovebotai' ),
-						'confirmRegen'      => __( 'Regenerate API credentials? The current credentials will stop working immediately.', 'ovebotai' ),
-						'confirmRegenHash'  => __( 'Regenerate feed hash? The current feed URL will stop working.', 'ovebotai' ),
-						'copied'            => __( 'Copied!', 'ovebotai' ),
-						'copy'              => __( 'Copy', 'ovebotai' ),
-						'enabled'           => __( 'Enabled', 'ovebotai' ),
-						'disabled'          => __( 'Disabled', 'ovebotai' ),
+						'saved'             => __( 'Settings saved.', 'ovebot-ai-chatbot-sales-agent' ),
+						'saving'            => __( 'Saving…', 'ovebot-ai-chatbot-sales-agent' ),
+						'error'             => __( 'An error occurred. Please try again.', 'ovebot-ai-chatbot-sales-agent' ),
+						'confirmRegen'      => __( 'Regenerate API credentials? The current credentials will stop working immediately.', 'ovebot-ai-chatbot-sales-agent' ),
+						'confirmRegenHash'  => __( 'Regenerate feed hash? The current feed URL will stop working.', 'ovebot-ai-chatbot-sales-agent' ),
+						'copied'            => __( 'Copied!', 'ovebot-ai-chatbot-sales-agent' ),
+						'copy'              => __( 'Copy', 'ovebot-ai-chatbot-sales-agent' ),
+						'enabled'           => __( 'Enabled', 'ovebot-ai-chatbot-sales-agent' ),
+						'disabled'          => __( 'Disabled', 'ovebot-ai-chatbot-sales-agent' ),
 					),
 				) );
 			}
@@ -282,13 +316,13 @@ class Ovebotai_Admin {
 					// Arrows are appended by setup.js itself (as real Unicode
 					// characters, since .text() would render an HTML entity
 					// literally) - kept out of the translatable strings (item 1).
-					'next'                  => __( 'Next', 'ovebotai' ),
-					'sync'                  => __( 'Finish setup', 'ovebotai' ),
-					'retry'                 => __( 'Retry', 'ovebotai' ),
-					'updated'               => __( 'Updated', 'ovebotai' ),
-					'error'                 => __( 'An error occurred. Please try again.', 'ovebotai' ),
-					'noProducts'            => __( 'No published products found - your AI agent won\'t have any products to recommend yet.', 'ovebotai' ),
-					'productsWillBeIndexed' => __( 'products will be sent to your AI agent so it can recommend them to customers.', 'ovebotai' ),
+					'next'                  => __( 'Next', 'ovebot-ai-chatbot-sales-agent' ),
+					'sync'                  => __( 'Finish setup', 'ovebot-ai-chatbot-sales-agent' ),
+					'retry'                 => __( 'Retry', 'ovebot-ai-chatbot-sales-agent' ),
+					'updated'               => __( 'Updated', 'ovebot-ai-chatbot-sales-agent' ),
+					'error'                 => __( 'An error occurred. Please try again.', 'ovebot-ai-chatbot-sales-agent' ),
+					'noProducts'            => __( 'No published products found - your AI agent won\'t have any products to recommend yet.', 'ovebot-ai-chatbot-sales-agent' ),
+					'productsWillBeIndexed' => __( 'products will be sent to your AI agent so it can recommend them to customers.', 'ovebot-ai-chatbot-sales-agent' ),
 				),
 			) );
 		}

@@ -1,6 +1,6 @@
-=== Ovebot – AI Chatbot, Live Chat & AI Sales Agent for WooCommerce ===
+=== Ovebot – AI Chatbot & Sales Agent ===
 Contributors: ovesio
-Tags: ai chatbot, live chat, ai agent, ai sales agent, woocommerce
+Tags: chatbot, ai, live chat, customer support, woocommerce
 Requires at least: 5.9
 Tested up to: 7.0
 Requires PHP: 7.4
@@ -8,217 +8,281 @@ Stable tag: 1.0.0
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
-AI chatbot & live chat. Your AI agent recommends products and tracks orders 24/7. Free plan for the first 200 stores. No credit card.
+AI chat widget powered by Ovebot.ai. Answers from your content, recommends products, tracks orders. Free plan for first 200 stores. No credit card.
 
 == Description ==
 
-🤖 **Ovebot – The AI Chatbot That Actually Knows Your Store**
+🤖 **Ovebot — an AI chatbot that knows your store**
 
-Most chat plugins give you a box. Ovebot gives you an **AI sales agent** — one that has read your product catalog, your policies and your pages, and can hold a real conversation about them at 3 AM while you sleep.
+Ovebot adds an AI chat widget to your WordPress site. The AI answers questions using **your** content — the pages you choose, the documents you upload and, on a WooCommerce store, your live product catalog — and hands the conversation over to a human on your team whenever the visitor asks for one.
 
-Install the plugin, click **Start Free**, and in a couple of minutes your WordPress site has a live chat widget backed by an AI chatbot that answers customer questions, recommends products that are actually in stock, and tells shoppers exactly where their order is — with the real courier tracking number.
+Install the plugin, connect your Ovebot.ai account from the setup wizard, and the widget goes live. There are no API keys to copy and no scripts to paste into your theme.
 
-No API keys. No copy-pasting scripts. No credit card to start.
+**This plugin does not require WooCommerce.** The chat widget, the knowledge base and the live-chat handover work on any WordPress site — a blog, an agency site, a booking site. If WooCommerce *is* installed, two extra features become available: product recommendations from your live catalog, and order-status lookup inside the chat.
 
-## 💸 Every Unanswered Question Is a Lost Sale
+The AI processing itself runs on the Ovebot.ai service, which requires an account — see **External services** below for exactly what is sent and when.
 
-Your visitors ask the same things over and over: *Do you have this in blue? Is it in stock? Where's my order? What's your return policy?* Every one of them that goes unanswered walks away.
+= 💬 What the AI can do =
 
-Ovebot answers all of it, instantly, in your customer's own language:
+✅ **Answer support questions** from your own knowledge base: shipping, returns, warranty, payment — whatever you feed it.
 
-✅ **AI Sales Agent** – Understands what the shopper actually wants and recommends real products from your live WooCommerce catalog, with images, prices and a click straight to the product page.
+✅ **Recommend products** *(WooCommerce)* from your live catalog, with images, prices and a link to the product page. Products that go out of stock drop out of the catalog automatically, so they stop being recommended.
 
-✅ **AI Customer Support** – Answers from your own knowledge base: shipping, returns, warranty, payment, anything you feed it.
+✅ **Answer "where is my order?"** *(WooCommerce)* with the real status and, when your shipping plugin has generated one, the tracking number.
 
-✅ **Order Tracking Inside the Chat** – "Where is my order?" gets a real answer, with the actual AWB/tracking number pulled from the courier plugin you already use.
+✅ **Hand over to a human.** Your team takes over a live conversation in one click; the AI resumes when they leave. Outside working hours the AI says so and leaves your contact details.
 
-✅ **Live Chat With Handoff to a Human** – When a visitor wants a person, your team takes over the conversation in one click. Outside working hours the AI says so and leaves your contact details.
+✅ **Handle self-service requests** — order cancellation, order modification, delivery or billing address change — through a secure form inside the widget, confirmed with a code emailed to the customer.
 
-✅ **Self-Service Requests** – Cancel an order, change a delivery address, modify an order — all handled inside the chat, verified by an email code, and delivered to your team as a ticket.
+✅ **Speak the visitor's language.** Set the language to `auto` and the widget follows the visitor's browser language, switching mid-conversation if they do.
 
-✅ **Never Shows Out-of-Stock Products** – Sold out or dropped from your feed? It disappears from chat automatically. Your AI never sells something you can't ship.
+= 🧠 Training the AI on your own content =
 
-## 🧠 An AI Chatbot Trained on Your Business, Not the Internet
+🟢 **Website pages** — pick the WordPress pages to sync from the setup wizard. Edit a synced page later and its knowledge-base entry updates on its own.
 
-This is what separates Ovebot from a generic chatbot: it only speaks from **your** data.
+🟢 **Uploaded documents** — PDF, Word (.doc/.docx), OpenDocument (.odt), RTF, Excel (.xls/.xlsx), CSV, XML, TXT and Markdown.
 
-🟢 **WooCommerce Product Feed** – The plugin publishes your catalog with real-time stock and availability. The AI recommends from what's actually on the shelf, right now.
+🟢 **Imported URLs** — any public page.
 
-🟢 **Knowledge Base** – Build it from your own WordPress pages with a click, import any public URL, or upload documents: PDF, Word (.doc/.docx), OpenDocument (.odt), RTF, Excel (.xls/.xlsx), CSV, XML, TXT and Markdown. Ovebot extracts the text and your AI reads it.
+🟢 **Agent memory** — a short always-on note the AI reads at the start of every conversation, for things like "Free shipping over 300 this week". The AI also suggests things worth remembering, which you approve with one click.
 
-🟢 **Agent Memory** – A short always-on note the AI reads at the start of every single conversation. Perfect for "Free shipping over 300 this week" or "We're closed for the holidays."
+🟢 **Product feed** *(WooCommerce)* — the plugin publishes a feed of your catalog with live stock, price and availability.
 
-🟢 **Memory Suggestions** – The AI notices patterns in conversations and suggests things worth remembering. Approve with one click.
+🟢 **SKU and link lookup** — paste a product link or type a product code and the AI resolves it against your catalog, answering about that exact product.
 
-🟢 **SKU & Link Lookup** – A shopper pastes a product link or types a product code? The AI resolves it directly against your catalog and answers about that exact product — no guessing, no "sorry, I can't open links."
+When there's no good match in your content, the AI says so and offers the closest alternatives rather than inventing an answer.
 
-🟢 **Honest Answers** – When there's no exact match, Ovebot says so and offers the closest alternatives instead of pushing unrelated junk. Trust converts better than noise.
+= 🌍 Speaks your customer's language =
 
-## 🌍 Speaks Your Customer's Language — Automatically
+Set the widget to `auto` and it detects the visitor's browser language on its own. If a visitor switches language mid-conversation, the AI switches with them — the replies, the forms, even the verification emails follow along.
 
-Set the widget to `auto` and it detects the visitor's browser language on its own. If a visitor switches languages mid-conversation, the AI switches with them — the replies, the forms, even the verification emails follow along.
+Your welcome message is written once in your language and translated into every supported language automatically. You can review and hand-correct any translation; manual edits are never overwritten.
 
-Your **welcome message** is written once in your language and translated into every supported language automatically. You can review and hand-correct any translation; manual edits are never overwritten.
+= 🛒 On a WooCommerce store =
 
-## 🛒 Built for WooCommerce Stores
+* **Live catalog feed** with real-time stock and availability
+* **Product carousels** in chat with quick refine buttons like *"In stock only"* or *"Under 500"*
+* **Order tracking endpoint** that reads the AWB from your shipping plugin
+* **Purchase tracking** on the order-received page, linking orders back to the conversations that preceded them
+* **Product click analytics** — which recommendations customers actually clicked
 
-- **Live catalog feed** with real-time stock and availability
-- **Product carousels** in chat with quick refine buttons like *"In stock only"* or *"Under 500"* — one tap, no typing
-- **Order tracking endpoint** that reads the AWB straight from your shipping plugin
-- **Order tracking snippet** for your checkout, linking real purchases back to the conversations that produced them
-- **Product click analytics** — see exactly which recommendations your customers actually clicked
+= 🎨 Making the widget yours =
 
-No WooCommerce? No problem. The chat widget and knowledge base work on any WordPress site — blog, agency, SaaS, booking, anything.
+Everything is configured from **Settings → Ovebot.ai**, live preview included:
 
-## 🎨 A Widget That Looks Like It Belongs on Your Site
-
-Configure everything from **Settings → Ovebot.ai**, live preview included:
-
-- **Colors & theme** – accent color, light or dark
-- **Title & subtitle** – your brand, your voice
-- **Bot name & avatar** – give your AI an identity
-- **Proactive message** – a teaser bubble that pops up after a delay you choose, turning silent browsers into conversations
-- **Position** – left or right corner, with X/Y offsets so it sits clear of your WhatsApp bubble or cookie banner
-- **Size, z-index, sound, auto-open** – full control, right down to the stacking order
+* Accent colour and light/dark theme
+* Title, subtitle, bot name and avatar
+* A proactive teaser message, with a delay you choose
+* Position (left or right corner) with X/Y offsets, so it sits clear of another floating button
+* Size, z-index, notification sound and auto-open
 
 Mobile-friendly out of the box.
 
-## 👥 Your Team, In Control
+= 👥 For your team =
 
-- **Live Sessions Dashboard** – see who's chatting right now, in real time
-- **Take Over** – jump into any conversation; your name and avatar appear in the visitor's chat header. Click **Leave** and the AI picks up where you left off
-- **Predefined quick replies** – saved message pills, one click to send, shared across your whole team
-- **Session History** – every transcript, searchable and filterable, with visitor country, working memory and linked orders
-- **Browser notifications** – a pop-up and a beep the moment a visitor asks for a human. First teammate to take over gets the chat; everyone else's alert clears
-- **Roles** – Owners get settings, billing and statistics; Agents get the chat work
-- **Invite your team** – agents join under your plan and are never charged separately
+* **Live sessions dashboard** — see who is chatting right now and take over any conversation
+* **Take over** — your name and avatar appear in the visitor's chat header; click **Leave** and the AI picks up where you left off
+* **Predefined quick replies** shared across the team
+* **Session history** with transcripts, visitor country, working memory and linked orders
+* **Browser notifications** when a visitor asks for a human — first teammate to take over gets the chat
+* **Roles** — owners manage settings, billing and statistics; agents handle the chat
+* **Invite your team** — agents join under your plan and are not charged separately
 
-## 📊 Proof That It's Working
+= 📊 Seeing what it does =
 
-- **Statistics** – sessions, messages split by visitor/AI/human, tokens and cost, day by day
-- **Activity Reports** – a friendly email twice a month with a PDF: conversations handled, **autonomy rate** (how much your AI resolved alone), estimated support hours saved, orders influenced and their value, your top recommended products, and practical tips on what to improve next
-- **Product Clicks** – a full log of every recommendation your customers clicked, ranked by popularity
+* **Statistics** — sessions, messages split by visitor/AI/human, tokens and cost, day by day
+* **Activity reports** — an email twice a month with a PDF: conversations handled, autonomy rate (how much the AI resolved alone), estimated support hours saved, orders influenced and their value, top recommended products
+* **Product clicks** — a full log of every recommendation customers clicked, ranked by popularity
 
-## 🔐 GDPR-Ready, Seriously
+= 🔐 GDPR =
 
 Ovebot was built with EU privacy rules in the design, not bolted on:
 
-- **AI disclosure + privacy notice** shown as the first message of every chat — visitors always know they're talking to an AI
-- **Auto-generated privacy policy** naming you as data controller and Ovebot as processor — or link your own
-- **Two first-party cookies only**, holding nothing but a random identifier. No name, no email, no browsing data
-- **Visitors can download or permanently delete their conversation** from the chat's ⋮ menu, any time
-- **Anonymize a session** on request, straight from the session detail page
-- **Full workspace data export** delivered as a ZIP to your inbox
-- **Sensitive data never gets typed into the chat** — cancellations and address changes use a secure form inside the widget, so nothing sensitive ends up in AI provider logs
+* **AI disclosure and privacy notice** shown as the first message of every chat — visitors always know they are talking to an AI
+* **Auto-generated privacy policy** naming you as data controller and Ovebot as processor (Art. 28 GDPR) — or link your own
+* **Two first-party cookies only**, holding nothing but a random identifier. No name, no email, no browsing data
+* **Visitors can download or permanently delete their conversation** from the chat's ⋮ menu, at any time
+* **Anonymize a session** on request, straight from the session detail page
+* **Full workspace data export**, delivered as a ZIP to your inbox
+* **Sensitive data never gets typed into the chat** — cancellations and address changes use a secure form inside the widget, so nothing sensitive ends up in AI provider logs
+* **Data Processing Agreement and sub-processor list** published and linked under **External services** below
 
-## ⚡ Fast, Because Slow Sites Don't Sell
+= ⚡ Performance =
 
-The widget loads from a single lightweight script. Your WordPress stays fast, your Core Web Vitals stay happy.
+The widget loads from a single lightweight script, asynchronously in the footer. Nothing is added to your pages while the chat is switched off.
 
-## 🆓 Free Plan — Early Access, First 200 Stores
+= 🆓 Free plan — early access, first 200 stores =
 
-Ovebot is in early access: the free plan is limited to the first 200 stores. It includes 100 AI replies per month, free forever. No credit card, no time limit, nothing to cancel.
+The plugin itself is free and fully functional: nothing in this code is locked behind a licence key, a trial period or a paid tier, and no feature of the plugin is gated on payment.
 
-Click **Start Free** in the setup wizard and you're running in minutes.
+What the plugin does *not* include is the AI processing, which is performed by the Ovebot.ai service on its own servers. That service has a **free plan**, which is what the setup wizard signs you up for. It includes 100 AI replies per month, free forever, with no credit card and no time limit. Ovebot.ai is in early access, so the free plan is currently offered to the first 200 stores; paid plans with higher allowances are available at any time. Everything described above works on the free plan, within the resources that plan allocates.
 
-Want to see it before you even install? Paste your website URL at [demo.ovebot.ai](https://demo.ovebot.ai) and in about a minute you'll be chatting with an AI agent trained on your own site. No signup.
+= 🛟 If you run out of allowance =
 
-## 🛟 And When You Get Busy — You Don't Lose Anyone
+The chat does not switch off. The widget moves to contact-collection mode: visitors leave their name, phone, email and message, and every submission lands in your Requests inbox and your email. The AI resumes automatically when the allowance resets — or immediately if you upgrade. You also get a heads-up email at 80% of your allowance. Only the AI's own replies count against it — visitor messages and replies your team types by hand are not counted.
 
-Hit your monthly message limit and the chat **does not shut off**. The widget switches to contact-collection mode: visitors leave their name, phone and message, and every one lands in your Requests inbox. A busy month turns into leads instead of a closed door. (Only the AI's replies count toward your limit — visitor messages and your team's manual replies are free.)
-
-## 🚀 Get Started in Minutes
+= 🚀 Getting started =
 
 1. Install and activate the plugin
-2. Start free from the setup wizard — or connect your existing Ovebot account with one click
+2. Connect an existing Ovebot.ai account from the setup wizard, or create a free one
 3. Pick your pages for the knowledge base, style your widget, and go live
 
-Your AI sales agent is on duty tonight. Install Ovebot and stop losing the customers you already paid to bring to your site.
+You can also try the service before installing anything: paste your site URL at [demo.ovebot.ai](https://demo.ovebot.ai) and chat with an agent trained on your own site. No signup.
 
-See all plans and pricing on the [Ovebot.ai website](https://ovebot.ai).
+= ⚖️ Trademarks =
+
+Ovebot and Ovesio are names of Aweb Design SRL, the author of this plugin. WooCommerce is a trademark of Automattic Inc.; this plugin is not affiliated with or endorsed by Automattic. FedEx, Colissimo, GLS, Packeta, Sameday, SEUR, UPS, Chronopost, Mondial Relay, DPD and FAN Courier are trademarks of their respective owners and are referenced here only to identify the shipping services whose tracking numbers this plugin can read from third-party plugins.
+
+== External services ==
+
+This plugin relies on the Ovebot.ai service, operated by Aweb Design SRL. The AI processing cannot be performed locally by the plugin: understanding a visitor's question and generating an answer requires large language models running on Ovebot.ai's servers. An Ovebot.ai account is required; the setup wizard can create a free one for you.
+
+The same terms and policies cover all of the Ovebot.ai endpoints listed below:
+
+* Terms of Service: https://account.ovebot.ai/en/legal/terms
+* Privacy & Cookie Policy: https://account.ovebot.ai/en/privacy
+* Data Processing Agreement: https://account.ovebot.ai/en/legal/dpa
+* Sub-processors: https://account.ovebot.ai/en/legal/sub-processors
+
+= 1. account.ovebot.ai — account and authorization =
+
+Used to connect your site to your Ovebot.ai account over OAuth 2.0 (PKCE), and to keep that connection alive.
+
+What is sent, and when:
+
+* When you click **Connect** or **Start free** in the setup wizard, you are sent to `https://account.ovebot.ai/oauth/authorize` with your site's domain name, the WordPress admin URL to return to, and the requested permission scopes. You then sign in (or register) on Ovebot.ai and approve the connection there.
+* Immediately after you approve, and afterwards roughly once an hour for as long as the connection lasts, the plugin posts to `https://account.ovebot.ai/oauth/token` to exchange the authorization code for access tokens and later to refresh them. Only the OAuth code / refresh token is sent.
+
+No visitor data and no store data are sent to this host.
+
+= 2. api.ovebot.ai — configuration and knowledge base =
+
+The plugin's admin-side API. Every request is authenticated with the OAuth access token above; nothing here happens on the front end of your site.
+
+What is sent, and when:
+
+* **On finishing the setup wizard, on saving the settings screen, and on plugin activation:** your widget configuration (colours, texts, position, language), and — only if WooCommerce is active and you left the corresponding switches on — the public URL of this site's product feed and the URL plus generated user/password of this site's order-lookup endpoint. This is what lets Ovebot.ai read your catalog and answer order questions.
+* **When you pick pages for the knowledge base in the wizard, and whenever you later edit one of those pages:** that page's title, plain-text content and permalink.
+* **When the plugin's admin screens load:** a status request, to show your connection state and your catalog / knowledge-base counts.
+* **When you click Disconnect, and on uninstalling the plugin:** a request to revoke the stored token.
+
+= 3. <your-workspace>.ovebot.ai — the chat widget =
+
+The visitor-facing part. `<your-workspace>` is the workspace slug of the account you connected.
+
+What is sent, and when:
+
+* **On every page view of your site, for every visitor, while the chat widget is enabled:** the browser loads `https://<your-workspace>.ovebot.ai/widget/chat-loader.js`. Loading it necessarily discloses the visitor's IP address and user agent to Ovebot.ai, as with any externally hosted script. From then on, the conversation itself (the messages the visitor types, the page they are on, and two first-party cookies holding a random visitor/session identifier) is exchanged with Ovebot.ai so the AI can reply.
+* **On the WooCommerce order-received page, once per order, while the chat widget is enabled:** the browser loads `https://<your-workspace>.ovebot.ai/widget/event.js` and reports the order number, total and currency, so the account's statistics can attribute an order to the conversation that preceded it.
+
+= 4. Requests Ovebot.ai makes back to your site =
+
+Not an outbound service, but disclosed for completeness. Once configured, Ovebot.ai's servers call two REST endpoints on your own site — `/wp-json/ovebotai/v1/feed` (your product catalog, protected by a secret hash in the URL) and `/wp-json/ovebotai/v1/orders` (order lookup, protected by HTTP Basic credentials generated on your site). Both require WooCommerce, both can be switched off in the plugin's settings, and both are served as Forbidden while the chat widget is disabled. Order lookup only ever answers for a request that already carries a matching email address or phone number for that specific order.
+
+= 5. Courier tracking links =
+
+*Only relevant on WooCommerce stores that also run one of the third-party shipping plugins listed further below.*
+
+**This plugin does not connect to any courier.** It reads the AWB / tracking number that your shipping plugin has already stored for an order, and builds a public tracking URL out of it. That URL is returned as text in the order-lookup response, so the AI can offer the customer a link to track their parcel. No request is made to the courier and no data is sent to it by this plugin; nothing at all happens unless the customer chooses to click the link, at which point they visit the courier's site directly, as they would from any tracking link.
+
+Depending on which shipping plugin generated the label, the link points to one of:
+
+* mondialrelay.com (Mondial Relay)
+* ups.com (UPS)
+* chronopost.fr (Chronopost)
+* dpdgroup.com (DPD)
+* fancourier.ro (FAN Courier)
+* sameday.ro (Sameday)
+* gls-group.eu (GLS)
+* laposte.fr (Colissimo)
+* seur.com (SEUR)
+* tracking.packeta.com (Packeta)
+* track.myshipi.com (FedEx, via the A2Z FedEx shipping plugin)
+
+If no supported shipping plugin is installed, or none has produced a tracking number for the order yet, no link is generated and the AI simply reports the order status.
 
 == Installation ==
 
 1. Upload the plugin to `/wp-content/plugins/` or install it through the WordPress plugins screen.
 2. Activate the plugin.
-3. Go to **Settings → Ovebot.ai** and follow the setup wizard: connect an existing Ovebot.ai account, or start on the free plan if you're new — no credit card needed.
-4. Choose the pages to sync into your knowledge base, customize the widget, and you're live.
+3. Go to **Settings → Ovebot.ai** and follow the setup wizard: connect an existing Ovebot.ai account, or create a free one from the wizard.
+4. Choose the pages to sync into the knowledge base, customize the widget, and finish the wizard.
 
-The connection uses OAuth — there are no API keys to copy and paste by hand.
+The connection uses OAuth, so there are no API keys to copy and paste by hand.
 
 == Frequently Asked Questions ==
 
 = Do I need an Ovebot.ai account? =
 
-Yes, but you can create one without leaving WordPress. The setup wizard lets you start on the **free plan** directly — no credit card, no separate signup on the website.
-
-= Does Ovebot cost anything to try? =
-
-No. The free plan is free forever and includes 100 AI replies per month, with no credit card and no time limit. Early access: the free plan is available to the first 200 stores. Paid plans with higher limits are available anytime at ovebot.ai.
+Yes. The AI runs on Ovebot.ai's servers, so the plugin has to be connected to an account. You can create one from the setup wizard without leaving WordPress, and the free plan needs no payment details.
 
 = Does this work without WooCommerce? =
 
-Yes. The AI chat widget and the knowledge base work on any WordPress site. The product feed and order tracking endpoint require WooCommerce.
+Yes. The chat widget, the knowledge base and the live-chat handover work on any WordPress site, and WooCommerce is never required to install, activate or use the plugin. Two features only appear when WooCommerce is active: product recommendations from your catalog, and order-status lookup.
 
-= How is this different from a normal live chat plugin? =
+= Is the plugin free? =
 
-A normal live chat waits for you to be online. Ovebot's AI agent answers on its own — from your real product catalog and your own documents — 24/7, and only pulls in a human when the conversation actually needs one.
+The plugin is free and fully functional — nothing in its code is locked, time-limited or gated behind a licence key. The AI processing is provided by the Ovebot.ai service, which has a free plan covering everything described here within that plan's allocated resources.
 
-= Where does the AI get its answers from? =
+= Does Ovebot cost anything to try? =
 
-Only from your data: your WooCommerce catalog, your knowledge base (WordPress pages, imported URLs, uploaded documents), and your Agent Memory. It doesn't browse the web and invent answers.
+No. The free plan includes 100 AI replies per month, free forever, with no credit card and no time limit. Ovebot.ai is in early access, so the free plan is currently offered to the first 200 stores. Paid plans with higher allowances are available at any time — that is a limit of the hosted service, not of this plugin, whose own code has no paid tier and no licence check.
 
-= What file types can I upload to the knowledge base? =
+= Is Ovebot GDPR compliant? =
 
-PDF, Word (.doc, .docx), OpenDocument (.odt), RTF, Excel (.xls, .xlsx), CSV, XML, plain text (.txt) and Markdown (.md). Ovebot extracts the text and pre-fills the entry for you to review before saving.
-
-= Can the AI recommend products that are out of stock? =
-
-No. When a product runs out of stock or drops out of your feed, Ovebot removes it from the catalog automatically, so it stops appearing in chat search and recommendations. If it comes back in stock, it reappears instantly.
-
-= Can my team take over a conversation from the AI? =
-
-Yes. Click **Take Over** on any session — your name and avatar appear in the visitor's chat header and you can reply directly, with one-click predefined quick replies. Click **Leave** and the AI resumes automatically.
-
-= What languages does the chat speak? =
-
-Set the language to `auto` and the widget detects the visitor's browser language. If a visitor starts writing in another supported language mid-chat, the AI switches with them — including forms and verification emails. You can also force a fixed language per site.
-
-= Can customers cancel or change an order through the chat? =
-
-Yes. Visitors can request an order cancellation, an order modification, a delivery address change or a billing address change through a secure form inside the widget. Each request is confirmed with a 6-digit code emailed to the customer, so only the person who placed the order can submit it. Your whole team is then notified by email.
+Ovebot is built for it. Every chat opens with an AI disclosure and a privacy notice linking to your privacy policy (yours, or an auto-generated one naming you as data controller and Ovebot as processor under Art. 28 GDPR). Only two first-party cookies are used and they hold nothing but a random identifier. Visitors can download or permanently delete their conversation at any time from the chat's ⋮ menu, you can anonymize any session on request, and you can export all of your workspace data as a ZIP. A Data Processing Agreement and the current sub-processor list are linked under **External services** above.
 
 = Can I run more than one website from one account? =
 
 Yes, on plans that allow it. Each agent has its own products, knowledge base, appearance, languages and statistics, while the message allowance is shared across all of them.
 
-= What happens when I hit my monthly message limit? =
-
-The chat stays on your site and switches to contact-collection mode: visitors leave their name, phone, email and message, and every submission lands in your Requests inbox and your email. The AI resumes automatically when your allowance resets — or immediately if you upgrade. You also get a heads-up email at 80% of your allowance.
-
-= Which messages count toward my plan's limit? =
+= Which messages count toward my plan's allowance? =
 
 Only the AI assistant's replies. Messages typed by your visitors, and replies you send manually after taking over a conversation, are not counted.
 
-= Is Ovebot GDPR compliant? =
-
-Ovebot is built for it. Every chat opens with an AI disclosure and a privacy notice linking to your privacy policy (yours, or an auto-generated one). Only two first-party cookies are used and they hold nothing but a random identifier. Visitors can download or permanently delete their conversation at any time, you can anonymize any session on request, and you can export all your workspace data as a ZIP.
-
-= Where do I manage the widget's appearance? =
-
-Settings → Ovebot.ai → Settings → Appearance. You can set the theme, accent color, title and subtitle, bot name and avatar, proactive message and delay, position (left/right + offsets), size, sound, auto-open and z-index.
-
-= The chat button overlaps another floating button on my site. Can I move it? =
-
-Yes. Change the side (left/right) and raise the X/Y offsets in the appearance settings. The proactive teaser bubble follows the new position automatically.
-
 = Can I try it before installing? =
 
-Yes. Paste your website URL at [demo.ovebot.ai](https://demo.ovebot.ai) — about a minute later you'll be chatting with an AI agent trained on your own site content. No signup required.
+Yes. Paste your website URL at [demo.ovebot.ai](https://demo.ovebot.ai) — about a minute later you will be chatting with an AI agent trained on your own site content. No signup required.
 
-= Which shipping/courier plugins does order tracking support? =
+= What data leaves my site? =
 
-The order-tracking endpoint reads the AWB/tracking number directly from whichever of these shipping plugins you already use to generate it — no extra setup needed, it just works if one of them is active and has generated a label for the order:
+See the **External services** section above, which lists each Ovebot.ai host, what is sent to it and when, together with the terms and privacy policy.
+
+= Where does the AI get its answers from? =
+
+From your own data: the WordPress pages you selected, documents and URLs you added to the knowledge base, your agent memory, and — on a WooCommerce store — your product catalog. It does not browse the web to answer.
+
+= What file types can I upload to the knowledge base? =
+
+PDF, Word (.doc, .docx), OpenDocument (.odt), RTF, Excel (.xls, .xlsx), CSV, XML, plain text (.txt) and Markdown (.md). The text is extracted and pre-filled for you to review before saving.
+
+= Can the AI recommend products that are out of stock? =
+
+No. Products that are out of stock, or that drop out of the feed, are removed from the catalog automatically and stop appearing in recommendations. They reappear when they are back in stock.
+
+= Can my team take over a conversation from the AI? =
+
+Yes. Click **Take over** on any live session — your name and avatar appear in the visitor's chat header and you reply directly, optionally with predefined quick replies. Click **Leave** and the AI resumes.
+
+= What languages does the chat speak? =
+
+Set the language to `auto` and the widget follows the visitor's browser language, including if they switch language mid-conversation; forms and verification emails follow along. You can also force a fixed language.
+
+= Can customers cancel or change an order through the chat? =
+
+Yes. Order cancellation, order modification, delivery address change and billing address change are collected through a secure form inside the widget. Each request is confirmed with a 6-digit code emailed to the customer, so only the person who placed the order can submit it, and your team is notified by email.
+
+= How is order lookup protected? =
+
+Ovebot.ai authenticates to the endpoint with a user/password pair generated on your site (regenerable at any time from the settings screen), and repeated authentication failures from an IP are rate-limited. On top of that, an order is only ever returned when the request also carries an email address or a phone number matching that order — either one works, and the endpoint verifies whichever it was given. The endpoint can be switched off entirely, and it returns 403 whenever the chat widget is disabled.
+
+= What happens when I use up my monthly allowance? =
+
+The chat stays on your site and switches to contact-collection mode: visitors leave their name, phone, email and message, and every submission lands in your Requests inbox and your email. The AI resumes when the allowance resets, or immediately if you upgrade. You also get a warning email at 80% of the allowance.
+
+= Which shipping plugins does order tracking read tracking numbers from? =
+
+The order-lookup endpoint reads the AWB / tracking number that one of these plugins has already stored for the order — no extra setup, and no courier account of your own is needed:
 
 * [FedEx Rates & Labels](https://myshipi.com/)
 * [Colissimo shipping methods for WooCommerce](https://www.colissimo.entreprise.laposte.fr/fr)
@@ -226,20 +290,33 @@ The order-tracking endpoint reads the AWB/tracking number directly from whicheve
 * [Packeta](https://www.zasilkovna.cz/)
 * [SamedayCourier Shipping](https://www.sameday.ro/contact)
 * [SEUR Oficial](http://www.seur.com/)
-* [WCMultiShipping - Mondial Relay, Inpost & Chronopost for WooCommerce](https://www.wcmultishipping.com/fr/mondial-relay-woocommerce/) (UPS, Chronopost and Mondial Relay)
+* [WCMultiShipping — Mondial Relay, Inpost & Chronopost for WooCommerce](https://www.wcmultishipping.com/fr/mondial-relay-woocommerce/) (UPS, Chronopost and Mondial Relay)
 * [DPD Baltic Shipping](https://dpd.com)
 * [HgE: Shipping Zones for FAN Courier Romania](https://www.linkedin.com/in/hurubarugeorgesemanuel/)
 
-Don't see your courier listed? Let us know at [ovebot.ai/contact](https://ovebot.ai/contact) and we'll look into adding support.
+If none of them is installed, the AI still answers with the order status — just without a tracking link. Missing a courier? Tell us at [ovebot.ai/contact](https://ovebot.ai/contact).
+
+= Where do I manage the widget's appearance? =
+
+Settings → Ovebot.ai → Settings → Appearance.
+
+= The chat button overlaps another floating button on my site. Can I move it? =
+
+Yes. Change the side (left/right) and raise the X/Y offsets in the appearance settings. The proactive teaser bubble follows the new position.
+
+= What happens when I uninstall the plugin? =
+
+All of the plugin's options, cached feed data and knowledge-base id mappings are deleted from your database, and a request is sent to Ovebot.ai to revoke the stored access token so it cannot be reused.
 
 == Screenshots ==
 
-1. The AI chat widget answering a customer question and recommending real, in-stock products from the store's catalog.
-2. Live Sessions Dashboard — see every visitor chatting right now, and take over any conversation in one click.
-3. Knowledge Base — train your AI from your WordPress pages, any public URL, or uploaded documents.
-4. Widget appearance settings — theme, accent color, bot name and avatar, proactive message and position.
-5. Order tracking in chat — real delivery status with the courier's AWB number.
+1. The AI chat widget answering a customer question and recommending in-stock products from the store's catalog.
+2. Live sessions dashboard — every visitor chatting right now, with one-click takeover.
+3. Knowledge base — trained from WordPress pages, imported URLs or uploaded documents.
+4. Widget appearance settings — theme, accent colour, bot name and avatar, proactive message and position.
+5. Order tracking in chat — delivery status with the courier's AWB number.
 6. Statistics and activity reports — conversations handled, autonomy rate and orders influenced.
+7. Working hours and human handover — when the AI can offer to connect a visitor to a live agent.
 
 == Changelog ==
 

@@ -25,8 +25,8 @@ jobs:
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
 
-          SLUG: ovebotai
+          SLUG: ovebot-ai-chatbot-sales-agent
 
           # SOURCE_DIR: dist/
 
-          # ASSETS_DIR: .wordpress-org
+          ASSETS_DIR: .wordpress-org

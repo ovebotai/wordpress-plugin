@@ -19,26 +19,22 @@ jobs:
         run: |
           set -euo pipefail
 
-          PLUGIN="ovebotai"
+          PLUGIN="ovebot-ai-chatbot-sales-agent"
           BUILD_DIR="$(mktemp -d)"
           mkdir -p "${BUILD_DIR}/${PLUGIN}"
 
-          rsync -a ./ "${BUILD_DIR}/${PLUGIN}/" \
-            --exclude '.distignore' \
-            --exclude '.gitignore' \
-            --exclude '.vscode' \
-            --exclude '.git' \
-            --exclude '.git/' \
-            --exclude '.github' \
-            --exclude '.github/' \
-            --exclude '.wordpress-org' \
-            --exclude '.wordpress-org/'
+          # Single source of truth for what must never ship: .distignore, the
+          # same list the WordPress.org SVN deploy honors. rsync ignores blank
+          # lines and #-comments in an --exclude-from file, so the annotated
+          # .distignore can be fed to it verbatim instead of being mirrored by
+          # hand here (which is how the two drifted apart before).
+          rsync -a ./ "${BUILD_DIR}/${PLUGIN}/" --exclude-from='.distignore'
 
           (cd "${BUILD_DIR}" && zip -r "${GITHUB_WORKSPACE}/${PLUGIN}.zip" "${PLUGIN}")
 
       - name: Upload asset
         uses: softprops/action-gh-release@v1
         with:
-          files: ovebotai.zip
+          files: ovebot-ai-chatbot-sales-agent.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -68,7 +68,7 @@ class Ovebotai_Setup {
 		check_ajax_referer( 'ovebotai_setup', 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'ovebotai' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'ovebot-ai-chatbot-sales-agent' ) ) );
 		}
 
 		$page_ids = array_map( 'absint', (array) ( $_POST['page_ids'] ?? array() ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified above via check_ajax_referer
@@ -97,7 +97,7 @@ class Ovebotai_Setup {
 		check_ajax_referer( 'ovebotai_setup', 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'ovebotai' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'ovebot-ai-chatbot-sales-agent' ) ) );
 		}
 
 		// The product-source choice is only committed now — the wizard keeps it
@@ -109,16 +109,37 @@ class Ovebotai_Setup {
 			update_option( 'ovebotai_products_source', $source, false );
 		}
 
+		// The on-site chat has to be switched on BEFORE the push, not after it.
+		// The payload hands Ovebot.ai the URLs of our /feed and /orders endpoints,
+		// and both of those answer 403 while the chat is off (see
+		// Ovebotai_Feed::check_hash() and Ovebotai_Orders::check_auth()). Enabling
+		// it afterwards leaves a window in which Ovebot.ai is being told "order
+		// lookup is enabled, here is the URL" while that very URL still refuses
+		// every request - so any validation it performs on receipt fails and the
+		// account records order_info/products as disabled. sync_settings() then
+		// reconciles that back onto the local switches on the next dashboard load,
+		// and the merchant finds order tracking off right after a wizard in which
+		// they never turned anything off.
+		$previous_chat_status = get_option( 'ovebotai_chat_status' );
+		update_option( 'ovebotai_chat_status', '1', false );
+
 		if ( ! Ovebotai::resync_setup() ) {
+			// Restore exactly what was there before - a setup that failed to sync
+			// must not leave the widget live on a site that was never configured.
+			if ( false === $previous_chat_status ) {
+				delete_option( 'ovebotai_chat_status' );
+			} else {
+				update_option( 'ovebotai_chat_status', $previous_chat_status, false );
+			}
+
 			wp_send_json_error( array(
-				'message' => __( 'Could not sync settings with Ovebot.ai.', 'ovebotai' ),
+				'message' => __( 'Could not sync settings with Ovebot.ai.', 'ovebot-ai-chatbot-sales-agent' ),
 			) );
 		}
 
-		update_option( 'ovebotai_chat_status',    '1', false );
 		update_option( 'ovebotai_setup_complete', '1', false );
 
-		wp_send_json_success( array( 'message' => __( 'Setup complete!', 'ovebotai' ) ) );
+		wp_send_json_success( array( 'message' => __( 'Setup complete!', 'ovebot-ai-chatbot-sales-agent' ) ) );
 	}
 
 	/**
@@ -173,7 +194,7 @@ class Ovebotai_Setup {
 				// Only report it when activating — deactivating an unpublished page
 				// is a no-op with nothing to say.
 				if ( $active ) {
-					$failed[ $page_id ] = __( 'Page is not published.', 'ovebotai' );
+					$failed[ $page_id ] = __( 'Page is not published.', 'ovebot-ai-chatbot-sales-agent' );
 				}
 				continue;
 			}
@@ -193,7 +214,7 @@ class Ovebotai_Setup {
 			// with page builders that don't store text in post_content).
 			if ( mb_strlen( $body ) < 10 ) {
 				if ( $active ) {
-					$failed[ $page_id ] = __( 'Not enough text content to sync (minimum 10 characters).', 'ovebotai' );
+					$failed[ $page_id ] = __( 'Not enough text content to sync (minimum 10 characters).', 'ovebot-ai-chatbot-sales-agent' );
 				}
 				continue;
 			}
@@ -244,13 +265,13 @@ class Ovebotai_Setup {
 					if ( '' === $quota_message ) {
 						$quota_message = (string) ( $result['body']['error']['message'] ?? '' );
 					}
-					$quota_blocked[ $page_id ] = __( 'Skipped — knowledge base limit reached.', 'ovebotai' );
+					$quota_blocked[ $page_id ] = __( 'Skipped — knowledge base limit reached.', 'ovebot-ai-chatbot-sales-agent' );
 					continue;
 				}
 
 				$failed[ $page_id ] = sprintf(
 					/* translators: %s: the API's error reason */
-					__( 'Sync failed: %s', 'ovebotai' ),
+					__( 'Sync failed: %s', 'ovebot-ai-chatbot-sales-agent' ),
 					Ovebotai_OAuth::error_message( $result )
 				);
 				continue;

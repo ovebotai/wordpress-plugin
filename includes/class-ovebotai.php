@@ -140,10 +140,53 @@ class Ovebotai {
 
 		// Only reconcile each flag when it's actually present in the response.
 		if ( array_key_exists( 'order_info', $integration ) ) {
-			update_option( 'ovebotai_order_api_enabled', $integration['order_info'] ? '1' : '0', false );
+			self::reconcile_remote_flag(
+				'ovebotai_order_api_enabled',
+				'ovebotai_order_api_confirmed',
+				(bool) $integration['order_info']
+			);
 		}
 		if ( array_key_exists( 'products', $integration ) ) {
-			update_option( 'ovebotai_products_enabled', $integration['products'] ? '1' : '0', false );
+			self::reconcile_remote_flag(
+				'ovebotai_products_enabled',
+				'ovebotai_products_confirmed',
+				(bool) $integration['products']
+			);
+		}
+	}
+
+	// Reconciles one local master switch against the account's copy of it.
+	//
+	// The account wins on read: the merchant may have toggled the feature directly
+	// in their Ovebot.ai account since the last local save, and that choice must
+	// not be silently overwritten by a stale local value.
+	//
+	// With one exception, and it is the whole point of this method. Until the
+	// account has confirmed the feature enabled at least once, a `false` coming
+	// back does NOT mean "the merchant turned this off". It equally means "you
+	// told us this was enabled and that hasn't been accepted (yet)" - Ovebot.ai
+	// checks the endpoint URL we sent by calling it, so the flag stays false until
+	// that check passes, and on a site that isn't reachable from the internet at
+	// all (staging, LAN, behind Basic Auth) it can never pass.
+	//
+	// Adopting that false unconditionally is what made order tracking look like it
+	// refused to save: Save writes '1' locally, the settings screen then redirects
+	// to the dashboard, the dashboard calls sync_settings(), and the not-yet-
+	// confirmed false immediately writes '0' back over it - so the merchant sees
+	// "Disabled" a second after switching it on, with no way to make it stick.
+	//
+	// So the first `true` we ever see from the account is what arms this reconcile.
+	// Before that, local wins; after it, the account wins as before, and a genuine
+	// remote switch-off is honoured on the next load.
+	private static function reconcile_remote_flag( string $option, string $confirmed_option, bool $remote ): void {
+		if ( $remote ) {
+			update_option( $option, '1', false );
+			update_option( $confirmed_option, '1', false );
+			return;
+		}
+
+		if ( '1' === get_option( $confirmed_option, '' ) ) {
+			update_option( $option, '0', false );
 		}
 	}
 
@@ -219,9 +262,17 @@ class Ovebotai {
 		if ( $wc_active && self::order_api_enabled() ) {
 			$payload['order_info'] = array(
 				'enabled'       => true,
-				'api_url'       => home_url( '/wp-json/ovebotai/v1/orders' ),
+				'api_url'       => rest_url( 'ovebotai/v1/orders' ),
 				'api_user'      => $order_user ?? (string) get_option( 'ovebotai_order_user', '' ),
 				'api_password'  => $order_pass ?? (string) get_option( 'ovebotai_order_pass', '' ),
+				// Default hint for which identifier the AI agent asks the shopper
+				// for first - NOT a restriction on what the plugin accepts. The
+				// /wp-json/ovebotai/v1/orders endpoint takes either an email or a
+				// phone number on every request and verifies whichever one it was
+				// given against the order (see Ovebotai_Orders::handle_request()),
+				// so phone lookup is fully functional regardless of this value.
+				// Which one the agent actually prompts for is decided by the
+				// workspace's own configuration on Ovebot.ai.
 				'lookup_method' => 'email',
 			);
 		} else {
@@ -253,7 +304,7 @@ class Ovebotai {
 			$feed_hash = (string) get_option( 'ovebotai_feed_hash', '' );
 			$payload['products'] = array(
 				'enabled'  => true,
-				'feed_url' => add_query_arg( 'hash', $feed_hash, home_url( '/wp-json/ovebotai/v1/feed' ) ),
+				'feed_url' => add_query_arg( 'hash', $feed_hash, rest_url( 'ovebotai/v1/feed' ) ),
 				'currency' => self::store_currency(),
 			);
 		} else {

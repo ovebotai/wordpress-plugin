@@ -52,7 +52,7 @@ class Ovebotai_Orders {
 		if ( ! Ovebotai::chat_enabled() || ! Ovebotai::order_api_enabled() ) {
 			return new WP_Error(
 				'ovebotai_orders_disabled',
-				__( 'Order lookup is currently disabled.', 'ovebotai' ),
+				__( 'Order lookup is currently disabled.', 'ovebot-ai-chatbot-sales-agent' ),
 				array( 'status' => 403 )
 			);
 		}
@@ -133,7 +133,7 @@ class Ovebotai_Orders {
 
 	public function handle_request( WP_REST_Request $request ): WP_REST_Response {
 		if ( ! Ovebotai::woocommerce_active() ) {
-			return $this->error( __( 'WooCommerce is not active.', 'ovebotai' ), 503 );
+			return $this->error( __( 'WooCommerce is not active.', 'ovebot-ai-chatbot-sales-agent' ), 503 );
 		}
 
 		$input    = $request->get_json_params() ?: $request->get_body_params();
@@ -142,34 +142,34 @@ class Ovebotai_Orders {
 		$phone    = sanitize_text_field( (string) ( $input['phone'] ?? '' ) );
 
 		if ( $order_id <= 0 ) {
-			return $this->error( __( 'Invalid order ID.', 'ovebotai' ), 400 );
+			return $this->error( __( 'Invalid order ID.', 'ovebot-ai-chatbot-sales-agent' ), 400 );
 		}
 
 		if ( ( '' === $email ) === ( '' === $phone ) ) {
-			return $this->error( __( 'Provide either email or phone, not both and not neither.', 'ovebotai' ), 400 );
+			return $this->error( __( 'Provide either email or phone, not both and not neither.', 'ovebot-ai-chatbot-sales-agent' ), 400 );
 		}
 
 		$order = wc_get_order( $order_id );
 		if ( ! $order || $order->get_status() === 'pending' ) {
-			return $this->error( __( 'Order not found.', 'ovebotai' ), 200 );
+			return $this->error( __( 'Order not found.', 'ovebot-ai-chatbot-sales-agent' ), 200 );
 		}
 
 		// Verify ownership.
 		if ( '' !== $email ) {
 			if ( ! is_email( $email ) ) {
-				return $this->error( __( 'Invalid email.', 'ovebotai' ), 400 );
+				return $this->error( __( 'Invalid email.', 'ovebot-ai-chatbot-sales-agent' ), 400 );
 			}
 			if ( ! hash_equals( strtolower( $order->get_billing_email() ), strtolower( $email ) ) ) {
-				return $this->error( __( 'Order not found.', 'ovebotai' ), 200 );
+				return $this->error( __( 'Order not found.', 'ovebot-ai-chatbot-sales-agent' ), 200 );
 			}
 		} else {
 			$stored_phone = $this->normalize_phone( $order->get_billing_phone() );
 			$given_phone  = $this->normalize_phone( $phone );
 			if ( strlen( $given_phone ) < 9 ) {
-				return $this->error( __( 'Invalid phone number.', 'ovebotai' ), 400 );
+				return $this->error( __( 'Invalid phone number.', 'ovebot-ai-chatbot-sales-agent' ), 400 );
 			}
 			if ( '' === $stored_phone || substr( $stored_phone, -strlen( $given_phone ) ) !== $given_phone ) {
-				return $this->error( __( 'Order not found.', 'ovebotai' ), 200 );
+				return $this->error( __( 'Order not found.', 'ovebot-ai-chatbot-sales-agent' ), 200 );
 			}
 		}
 

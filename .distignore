@@ -28,3 +28,9 @@ tidio-readme.txt
 
 # Repo docs that are not plugin documentation
 SECURITY.md
+
+# Translations are generated and delivered by translate.wordpress.org — bundled
+# .po/.mo files must never ship in the package.
+languages
+*.po
+*.mo
