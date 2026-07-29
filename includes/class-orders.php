@@ -76,8 +76,16 @@ class Ovebotai_Orders {
 		$given_pass = '';
 
 		if ( isset( $_SERVER['PHP_AUTH_USER'] ) ) {
-			$given_user = $_SERVER['PHP_AUTH_USER']; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-			$given_pass = $_SERVER['PHP_AUTH_PW'] ?? ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+			// The credentials this endpoint accepts are generated on-site as
+			// plain alphanumeric tokens (wp_generate_password( .., false ) — see
+			// Ovebotai::generate_order_credentials()), so sanitize_text_field()
+			// leaves a legitimate value byte-for-byte intact while still stripping
+			// any tags / control characters an attacker might inject, before the
+			// constant-time hash_equals() comparison below.
+			$given_user = sanitize_text_field( wp_unslash( $_SERVER['PHP_AUTH_USER'] ) );
+			$given_pass = isset( $_SERVER['PHP_AUTH_PW'] )
+				? sanitize_text_field( wp_unslash( $_SERVER['PHP_AUTH_PW'] ) )
+				: '';
 		} else {
 			$header = sanitize_text_field( wp_unslash( $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '' ) );
 			if ( stripos( $header, 'Basic ' ) === 0 ) {

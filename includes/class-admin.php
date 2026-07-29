@@ -144,11 +144,22 @@ class Ovebotai_Admin {
 	// ── OAuth: return ────────────────────────────────────────────────────────
 
 	public function handle_oauth_return() {
-		// This is an external OAuth redirect from account.ovebot.ai, not a
-		// same-site form submission - a WP nonce can't apply here (Ovebot.ai
-		// has no session to generate one from). CSRF protection is the OAuth
-		// `state` param itself, validated against our stored PKCE verifier
-		// inside exchange_code() below.
+		// Runs on admin_init to catch the redirect account.ovebot.ai sends the
+		// browser back to once the merchant approves the connection.
+		//
+		// Why there is no wp_verify_nonce()/check_admin_referer() here: this is an
+		// inbound redirect from a *different origin* (account.ovebot.ai), not a
+		// same-site form post, so there was never a WordPress nonce to round-trip
+		// through it. CSRF is instead defended the way the OAuth authorization-code
+		// flow is designed to be — with the `state` parameter, validated below: our
+		// own get_auth_url() generated a random state and stored a PKCE verifier
+		// under it in a 10-minute transient, so a matching transient proves this
+		// callback answers a request THIS site started (the OAuth equivalent of a
+		// nonce). On top of that we gate on the admin capability and sanitize every
+		// value read.
+
+		// Bail unless this is our own admin page carrying an authorization code.
+		// Read-only routing check on the current admin URL - not a state change.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( empty( $_GET['page'] ) || 'ovebotai' !== $_GET['page'] ) return;
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -156,24 +167,47 @@ class Ovebotai_Admin {
 		if ( ! current_user_can( 'manage_options' ) ) return;
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$code  = sanitize_text_field( wp_unslash( $_GET['code'] ) );
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$state = sanitize_text_field( wp_unslash( $_GET['state'] ?? '' ) );
+
+		// Origin validation (the nonce-equivalent described above): reject anything
+		// whose state doesn't map to a live PKCE verifier this site issued, before
+		// the authorization code is even read. exchange_code() re-reads and consumes
+		// that same verifier, so a forged or stale callback stops right here.
+		if ( '' === $state || false === get_transient( 'ovebotai_pkce_verifier_' . $state ) ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$code = sanitize_text_field( wp_unslash( $_GET['code'] ) );
 
 		$result = Ovebotai_OAuth::instance()->exchange_code( $code, $state );
 
 		if ( ! empty( $result['error'] ) ) {
-			wp_safe_redirect( add_query_arg( array(
-				'page'        => 'ovebotai',
-				'oauth_error' => rawurlencode( $result['error'] ),
-			), admin_url( 'admin.php' ) ) );
-		} else {
-			// No step hint needed: render_page() sends an already-complete setup
-			// (i.e. a reconnect) straight to the dashboard, and an unfinished one
-			// lands on step 2 because the tokens now exist.
-			wp_safe_redirect( add_query_arg( 'page', 'ovebotai', admin_url( 'admin.php' ) ) );
+			// Hand the failure to the wizard through a short-lived, per-user
+			// transient rather than a query-string parameter, so the next page load
+			// has no untrusted $_GET value to read back - the redirect target below
+			// carries nothing but ?page=ovebotai.
+			set_transient( 'ovebotai_oauth_error_' . get_current_user_id(), $result['error'], MINUTE_IN_SECONDS );
 		}
+
+		// No step hint needed: render_page() sends an already-complete setup (a
+		// reconnect) straight to the dashboard, and an unfinished one lands on step 2
+		// because the tokens now exist.
+		wp_safe_redirect( add_query_arg( 'page', 'ovebotai', admin_url( 'admin.php' ) ) );
 		exit;
+	}
+
+	// One-shot read of the OAuth-return error stashed by handle_oauth_return().
+	// Stored as a per-user transient ("flash" message) and cleared on first read,
+	// so the wizard shows it exactly once and no error string has to travel back
+	// through - and be read from - $_GET on the following request.
+	private function consume_oauth_error(): string {
+		$key   = 'ovebotai_oauth_error_' . get_current_user_id();
+		$error = (string) get_transient( $key );
+		if ( '' !== $error ) {
+			delete_transient( $key );
+		}
+		return $error;
 	}
 
 	// ── Disconnect ───────────────────────────────────────────────────────────
@@ -309,9 +343,9 @@ class Ovebotai_Admin {
 				'stepsSequence'  => $steps_seq,
 				'isConnected'    => $oauth->is_connected() ? 1 : 0,
 				'productCounts'  => $product_counts,
-				// Read-only error message display, already sanitized - no state change.
-				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				'oauthError'     => isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp_unslash( $_GET['oauth_error'] ) ) : '',
+				// Set by handle_oauth_return() on a failed connect, read once from a
+				// per-user transient here (no $_GET involved). setup.js renders it.
+				'oauthError'     => $this->consume_oauth_error(),
 				'i18n'           => array(
 					// Arrows are appended by setup.js itself (as real Unicode
 					// characters, since .text() would render an HTML entity

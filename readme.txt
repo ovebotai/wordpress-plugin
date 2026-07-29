@@ -4,7 +4,7 @@ Tags: chatbot, ai, live chat, customer support, woocommerce
 Requires at least: 5.9
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -143,6 +143,7 @@ The same terms and policies cover all of the Ovebot.ai endpoints listed below:
 * Privacy & Cookie Policy: https://account.ovebot.ai/en/privacy
 * Data Processing Agreement: https://account.ovebot.ai/en/legal/dpa
 * Sub-processors: https://account.ovebot.ai/en/legal/sub-processors
+* GDPR & data-protection overview: https://ovebot.ai/en/features#gdpr
 
 = 1. account.ovebot.ai — account and authorization =
 
@@ -173,11 +174,20 @@ The visitor-facing part. `<your-workspace>` is the workspace slug of the account
 What is sent, and when:
 
 * **On every page view of your site, for every visitor, while the chat widget is enabled:** the browser loads `https://<your-workspace>.ovebot.ai/widget/chat-loader.js`. Loading it necessarily discloses the visitor's IP address and user agent to Ovebot.ai, as with any externally hosted script. From then on, the conversation itself (the messages the visitor types, the page they are on, and two first-party cookies holding a random visitor/session identifier) is exchanged with Ovebot.ai so the AI can reply.
-* **On the WooCommerce order-received page, once per order, while the chat widget is enabled:** the browser loads `https://<your-workspace>.ovebot.ai/widget/event.js` and reports the order number, total and currency, so the account's statistics can attribute an order to the conversation that preceded it.
+* **On the WooCommerce order-received page, once per order, while the chat widget is enabled:** the browser loads `https://<your-workspace>.ovebot.ai/widget/event.js` and reports the order number, total and currency. Ovebot.ai records only these — the order id and its total — and keeps them to produce the account's activity / justification report (attributing an order to the conversation that preceded it). No line items, customer names, emails, phone numbers or addresses are sent by this event.
 
 = 4. Requests Ovebot.ai makes back to your site =
 
-Not an outbound service, but disclosed for completeness. Once configured, Ovebot.ai's servers call two REST endpoints on your own site — `/wp-json/ovebotai/v1/feed` (your product catalog, protected by a secret hash in the URL) and `/wp-json/ovebotai/v1/orders` (order lookup, protected by HTTP Basic credentials generated on your site). Both require WooCommerce, both can be switched off in the plugin's settings, and both are served as Forbidden while the chat widget is disabled. Order lookup only ever answers for a request that already carries a matching email address or phone number for that specific order.
+Not an outbound connection the plugin opens, but disclosed here because this is how your product and order data actually reaches Ovebot.ai. Once configured, Ovebot.ai's servers call two REST endpoints on your own site. Both require WooCommerce, both can be switched off in the plugin's settings, and both are served as Forbidden while the chat widget is disabled.
+
+* **`/wp-json/ovebotai/v1/feed`** — your product catalog, protected by a secret hash in the URL. For each purchasable, in-stock product it returns: the internal product id, name, description, category path, brand/manufacturer, availability, price and sale price, currency, main image URL, product-page URL, product attributes and — for managed-stock products — the available quantity. Out-of-stock and zero-priced products are left out. This is the product data Ovebot.ai uses to answer questions and recommend items.
+* **`/wp-json/ovebotai/v1/orders`** — order-status lookup, protected by HTTP Basic credentials generated on your site. The order is always found by **this plugin, looking it up live in your own site's WooCommerce database** — Ovebot.ai keeps no copy of your orders and does not search for it on its side. When a customer asks "where is my order?", Ovebot.ai simply forwards the order number they gave, together with the email address **or** phone number they entered so ownership can be proven, to this endpoint; the plugin does the lookup and hands back the answer. The email/phone is used only to check it matches that one order in that single request — it is never stored or logged, on your site or on Ovebot.ai. Only on a match does the endpoint return the order number, creation date, status, total and currency, plus — when your shipping plugin has stored one — the tracking (AWB) number, carrier name and a public tracking URL. Nothing is returned for an order the request cannot prove ownership of.
+
+What Ovebot.ai keeps, and what it does not:
+
+* **Product feed:** Ovebot.ai stores the catalog it reads from `/feed` so the AI can recommend your products to visitors, and refreshes it as your stock and prices change. Remove a product, or let it go out of stock, and it drops out on the next refresh.
+* **Orders:** Ovebot.ai records only the order id and order total (from the order-received event above), and keeps them solely to build your account's activity / justification report.
+* **Customer contact details are not retained:** the email address or phone number a customer enters when asking "where is my order?" is used only to authorize that one lookup. It is not stored or logged by this plugin, and it is not saved by Ovebot.ai either — it never becomes part of your account's stored data.
 
 = 5. Courier tracking links =
 
@@ -185,19 +195,19 @@ Not an outbound service, but disclosed for completeness. Once configured, Ovebot
 
 **This plugin does not connect to any courier.** It reads the AWB / tracking number that your shipping plugin has already stored for an order, and builds a public tracking URL out of it. That URL is returned as text in the order-lookup response, so the AI can offer the customer a link to track their parcel. No request is made to the courier and no data is sent to it by this plugin; nothing at all happens unless the customer chooses to click the link, at which point they visit the courier's site directly, as they would from any tracking link.
 
-Depending on which shipping plugin generated the label, the link points to one of:
+Depending on which shipping plugin generated the label, the link points to the tracking page of one of the couriers below. These are independent third parties; this plugin has no business relationship with them and sends them nothing. Their own terms and privacy policies (linked for reference) apply only if and when the customer clicks through to the courier's own site:
 
-* mondialrelay.com (Mondial Relay)
-* ups.com (UPS)
-* chronopost.fr (Chronopost)
-* dpdgroup.com (DPD)
-* fancourier.ro (FAN Courier)
-* sameday.ro (Sameday)
-* gls-group.eu (GLS)
-* laposte.fr (Colissimo)
-* seur.com (SEUR)
-* tracking.packeta.com (Packeta)
-* track.myshipi.com (FedEx, via the A2Z FedEx shipping plugin)
+* UPS — tracking domain ups.com. Terms & conditions: https://www.ups.com/us/en/support/shipping-support/legal-terms-conditions.page — Privacy notice: https://www.ups.com/us/en/support/shipping-support/legal-terms-conditions/privacy-notice.page
+* Chronopost — tracking domain chronopost.fr. Legal notice: https://www.chronopost.fr/fr/mentions-legales — Privacy policy: https://www.chronopost.fr/en/data-protection-policy
+* Mondial Relay — tracking domain mondialrelay.com. Legal notice: https://www.mondialrelay.fr/mentions-legales/ — Privacy policy: https://www.mondialrelay.fr/donnees-personnelles/
+* DPD — tracking domain dpdgroup.com. Legal notice: https://www.geopost.com/en/legal-and-copyright-notice-disclaimer-dispute-settlement/ — Privacy policy: https://www.geopost.com/en/data-privacy-policy/
+* FAN Courier — tracking domain fancourier.ro. Terms & conditions: https://www.fancourier.ro/conditii-generale-privind-furnizarea-serviciilor-postale/ — Privacy policy: https://www.fancourier.ro/politica-de-confidentialitate/
+* Sameday — tracking domain sameday.ro. Terms & conditions: https://sameday.ro/termeni-si-conditii/ — Privacy policy: https://sameday.ro/politica-de-confidentialitate/
+* GLS — tracking domain gls-group.eu. Privacy policy: https://gls-group.eu/GROUP/en/data-protection/ (GLS Group publishes its terms per country, not as a single global page)
+* Colissimo (La Poste) — tracking domain laposte.fr. Privacy policy: https://www.laposte.fr/conseils-pratiques/donnees-personnelles-colissimo (La Poste publishes its terms as country/service PDFs rather than a single page)
+* SEUR — tracking domain seur.com. Legal notice: https://www.seur.com/es/aviso-legal/ — Privacy policy: https://www.seur.com/es/politica-de-privacidad-y-cookies/
+* Packeta — tracking domain tracking.packeta.com. Terms & conditions: https://www.packeta.com/general-terms-conditions — Privacy policy: https://www.packeta.com/privacy-policy
+* FedEx (via the A2Z FedEx shipping plugin) — tracking domain track.myshipi.com. Terms of use: https://www.fedex.com/en-us/terms-of-use.html — Privacy policy: https://www.fedex.com/en-us/trust-center/global-privacy-policy.html
 
 If no supported shipping plugin is installed, or none has produced a tracking number for the order yet, no link is generated and the AI simply reports the order status.
 
@@ -320,10 +330,18 @@ All of the plugin's options, cached feed data and knowledge-base id mappings are
 
 == Changelog ==
 
+= 1.0.1 =
+* Expanded the External services documentation: what data is sent and when, what Ovebot.ai retains (product feed for recommendations, order id/total for the activity report) and what it never stores (the email/phone a customer enters for an order lookup), and terms/privacy links for every courier whose public tracking page the plugin can build a link to.
+* Sanitized the HTTP Basic credentials read from `$_SERVER` on the order-lookup endpoint.
+* Hardened the OAuth return handler: explicit `state`/PKCE origin validation before the authorization code is read, and the connect-error message is now passed through a per-user transient instead of a query-string parameter.
+
 = 1.0.0 =
 * Initial release.
 
 == Upgrade Notice ==
+
+= 1.0.1 =
+* Documentation and security hardening for the plugin review: fuller External services disclosure, sanitized order-endpoint credentials, and a stricter OAuth return handler.
 
 = 1.0.0 =
 * Initial release.

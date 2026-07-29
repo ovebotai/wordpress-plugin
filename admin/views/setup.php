@@ -20,9 +20,11 @@ $ovebotai_steps_seq = $ovebotai_wc_active ? array( 1, 2, 3, 4 ) : array( 1, 2, 4
 // finished setup has already been routed to the dashboard by render_page(),
 // so the only two entry points left are "connect" and "pick pages".
 $ovebotai_initial_step = $ovebotai_is_connected ? 2 : 1;
-// Read-only error message display, already sanitized - no state change.
-// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-$ovebotai_oauth_error  = isset( $_GET['oauth_error'] ) ? sanitize_text_field( wp_unslash( $_GET['oauth_error'] ) ) : '';
+
+// A failed OAuth connect surfaces its message through setup.js (localized as
+// ovebotaiSetup.oauthError, read once from a per-user transient in
+// Ovebotai_Admin::enqueue_assets()), which renders the error notice on load - so
+// this view no longer reads anything from $_GET.
 
 // Product-source choice (wizard step 3) + the connected agent's settings page
 // on Ovebot.ai (linked from the "own feed" option and the final success screen).
@@ -82,11 +84,8 @@ $ovebotai_agent_settings_url  = $ovebotai_oauth->get_agent_settings_url();
 					<strong><?php esc_html_e( 'Free plan for the first 200 stores. No credit card.', 'ovebot-ai-chatbot-sales-agent' ); ?></strong>
 				</p>
 
-				<?php if ( $ovebotai_oauth_error ) : ?>
-				<div class="ovebotai-notice ovebotai-notice-error">
-					<p><?php echo esc_html( $ovebotai_oauth_error ); ?></p>
-				</div>
-				<?php endif; ?>
+				<!-- A connect failure's message is injected here by setup.js
+				     (showOauthError), before the connect box below. -->
 
 				<div class="ovebotai-connect-box">
 					<div class="ovebotai-connect-actions">
