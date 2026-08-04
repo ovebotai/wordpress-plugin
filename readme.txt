@@ -4,13 +4,13 @@ Tags: chatbot, ai, live chat, customer support, woocommerce
 Requires at least: 5.9
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
-AI chat widget powered by Ovebot.ai. Answers from your content, recommends products, tracks orders. Free plan for first 200 stores. No credit card.
-
 == Description ==
+
+🎯 **FREE AI chat widget powered by Ovebot.ai. Answers from your content, recommends products, tracks orders. Free plan for first 200 stores. No credit card.**
 
 🤖 **Ovebot — an AI chatbot that knows your store**
 
@@ -329,6 +329,9 @@ All of the plugin's options, cached feed data and knowledge-base id mappings are
 7. Working hours and human handover — when the AI can offer to connect a visitor to a live agent.
 
 == Changelog ==
+
+= 1.0.2 =
+Readme file updated.
 
 = 1.0.1 =
 * Expanded the External services documentation: what data is sent and when, what Ovebot.ai retains (product feed for recommendations, order id/total for the activity report) and what it never stores (the email/phone a customer enters for an order lookup), and terms/privacy links for every courier whose public tracking page the plugin can build a link to.
