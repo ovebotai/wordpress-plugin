@@ -2,9 +2,9 @@
 Contributors: ovesio
 Tags: chatbot, ai, live chat, customer support, woocommerce
 Requires at least: 5.8
-Tested up to: 7.2
+Tested up to: 7.0
 Requires PHP: 7.2
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -28,7 +28,7 @@ The AI processing itself runs on the Ovebot.ai service, which requires an accoun
 
 ✅ **Answer support questions** from your own knowledge base: shipping, returns, warranty, payment — whatever you feed it.
 
-✅ **Recommend products** *(WooCommerce)* from your live catalog, with images, prices and a link to the product page. Products that go out of stock drop out of the catalog automatically, so they stop being recommended.
+✅ **Recommend products** *(WooCommerce)* from your live catalog, with images, prices and a link to the product page. Out-of-stock products drop out automatically and stop being recommended.
 
 ✅ **Answer "where is my order?"** *(WooCommerce)* with the real status and, when your shipping plugin has generated one, the tracking number.
 
@@ -36,7 +36,7 @@ The AI processing itself runs on the Ovebot.ai service, which requires an accoun
 
 ✅ **Handle self-service requests** — order cancellation, order modification, delivery or billing address change — through a secure form inside the widget, confirmed with a code emailed to the customer.
 
-✅ **Speak the visitor's language.** Set the language to `auto` and the widget follows the visitor's browser language, switching mid-conversation if they do.
+✅ **Speak the visitor's language.** Set the language to `auto` and the widget follows the visitor's browser language, switching mid-conversation if they do. Your welcome message is auto-translated into every supported language, and you can hand-correct any translation.
 
 = 🧠 Training the AI on your own content =
 
@@ -53,12 +53,6 @@ The AI processing itself runs on the Ovebot.ai service, which requires an accoun
 🟢 **SKU and link lookup** — paste a product link or type a product code and the AI resolves it against your catalog, answering about that exact product.
 
 When there's no good match in your content, the AI says so and offers the closest alternatives rather than inventing an answer.
-
-= 🌍 Speaks your customer's language =
-
-Set the widget to `auto` and it detects the visitor's browser language on its own. If a visitor switches language mid-conversation, the AI switches with them — the replies, the forms, even the verification emails follow along.
-
-Your welcome message is written once in your language and translated into every supported language automatically. You can review and hand-correct any translation; manual edits are never overwritten.
 
 = 🛒 Built to sell on WooCommerce =
 
@@ -87,8 +81,7 @@ Mobile-friendly out of the box.
 * **Predefined quick replies** shared across the team
 * **Session history** with transcripts, visitor country, working memory and linked orders
 * **Browser notifications** when a visitor asks for a human — first teammate to take over gets the chat
-* **Roles** — owners manage settings, billing and statistics; agents handle the chat
-* **Invite your team** — agents join under your plan and are not charged separately
+* **Roles & team invites** — owners manage settings, billing and statistics; agents join under your plan, handle the chat, and are not charged separately
 
 = 📊 Seeing what it does =
 
@@ -115,13 +108,7 @@ The widget loads from a single lightweight script, asynchronously in the footer.
 
 = 🆓 Free plan — early access, first 200 stores =
 
-The plugin itself is free and fully functional: nothing in this code is locked behind a licence key, a trial period or a paid tier, and no feature of the plugin is gated on payment.
-
-What the plugin does *not* include is the AI processing, which is performed by the Ovebot.ai service on its own servers. That service has a **free plan**, which is what the setup wizard signs you up for. It includes 100 AI replies per month, free forever, with no credit card and no time limit. Ovebot.ai is in early access, so the free plan is currently offered to the first 200 stores; paid plans with higher allowances are available at any time. Everything described above works on the free plan, within the resources that plan allocates.
-
-= 🛟 If you run out of allowance =
-
-The chat does not switch off. The widget moves to contact-collection mode: visitors leave their name, phone, email and message, and every submission lands in your Requests inbox and your email. The AI resumes automatically when the allowance resets — or immediately if you upgrade. You also get a heads-up email at 80% of your allowance. Only the AI's own replies count against it — visitor messages and replies your team types by hand are not counted.
+The plugin itself is free and fully functional: nothing in its code is locked behind a licence key, a trial period or a paid tier. The AI processing runs on the Ovebot.ai service, whose **free plan** — the one the setup wizard signs you up for — includes 100 AI replies per month, free forever, with no credit card and no time limit. Ovebot.ai is in early access, so the free plan is currently offered to the first 200 stores; paid plans with higher allowances are available at any time. If you ever use up the monthly allowance, the chat switches to contact-collection mode and the AI resumes when the allowance resets — see the FAQ for details.
 
 = 🚀 Getting started =
 
@@ -129,7 +116,7 @@ The chat does not switch off. The widget moves to contact-collection mode: visit
 2. Connect an existing Ovebot.ai account from the setup wizard, or create a free one
 3. Pick your pages for the knowledge base, style your widget, and go live
 
-You can also try the service before installing anything: paste your site URL at [demo.ovebot.ai](https://demo.ovebot.ai) and chat with an agent trained on your own site. No signup.
+Want to see it first? Paste your site URL at [demo.ovebot.ai](https://demo.ovebot.ai) — no signup.
 
 = ⚖️ Trademarks =
 
@@ -164,7 +151,7 @@ The plugin's admin-side API. Every request is authenticated with the OAuth acces
 
 What is sent, and when:
 
-* **On finishing the setup wizard, on saving the settings screen, and on plugin activation:** your widget configuration (colours, texts, position, language), and — only if WooCommerce is active and you left the corresponding switches on — the public URL of this site's product feed and the URL plus generated user/password of this site's order-lookup endpoint. This is what lets Ovebot.ai read your catalog and answer order questions.
+* **On finishing the setup wizard, on saving the settings screen, and on plugin activation:** your widget configuration (colours, texts, position, language), and — only if WooCommerce is active and you left the corresponding switches on — the public URL of this site's product feed and the URL plus generated user/password of this site's order-lookup endpoint.
 * **When you pick pages for the knowledge base in the wizard, and whenever you later edit one of those pages:** that page's title, plain-text content and permalink.
 * **When the plugin's admin screens load:** a status request, to show your connection state and your catalog / knowledge-base counts.
 * **When you click Disconnect, and on uninstalling the plugin:** a request to revoke the stored token.
@@ -176,40 +163,28 @@ The visitor-facing part. `<your-workspace>` is the workspace slug of the account
 What is sent, and when:
 
 * **On every page view of your site, for every visitor, while the chat widget is enabled:** the browser loads `https://<your-workspace>.ovebot.ai/widget/chat-loader.js`. Loading it necessarily discloses the visitor's IP address and user agent to Ovebot.ai, as with any externally hosted script. From then on, the conversation itself (the messages the visitor types, the page they are on, and two first-party cookies holding a random visitor/session identifier) is exchanged with Ovebot.ai so the AI can reply.
-* **On the WooCommerce order-received page, once per order, while the chat widget is enabled:** the browser loads `https://<your-workspace>.ovebot.ai/widget/event.js` and reports the order number, total and currency. Ovebot.ai records only these — the order id and its total — and keeps them to produce the account's activity / justification report (attributing an order to the conversation that preceded it). No line items, customer names, emails, phone numbers or addresses are sent by this event.
+* **On the WooCommerce order-received page, once per order, while the chat widget is enabled:** the browser loads `https://<your-workspace>.ovebot.ai/widget/event.js` and reports the order number, total and currency. Ovebot.ai records only the order id and total, to attribute the order to the conversation that preceded it in the account's activity report. No line items, customer names, emails, phone numbers or addresses are sent by this event.
 
 = 4. Requests Ovebot.ai makes back to your site =
 
 Not an outbound connection the plugin opens, but disclosed here because this is how your product and order data actually reaches Ovebot.ai. Once configured, Ovebot.ai's servers call two REST endpoints on your own site. Both require WooCommerce, both can be switched off in the plugin's settings, and both are served as Forbidden while the chat widget is disabled.
 
-* **`/wp-json/ovebotai/v1/feed`** — your product catalog, protected by a secret hash in the URL. For each purchasable, in-stock product it returns: the internal product id, name, description, category path, brand/manufacturer, availability, price and sale price, currency, main image URL, product-page URL, product attributes and — for managed-stock products — the available quantity. Out-of-stock and zero-priced products are left out. This is the product data Ovebot.ai uses to answer questions and recommend items.
-* **`/wp-json/ovebotai/v1/orders`** — order-status lookup, protected by HTTP Basic credentials generated on your site. The order is always found by **this plugin, looking it up live in your own site's WooCommerce database** — Ovebot.ai keeps no copy of your orders and does not search for it on its side. When a customer asks "where is my order?", Ovebot.ai simply forwards the order number they gave, together with the email address **or** phone number they entered so ownership can be proven, to this endpoint; the plugin does the lookup and hands back the answer. The email/phone is used only to check it matches that one order in that single request — it is never stored or logged, on your site or on Ovebot.ai. Only on a match does the endpoint return the order number, creation date, status, total and currency, plus — when your shipping plugin has stored one — the tracking (AWB) number, carrier name and a public tracking URL. Nothing is returned for an order the request cannot prove ownership of.
+* **`/wp-json/ovebotai/v1/feed`** — your product catalog, protected by a secret hash in the URL. For each purchasable, in-stock product it returns: the internal product id, name, description, category path, brand, availability, price and sale price, currency, main image URL, product-page URL, attributes and — for managed-stock products — the available quantity. Out-of-stock and zero-priced products are left out.
+* **`/wp-json/ovebotai/v1/orders`** — order-status lookup, protected by HTTP Basic credentials generated on your site. The order is always found by **this plugin, looking it up live in your own WooCommerce database** — Ovebot.ai keeps no copy of your orders. When a customer asks "where is my order?", Ovebot.ai forwards the order number together with the email address **or** phone number the customer entered so ownership can be proven. Only on a match does the endpoint return the order number, creation date, status, total and currency, plus — when your shipping plugin has stored one — the tracking (AWB) number, carrier name and a public tracking URL. Nothing is returned for an order the request cannot prove ownership of.
 
 What Ovebot.ai keeps, and what it does not:
 
-* **Product feed:** Ovebot.ai stores the catalog it reads from `/feed` so the AI can recommend your products to visitors, and refreshes it as your stock and prices change. Remove a product, or let it go out of stock, and it drops out on the next refresh.
-* **Orders:** Ovebot.ai records only the order id and order total (from the order-received event above), and keeps them solely to build your account's activity / justification report.
-* **Customer contact details are not retained:** the email address or phone number a customer enters when asking "where is my order?" is used only to authorize that one lookup. It is not stored or logged by this plugin, and it is not saved by Ovebot.ai either — it never becomes part of your account's stored data.
+* **Product feed:** Ovebot.ai stores the catalog it reads from `/feed` so the AI can recommend your products, refreshing it as stock and prices change. Remove a product, or let it go out of stock, and it drops out on the next refresh.
+* **Orders:** Ovebot.ai records only the order id and order total (from the order-received event above), solely to build your account's activity report.
+* **Customer contact details are not retained:** the email/phone a customer enters for an order lookup authorizes that one request only — it is never stored or logged, by this plugin or by Ovebot.ai.
 
 = 5. Courier tracking links =
 
-*Only relevant on WooCommerce stores that also run one of the third-party shipping plugins listed further below.*
+*Only relevant on WooCommerce stores running one of the supported third-party shipping plugins (listed in the FAQ).*
 
 **This plugin does not connect to any courier.** It reads the AWB / tracking number that your shipping plugin has already stored for an order, and builds a public tracking URL out of it. That URL is returned as text in the order-lookup response, so the AI can offer the customer a link to track their parcel. No request is made to the courier and no data is sent to it by this plugin; nothing at all happens unless the customer chooses to click the link, at which point they visit the courier's site directly, as they would from any tracking link.
 
-Depending on which shipping plugin generated the label, the link points to the tracking page of one of the couriers below. These are independent third parties; this plugin has no business relationship with them and sends them nothing. Their own terms and privacy policies (linked for reference) apply only if and when the customer clicks through to the courier's own site:
-
-* UPS — tracking domain ups.com. Terms & conditions: https://www.ups.com/us/en/support/shipping-support/legal-terms-conditions.page — Privacy notice: https://www.ups.com/us/en/support/shipping-support/legal-terms-conditions/privacy-notice.page
-* Chronopost — tracking domain chronopost.fr. Legal notice: https://www.chronopost.fr/fr/mentions-legales — Privacy policy: https://www.chronopost.fr/en/data-protection-policy
-* Mondial Relay — tracking domain mondialrelay.com. Legal notice: https://www.mondialrelay.fr/mentions-legales/ — Privacy policy: https://www.mondialrelay.fr/donnees-personnelles/
-* DPD — tracking domain dpdgroup.com. Legal notice: https://www.geopost.com/en/legal-and-copyright-notice-disclaimer-dispute-settlement/ — Privacy policy: https://www.geopost.com/en/data-privacy-policy/
-* FAN Courier — tracking domain fancourier.ro. Terms & conditions: https://www.fancourier.ro/conditii-generale-privind-furnizarea-serviciilor-postale/ — Privacy policy: https://www.fancourier.ro/politica-de-confidentialitate/
-* Sameday — tracking domain sameday.ro. Terms & conditions: https://sameday.ro/termeni-si-conditii/ — Privacy policy: https://sameday.ro/politica-de-confidentialitate/
-* GLS — tracking domain gls-group.eu. Privacy policy: https://gls-group.eu/GROUP/en/data-protection/ (GLS Group publishes its terms per country, not as a single global page)
-* Colissimo (La Poste) — tracking domain laposte.fr. Privacy policy: https://www.laposte.fr/conseils-pratiques/donnees-personnelles-colissimo (La Poste publishes its terms as country/service PDFs rather than a single page)
-* SEUR — tracking domain seur.com. Legal notice: https://www.seur.com/es/aviso-legal/ — Privacy policy: https://www.seur.com/es/politica-de-privacidad-y-cookies/
-* Packeta — tracking domain tracking.packeta.com. Terms & conditions: https://www.packeta.com/general-terms-conditions — Privacy policy: https://www.packeta.com/privacy-policy
-* FedEx (via the A2Z FedEx shipping plugin) — tracking domain track.myshipi.com. Terms of use: https://www.fedex.com/en-us/terms-of-use.html — Privacy policy: https://www.fedex.com/en-us/trust-center/global-privacy-policy.html
+Depending on which shipping plugin generated the label, the link points to the public tracking page of one of these couriers: UPS, Chronopost, Mondial Relay, DPD, FAN Courier, Sameday, GLS, Colissimo (La Poste), SEUR, Packeta, or FedEx (via track.myshipi.com). These are independent third parties; this plugin has no business relationship with them and sends them nothing. Their terms and privacy policies — linked in the FAQ entry *"Which couriers can tracking links point to?"* — apply only if the customer clicks through to the courier's own site.
 
 If no supported shipping plugin is installed, or none has produced a tracking number for the order yet, no link is generated and the AI simply reports the order status.
 
@@ -308,6 +283,22 @@ The order-lookup endpoint reads the AWB / tracking number that one of these plug
 
 If none of them is installed, the AI still answers with the order status — just without a tracking link. Missing a courier? Tell us at [ovebot.ai/contact](https://ovebot.ai/contact).
 
+= Which couriers can tracking links point to? =
+
+Depending on which shipping plugin generated the label, the tracking link offered in chat points to the public tracking page of one of the couriers below. They are independent third parties — this plugin sends them nothing; their terms and privacy policies (linked for reference, per the External services section above) apply only if the customer clicks through to the courier's own site:
+
+* UPS — tracking domain ups.com. Terms & conditions: https://www.ups.com/us/en/support/shipping-support/legal-terms-conditions.page — Privacy notice: https://www.ups.com/us/en/support/shipping-support/legal-terms-conditions/privacy-notice.page
+* Chronopost — tracking domain chronopost.fr. Legal notice: https://www.chronopost.fr/fr/mentions-legales — Privacy policy: https://www.chronopost.fr/en/data-protection-policy
+* Mondial Relay — tracking domain mondialrelay.com. Legal notice: https://www.mondialrelay.fr/mentions-legales/ — Privacy policy: https://www.mondialrelay.fr/donnees-personnelles/
+* DPD — tracking domain dpdgroup.com. Legal notice: https://www.geopost.com/en/legal-and-copyright-notice-disclaimer-dispute-settlement/ — Privacy policy: https://www.geopost.com/en/data-privacy-policy/
+* FAN Courier — tracking domain fancourier.ro. Terms & conditions: https://www.fancourier.ro/conditii-generale-privind-furnizarea-serviciilor-postale/ — Privacy policy: https://www.fancourier.ro/politica-de-confidentialitate/
+* Sameday — tracking domain sameday.ro. Terms & conditions: https://sameday.ro/termeni-si-conditii/ — Privacy policy: https://sameday.ro/politica-de-confidentialitate/
+* GLS — tracking domain gls-group.eu. Privacy policy: https://gls-group.eu/GROUP/en/data-protection/ (GLS Group publishes its terms per country, not as a single global page)
+* Colissimo (La Poste) — tracking domain laposte.fr. Privacy policy: https://www.laposte.fr/conseils-pratiques/donnees-personnelles-colissimo (La Poste publishes its terms as country/service PDFs rather than a single page)
+* SEUR — tracking domain seur.com. Legal notice: https://www.seur.com/es/aviso-legal/ — Privacy policy: https://www.seur.com/es/politica-de-privacidad-y-cookies/
+* Packeta — tracking domain tracking.packeta.com. Terms & conditions: https://www.packeta.com/general-terms-conditions — Privacy policy: https://www.packeta.com/privacy-policy
+* FedEx (via the A2Z FedEx shipping plugin) — tracking domain track.myshipi.com. Terms of use: https://www.fedex.com/en-us/terms-of-use.html — Privacy policy: https://www.fedex.com/en-us/trust-center/global-privacy-policy.html
+
 = Where do I manage the widget's appearance? =
 
 Settings → Ovebot.ai → Settings → Appearance.
@@ -332,10 +323,12 @@ All of the plugin's options, cached feed data and knowledge-base id mappings are
 
 == Changelog ==
 
+= 1.0.4 =
+* Tested up field added
+
 = 1.0.3 =
 * Compatibility lowered to WP 5.8 and PHP 7.2.
 * WooCommerce older than v4.3 bug fix
-
 
 = 1.0.2 =
 Readme file updated.
