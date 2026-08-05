@@ -1,20 +1,22 @@
-=== Ovebot – AI Chatbot & Sales Agent ===
+=== Ovebot – AI Chatbot, Live Chat & Sales Agent ===
 Contributors: ovesio
 Tags: chatbot, ai, live chat, customer support, woocommerce
-Requires at least: 5.9
-Tested up to: 7.0
-Requires PHP: 7.4
-Stable tag: 1.0.2
+Requires at least: 5.8
+Tested up to: 7.2
+Requires PHP: 7.2
+Stable tag: 1.0.3
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
+Free AI chatbot & live chat for WordPress and WooCommerce. Answers from your content, recommends products, tracks orders. No credit card needed.
+
 == Description ==
 
-🎯 **FREE AI chat widget powered by Ovebot.ai. Answers from your content, recommends products, tracks orders. Free plan for first 200 stores. No credit card.**
+🎯 **Free AI chatbot with live chat for WordPress & WooCommerce — answers customer questions 24/7 from your own content, recommends products and tracks orders. Free plan for the first 200 stores, no credit card.**
 
 🤖 **Ovebot — an AI chatbot that knows your store**
 
-Ovebot adds an AI chat widget to your WordPress site. The AI answers questions using **your** content — the pages you choose, the documents you upload and, on a WooCommerce store, your live product catalog — and hands the conversation over to a human on your team whenever the visitor asks for one.
+Ovebot adds an AI chatbot to your WordPress site. The AI answers questions using **your** content — the pages you choose, the documents you upload and, on a WooCommerce store, your live product catalog — and hands the conversation over to your team as a live chat whenever the visitor asks for a human.
 
 Install the plugin, connect your Ovebot.ai account from the setup wizard, and the widget goes live. There are no API keys to copy and no scripts to paste into your theme.
 
@@ -22,7 +24,7 @@ Install the plugin, connect your Ovebot.ai account from the setup wizard, and th
 
 The AI processing itself runs on the Ovebot.ai service, which requires an account — see **External services** below for exactly what is sent and when.
 
-= 💬 What the AI can do =
+= 💬 Your 24/7 AI support and sales agent =
 
 ✅ **Answer support questions** from your own knowledge base: shipping, returns, warranty, payment — whatever you feed it.
 
@@ -58,7 +60,7 @@ Set the widget to `auto` and it detects the visitor's browser language on its ow
 
 Your welcome message is written once in your language and translated into every supported language automatically. You can review and hand-correct any translation; manual edits are never overwritten.
 
-= 🛒 On a WooCommerce store =
+= 🛒 Built to sell on WooCommerce =
 
 * **Live catalog feed** with real-time stock and availability
 * **Product carousels** in chat with quick refine buttons like *"In stock only"* or *"Under 500"*
@@ -78,7 +80,7 @@ Everything is configured from **Settings → Ovebot.ai**, live preview included:
 
 Mobile-friendly out of the box.
 
-= 👥 For your team =
+= 👥 Live chat for your team =
 
 * **Live sessions dashboard** — see who is chatting right now and take over any conversation
 * **Take over** — your name and avatar appear in the visitor's chat header; click **Leave** and the AI picks up where you left off
@@ -329,6 +331,11 @@ All of the plugin's options, cached feed data and knowledge-base id mappings are
 7. Working hours and human handover — when the AI can offer to connect a visitor to a live agent.
 
 == Changelog ==
+
+= 1.0.3 =
+* Compatibility lowered to WP 5.8 and PHP 7.2.
+* WooCommerce older than v4.3 bug fix
+
 
 = 1.0.2 =
 Readme file updated.
