@@ -2,9 +2,9 @@
 Contributors: ovesio
 Tags: chatbot, ai, live chat, customer support, woocommerce
 Requires at least: 5.8
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.2
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -322,6 +322,9 @@ All of the plugin's options, cached feed data and knowledge-base id mappings are
 7. Working hours and human handover — when the AI can offer to connect a visitor to a live agent.
 
 == Changelog ==
+
+= 1.0.5 =
+* Tested up field updated
 
 = 1.0.4 =
 * Tested up field added
