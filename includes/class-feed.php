@@ -152,7 +152,9 @@ class Ovebotai_Feed {
 			// (possibly stale) _stock_status meta. Net out stock already held
 			// by unpaid/pending orders (WooCommerce's checkout hold window) so
 			// we don't advertise quantity that's already spoken for.
-			$held       = (int) wc_get_held_stock_quantity( $product );
+			// wc_get_held_stock_quantity() only exists since WooCommerce 4.3 -
+			// on older WC versions no hold window is netted out.
+			$held       = function_exists( 'wc_get_held_stock_quantity' ) ? (int) wc_get_held_stock_quantity( $product ) : 0;
 			$quantity   = max( 0, (int) $product->get_stock_quantity() - $held );
 			$backorders = $product->get_backorders(); // 'no' | 'notify' | 'yes'
 
