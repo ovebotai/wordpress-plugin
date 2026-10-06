@@ -110,6 +110,23 @@ if ( ! $ovebotai_oauth->is_connected() ) {
 					<p class="description"><?php esc_html_e( 'When off, your AI agent stops suggesting products to customers in the chat.', 'ovebot-ai-chatbot-sales-agent' ); ?></p>
 				</div>
 
+				<!-- "Add to cart" button on recommended products. Saved locally and
+				     mirrored into the account's products.add_to_cart on Save. Also
+				     gates the storefront cart script + cart endpoint. -->
+				<div class="ovebotai-field ovebotai-field-switch">
+					<label><?php esc_html_e( 'Add to cart button', 'ovebot-ai-chatbot-sales-agent' ); ?></label>
+					<div class="ovebotai-switch-wrap">
+						<label class="ovebotai-switch">
+							<input type="checkbox" name="add_to_cart" id="oveAddToCart" value="1" <?php checked( Ovebotai::add_to_cart_enabled() ); ?>>
+							<span class="ovebotai-switch-slider"></span>
+						</label>
+						<span class="ovebotai-switch-lbl" id="oveAddToCartLbl">
+							<?php echo Ovebotai::add_to_cart_enabled() ? esc_html__( 'Enabled', 'ovebot-ai-chatbot-sales-agent' ) : esc_html__( 'Disabled', 'ovebot-ai-chatbot-sales-agent' ); ?>
+						</span>
+					</div>
+					<p class="description"><?php esc_html_e( 'Lets customers add a recommended product to their cart straight from the chat, and keeps the chat in sync with the cart. The option must also be enabled in your Ovebot.ai account.', 'ovebot-ai-chatbot-sales-agent' ); ?></p>
+				</div>
+
 				<!-- Product source (item 10): built-in automatic feed vs. products
 				     managed directly on Ovebot.ai. When off, the products section
 				     is omitted from the API push entirely (leaving Ovebot.ai's copy
@@ -155,7 +172,7 @@ if ( ! $ovebotai_oauth->is_connected() ) {
 							<span class="dashicons dashicons-image-rotate" aria-hidden="true"></span>
 						</button>
 					</div>
-					<p class="description"><?php esc_html_e( 'Ovebot.ai reads this URL periodically to keep your AI agent\'s product recommendations up to date with your catalog (stock, price, availability).', 'ovebot-ai-chatbot-sales-agent' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Ovebot.ai reads this URL periodically to keep your AI agent\'s product recommendations up to date with your catalog (stock, price, availability). Only in-stock products are included, and variable products are sent as one product per variation.', 'ovebot-ai-chatbot-sales-agent' ); ?></p>
 				</div>
 
 			</div>

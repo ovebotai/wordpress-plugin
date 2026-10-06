@@ -3,7 +3,7 @@
  * Plugin Name:       Ovebot – AI Chatbot & Sales Agent
  * Plugin URI:        https://ovebot.ai
  * Description:       Adds an AI chat widget to your site, powered by the Ovebot.ai service. Answers visitor questions from your own content and, on WooCommerce stores, recommends products and looks up order status.
- * Version:           1.0.1
+ * Version:           1.1.0
  * Requires at least: 5.9
  * Requires PHP:      7.4
  * Author:            Ovesio
@@ -15,7 +15,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'OVEBOTAI_VERSION',     '1.0.1' );
+define( 'OVEBOTAI_VERSION',     '1.1.0' );
 define( 'OVEBOTAI_MIN_WP_VER',  '5.9' );
 define( 'OVEBOTAI_MIN_PHP_VER', '7.4' );
 define( 'OVEBOTAI_FILE',        __FILE__ );

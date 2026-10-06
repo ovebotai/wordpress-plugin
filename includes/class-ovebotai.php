@@ -71,6 +71,10 @@ class Ovebotai {
 		if ( false === get_option( 'ovebotai_products_enabled', false ) ) {
 			update_option( 'ovebotai_products_enabled', '1', false );
 		}
+		// "Add to cart" button in the chat: on by default, same seeding rule.
+		if ( false === get_option( 'ovebotai_add_to_cart', false ) ) {
+			update_option( 'ovebotai_add_to_cart', '1', false );
+		}
 
 		// Safety net for deactivate → reactivate: nothing else re-pushes our
 		// config to Ovebot.ai just because the plugin came back online, so if
@@ -116,6 +120,16 @@ class Ovebotai {
 	// sync_settings()). Defaults to enabled.
 	public static function products_enabled(): bool {
 		return '1' === get_option( 'ovebotai_products_enabled', '1' );
+	}
+
+	// "Add to cart" button on recommended products in the chat. Stored locally
+	// and mirrored into the remote products.add_to_cart on every setup push;
+	// GET /v1/integration/status carries no such flag, so nothing is reconciled
+	// back - this option is the only source. Defaults to enabled (like product
+	// recommendations) so finishing the wizard sends it enabled to the account.
+	// Only meaningful while recommendations are on and the built-in feed is used.
+	public static function add_to_cart_enabled(): bool {
+		return '1' === get_option( 'ovebotai_add_to_cart', '1' );
 	}
 
 	// Pulls the account's current integration status and reconciles the local
@@ -303,9 +317,10 @@ class Ovebotai {
 		if ( $wc_active ) {
 			$feed_hash = (string) get_option( 'ovebotai_feed_hash', '' );
 			$payload['products'] = array(
-				'enabled'  => true,
-				'feed_url' => add_query_arg( 'hash', $feed_hash, rest_url( 'ovebotai/v1/feed' ) ),
-				'currency' => self::store_currency(),
+				'enabled'     => true,
+				'add_to_cart' => self::add_to_cart_enabled(),
+				'feed_url'    => add_query_arg( 'hash', $feed_hash, rest_url( 'ovebotai/v1/feed' ) ),
+				'currency'    => self::store_currency(),
 			);
 		} else {
 			$payload['products'] = array( 'enabled' => false );

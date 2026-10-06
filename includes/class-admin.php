@@ -356,7 +356,7 @@ class Ovebotai_Admin {
 					'updated'               => __( 'Updated', 'ovebot-ai-chatbot-sales-agent' ),
 					'error'                 => __( 'An error occurred. Please try again.', 'ovebot-ai-chatbot-sales-agent' ),
 					'noProducts'            => __( 'No published products found - your AI agent won\'t have any products to recommend yet.', 'ovebot-ai-chatbot-sales-agent' ),
-					'productsWillBeIndexed' => __( 'products will be sent to your AI agent so it can recommend them to customers.', 'ovebot-ai-chatbot-sales-agent' ),
+					'productsWillBeIndexed' => __( 'products will be sent to your AI agent so it can recommend them to customers. Variable products are sent as one product per variation (e.g. each colour/size), so the agent can recommend and add to the cart the exact combination.', 'ovebot-ai-chatbot-sales-agent' ),
 				),
 			) );
 		}
@@ -383,17 +383,38 @@ class Ovebotai_Admin {
 			SELECT COUNT(DISTINCT p.ID) FROM {$wpdb->posts} p
 			WHERE p.post_type = 'product' AND p.post_status = 'publish'
 		" );
-		// Products that actually go on the feed: in stock or on backorder, with a
+		// Rows that actually go on the feed: in stock or on backorder, with a
 		// positive price (matches the meta_query in Ovebotai_Feed::build_feed()).
+		// Variable products are published one row per variation, so the count is
+		// non-variable products + published variations (of published parents),
+		// each under the same stock/price filter.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$feed_count = (int) $wpdb->get_var( $wpdb->prepare( "
+		$simple_count = (int) $wpdb->get_var( $wpdb->prepare( "
 			SELECT COUNT(DISTINCT p.ID) FROM {$wpdb->posts} p
 			JOIN {$wpdb->postmeta} pm_stock ON p.ID = pm_stock.post_id
 			JOIN {$wpdb->postmeta} pm_price ON p.ID = pm_price.post_id
 			WHERE p.post_type = 'product' AND p.post_status = 'publish'
 			  AND pm_stock.meta_key = '_stock_status' AND pm_stock.meta_value IN (%s, %s)
 			  AND pm_price.meta_key = '_price' AND CAST(pm_price.meta_value AS DECIMAL(20,4)) > 0
+			  AND p.ID NOT IN (
+				SELECT tr.object_id FROM {$wpdb->term_relationships} tr
+				JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+				JOIN {$wpdb->terms} t ON tt.term_id = t.term_id
+				WHERE tt.taxonomy = 'product_type' AND t.slug = 'variable'
+			  )
 		", 'instock', 'onbackorder' ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$variation_count = (int) $wpdb->get_var( $wpdb->prepare( "
+			SELECT COUNT(DISTINCT v.ID) FROM {$wpdb->posts} v
+			JOIN {$wpdb->posts} p ON v.post_parent = p.ID
+			JOIN {$wpdb->postmeta} pm_stock ON v.ID = pm_stock.post_id
+			JOIN {$wpdb->postmeta} pm_price ON v.ID = pm_price.post_id
+			WHERE v.post_type = 'product_variation' AND v.post_status = 'publish'
+			  AND p.post_type = 'product' AND p.post_status = 'publish'
+			  AND pm_stock.meta_key = '_stock_status' AND pm_stock.meta_value IN (%s, %s)
+			  AND pm_price.meta_key = '_price' AND CAST(pm_price.meta_value AS DECIMAL(20,4)) > 0
+		", 'instock', 'onbackorder' ) );
+		$feed_count = $simple_count + $variation_count;
 
 		return array(
 			'total'      => $total,

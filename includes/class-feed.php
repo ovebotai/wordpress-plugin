@@ -104,103 +104,206 @@ class Ovebotai_Feed {
 			$product = wc_get_product( $pid );
 			if ( ! $product || ! $product->is_visible() ) continue;
 
-			$manage_stock = $product->get_manage_stock();
+			// Variable products are published one row per variation ("white
+			// T-shirt, size M" is its own product, with its own image, price and
+			// stock), so the agent recommends - and adds to the cart - the exact
+			// combination. The parent itself is never a row: it can't be added
+			// to the cart without choosing a variation. Variations that aren't
+			// visible/purchasable (unpublished, no price) are skipped.
+			if ( $product->is_type( 'variable' ) ) {
+				foreach ( $product->get_children() as $variation_id ) {
+					$variation = wc_get_product( $variation_id );
+					if ( ! $variation || ! $variation->is_type( 'variation' ) ) continue;
+					if ( ! $variation->variation_is_visible() || ! $variation->is_purchasable() ) continue;
 
-			if ( $manage_stock ) {
-				// Managed stock: trust our own quantity/backorder math over the
-				// (possibly stale) _stock_status meta. Net out stock already held
-				// by unpaid/pending orders (WooCommerce's checkout hold window) so
-				// we don't advertise quantity that's already spoken for.
-				$held       = (int) wc_get_held_stock_quantity( $product );
-				$quantity   = max( 0, (int) $product->get_stock_quantity() - $held );
-				$backorders = $product->get_backorders(); // 'no' | 'notify' | 'yes'
-
-				if ( $quantity <= 0 ) {
-					$availability = ( 'no' === $backorders ) ? 'out_of_stock' : 'in_stock';
-				} else {
-					$availability = 'in_stock';
-				}
-			} else {
-				// Unmanaged stock: no quantity to report, just relay _stock_status.
-				$quantity = null;
-				switch ( $product->get_stock_status() ) {
-					case 'instock':
-						$availability = 'in_stock';
-						break;
-					case 'onbackorder':
-						$availability = 'preorder';
-						break;
-					default:
-						$availability = 'out_of_stock';
-				}
-			}
-
-			if ( 'out_of_stock' === $availability ) continue;
-
-			$price = (float) $product->get_price();
-
-			// Defense in depth: the meta_query above already excludes non-positive
-			// _price at the SQL level, but that meta can lag the live computed
-			// price (e.g. a scheduled sale that just ended) — re-check here too.
-			if ( $price <= 0 ) continue;
-
-			$regular = (float) $product->get_regular_price();
-			$special = $product->is_on_sale() ? $price : null;
-			$display = $product->is_on_sale() ? $regular : $price;
-
-			$image_id  = $product->get_image_id();
-			$image_url = $image_id ? wp_get_attachment_url( $image_id ) : null;
-
-			$category = $this->get_category_path( $pid );
-			$brand    = $this->get_brand( $pid );
-
-			$attributes = array();
-			foreach ( $product->get_attributes() as $attr ) {
-				if ( $attr->is_taxonomy() ) {
-					$terms = get_the_terms( $pid, $attr->get_name() );
-					if ( $terms ) {
-						$attributes[ wc_attribute_label( $attr->get_name() ) ] = implode( ', ', wp_list_pluck( $terms, 'name' ) );
+					$row = $this->build_row( $variation, $product, $currency );
+					if ( $row ) {
+						$data[] = $row;
 					}
-				} else {
-					$attributes[ $attr->get_name() ] = implode( ', ', $attr->get_options() );
 				}
+				continue;
 			}
 
-			// strip_shortcodes() first: shortcode brackets like [gallery] or
-			// [contact-form-7] aren't HTML tags, so wp_strip_all_tags() alone
-			// would leave the raw "[shortcode attr=...]" text in the feed.
-			$description = strip_shortcodes( $product->get_short_description() ?: $product->get_description() );
-			$description = wp_strip_all_tags( $description );
-			$description = html_entity_decode( $description, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
-			$description = trim( (string) preg_replace( '/\s+/', ' ', $description ) );
-
-			$row = array(
-				'ref'          => (string) $pid,
-				'name'         => $product->get_name(),
-				'description'  => $description,
-				'category'     => $category,
-				'manufacturer' => $brand,
-				'availability' => $availability,
-				'price'        => round( $display, 2 ),
-				'currency'     => $currency,
-				'image'        => $image_url ?: null,
-				'url'          => get_permalink( $pid ),
-				'attributes'   => $attributes,
-			);
-
-			// Quantity and special are optional: omit them entirely rather than
-			// sending null.
-			if ( null !== $quantity ) {
-				$row['quantity'] = $quantity;
+			$row = $this->build_row( $product, null, $currency );
+			if ( $row ) {
+				$data[] = $row;
 			}
-			if ( null !== $special ) {
-				$row['special'] = round( $special, 2 );
-			}
-
-			$data[] = $row;
 		}
 
 		return $data;
+	}
+
+	// One feed row for a simple product ($parent null) or for a single variation
+	// ($parent = its variable product). Returns null when the product is out of
+	// stock or unpriced. 'ref' is the WooCommerce product/variation id - the same
+	// id the native add-to-cart endpoint (?wc-ajax=add_to_cart) accepts as
+	// product_id, so for a variation the exact combination gets added.
+	private function build_row( WC_Product $product, ?WC_Product $parent, string $currency ): ?array {
+		$pid       = $product->get_id();
+		$parent_id = $parent ? $parent->get_id() : $pid;
+
+		// For a variation, get_manage_stock() returns 'parent' when stock is
+		// tracked on the variable product; get_stock_quantity()/get_backorders()
+		// then resolve to the parent's values, so the same math applies.
+		$manage_stock = $product->get_manage_stock();
+
+		if ( $manage_stock ) {
+			// Managed stock: trust our own quantity/backorder math over the
+			// (possibly stale) _stock_status meta. Net out stock already held
+			// by unpaid/pending orders (WooCommerce's checkout hold window) so
+			// we don't advertise quantity that's already spoken for.
+			$held       = (int) wc_get_held_stock_quantity( $product );
+			$quantity   = max( 0, (int) $product->get_stock_quantity() - $held );
+			$backorders = $product->get_backorders(); // 'no' | 'notify' | 'yes'
+
+			if ( $quantity <= 0 ) {
+				$availability = ( 'no' === $backorders ) ? 'out_of_stock' : 'in_stock';
+			} else {
+				$availability = 'in_stock';
+			}
+		} else {
+			// Unmanaged stock: no quantity to report, just relay _stock_status.
+			$quantity = null;
+			switch ( $product->get_stock_status() ) {
+				case 'instock':
+					$availability = 'in_stock';
+					break;
+				case 'onbackorder':
+					$availability = 'preorder';
+					break;
+				default:
+					$availability = 'out_of_stock';
+			}
+		}
+
+		if ( 'out_of_stock' === $availability ) return null;
+
+		$price = (float) $product->get_price();
+
+		// Defense in depth: the meta_query above already excludes non-positive
+		// _price at the SQL level, but that meta can lag the live computed
+		// price (e.g. a scheduled sale that just ended) — re-check here too.
+		if ( $price <= 0 ) return null;
+
+		$regular = (float) $product->get_regular_price();
+		$special = $product->is_on_sale() ? $price : null;
+		$display = $product->is_on_sale() ? $regular : $price;
+
+		// A variation without its own image inherits the parent's (WC does this
+		// in WC_Product_Variation::get_image_id()).
+		$image_id  = $product->get_image_id();
+		$image_url = $image_id ? wp_get_attachment_url( $image_id ) : null;
+
+		// Categories and brands are taxonomies of the parent product.
+		$category = $this->get_category_path( $parent_id );
+		$brand    = $this->get_brand( $parent_id );
+
+		// Parent-level attributes (for a simple product: all of them; for a
+		// variation: the non-variation ones, e.g. "Material: Cotton"), then the
+		// variation's own chosen values ("Color: White", "Size: M") on top.
+		$attributes = array();
+		foreach ( ( $parent ?: $product )->get_attributes() as $attr ) {
+			if ( $parent && $attr->get_variation() ) continue;
+
+			if ( $attr->is_taxonomy() ) {
+				$terms = get_the_terms( $parent_id, $attr->get_name() );
+				if ( $terms ) {
+					$attributes[ wc_attribute_label( $attr->get_name() ) ] = implode( ', ', wp_list_pluck( $terms, 'name' ) );
+				}
+			} else {
+				$attributes[ $attr->get_name() ] = implode( ', ', $attr->get_options() );
+			}
+		}
+
+		if ( $parent ) {
+			foreach ( $product->get_attributes() as $taxonomy => $value ) {
+				// '' means "Any ..." - the variation doesn't pin this attribute.
+				if ( '' === (string) $value ) continue;
+
+				if ( taxonomy_exists( $taxonomy ) ) {
+					$term  = get_term_by( 'slug', $value, $taxonomy );
+					$value = $term ? $term->name : $value;
+				}
+
+				$attributes[ wc_attribute_label( $taxonomy, $parent ) ] = $value;
+			}
+		}
+
+		// strip_shortcodes() first: shortcode brackets like [gallery] or
+		// [contact-form-7] aren't HTML tags, so wp_strip_all_tags() alone
+		// would leave the raw "[shortcode attr=...]" text in the feed.
+		// A variation's own description comes first, then the parent's.
+		$description = $product->get_description();
+		if ( '' === $description && $parent ) {
+			$description = $parent->get_short_description() ?: $parent->get_description();
+		} elseif ( ! $parent ) {
+			$description = $product->get_short_description() ?: $description;
+		}
+		$description = strip_shortcodes( $description );
+		$description = wp_strip_all_tags( $description );
+		$description = html_entity_decode( $description, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+		$description = trim( (string) preg_replace( '/\s+/', ' ', $description ) );
+
+		$row = array(
+			'ref'          => (string) $pid,
+			// For a variation WC's generated title already reads
+			// "Parent name - White, M".
+			'name'         => $product->get_name(),
+			'description'  => $description,
+			'category'     => $category,
+			'manufacturer' => $brand,
+			'availability' => $availability,
+			'price'        => round( $display, 2 ),
+			'currency'     => $currency,
+			'image'        => $image_url ?: null,
+			// For a variation this is the parent's permalink with the variation's
+			// attributes as query args, so the product page opens pre-selected.
+			'url'          => $product->get_permalink(),
+			'attributes'   => $attributes,
+		);
+
+		// Quantity and special are optional: omit them entirely rather than
+		// sending null.
+		if ( null !== $quantity ) {
+			$row['quantity'] = $quantity;
+		}
+		if ( null !== $special ) {
+			$row['special'] = round( $special, 2 );
+		}
+
+		// Optional columns - only present when the product has a value. A
+		// variation's SKU falls back to the parent's (WC does that itself).
+		$sku = trim( (string) $product->get_sku() );
+		if ( '' !== $sku ) {
+			$row['sku'] = $sku;
+		}
+
+		// WooCommerce's native "GTIN, UPC, EAN, or ISBN" field (WC 9.1+); the
+		// method doesn't exist on older WC, in which case the column is omitted.
+		if ( method_exists( $product, 'get_global_unique_id' ) ) {
+			$gtin = trim( (string) $product->get_global_unique_id() );
+			if ( '' !== $gtin ) {
+				$row['gtin'] = $gtin;
+			}
+		}
+
+		// Gallery images as absolute URLs, in gallery order. The gallery lives
+		// on the parent product only, so a variation gets its parent's gallery
+		// (minus the image already sent as the main one).
+		$gallery = array();
+		foreach ( ( $parent ?: $product )->get_gallery_image_ids() as $gallery_id ) {
+			if ( (int) $gallery_id === (int) $image_id ) continue;
+
+			$gallery_url = wp_get_attachment_url( $gallery_id );
+			if ( $gallery_url ) {
+				$gallery[] = $gallery_url;
+			}
+		}
+		if ( $gallery ) {
+			$row['additional_image_link'] = $gallery;
+		}
+
+		return $row;
 	}
 
 	private function get_brand( int $product_id ): ?string {

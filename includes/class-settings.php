@@ -55,6 +55,8 @@ class Ovebotai_Settings {
 		if ( Ovebotai::woocommerce_active() ) {
 			update_option( 'ovebotai_order_api_enabled', ! empty( $_POST['order_api_status'] ) ? '1' : '0', false );
 			update_option( 'ovebotai_products_enabled', ! empty( $_POST['products_enabled'] ) ? '1' : '0', false );
+			// "Add to cart" button in the chat - mirrored as products.add_to_cart.
+			update_option( 'ovebotai_add_to_cart', ! empty( $_POST['add_to_cart'] ) ? '1' : '0', false );
 		}
 
 		$widget = array();

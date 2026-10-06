@@ -124,6 +124,12 @@
 			$('#oveProductsEnabledLbl').text($(this).is(':checked') ? cfg.i18n.enabled : cfg.i18n.disabled);
 		});
 
+		// ── Toggle add-to-cart button status label ───────────────────────────
+
+		$('#oveAddToCart').on('change', function () {
+			$('#oveAddToCartLbl').text($(this).is(':checked') ? cfg.i18n.enabled : cfg.i18n.disabled);
+		});
+
 		// ── Toggle built-in product-feed status label + Feed URL visibility ──
 
 		var $oveFeedUrlField = $('#oveFeedUrlField');

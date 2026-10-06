@@ -421,13 +421,10 @@ class Ovebotai_OAuth {
 		return 'https://' . $workspace . '.ovebot.ai/setup';
 	}
 
-	// Sign-up link for the "Start Free" button. `plan` carries the platform's
-	// freemium slug — account.ovebot.ai checks it is an open plan and falls
-	// back to plain registration (with its own notice) when it isn't, so
-	// there is nothing to verify on this side.
+	// Sign-up link for the "Start Free" button. Only the site's domain is
+	// passed along; the plan is chosen on account.ovebot.ai.
 	public static function get_register_url(): string {
 		return 'https://' . OVEBOTAI_ACCOUNT_HOST . '/register?' . http_build_query( array(
-			'plan'   => 'wp-freemium',
 			'domain' => (string) wp_parse_url( home_url(), PHP_URL_HOST ),
 		) );
 	}

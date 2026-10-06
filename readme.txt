@@ -4,7 +4,7 @@ Tags: chatbot, ai, live chat, customer support, woocommerce
 Requires at least: 5.9
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.1.0
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -174,19 +174,20 @@ The visitor-facing part. `<your-workspace>` is the workspace slug of the account
 What is sent, and when:
 
 * **On every page view of your site, for every visitor, while the chat widget is enabled:** the browser loads `https://<your-workspace>.ovebot.ai/widget/chat-loader.js`. Loading it necessarily discloses the visitor's IP address and user agent to Ovebot.ai, as with any externally hosted script. From then on, the conversation itself (the messages the visitor types, the page they are on, and two first-party cookies holding a random visitor/session identifier) is exchanged with Ovebot.ai so the AI can reply.
-* **On the WooCommerce order-received page, once per order, while the chat widget is enabled:** the browser loads `https://<your-workspace>.ovebot.ai/widget/event.js` and reports the order number, total and currency. Ovebot.ai records only these — the order id and its total — and keeps them to produce the account's activity / justification report (attributing an order to the conversation that preceded it). No line items, customer names, emails, phone numbers or addresses are sent by this event.
+* **On the WooCommerce order-received page, once per order, while the chat widget is enabled:** the browser loads `https://<your-workspace>.ovebot.ai/widget/event.js` and reports the order number, total and currency, together with the order lines (product/variation id, product name, unit price and quantity). Ovebot.ai keeps them to produce the account's activity / justification report (attributing an order to the conversation that preceded it). No customer names, emails, phone numbers or addresses are sent by this event.
+* **While the chat widget and the "Add to cart button" setting are both enabled:** the chat options pushed to the widget include the visitor's current cart (product/variation id, SKU, name, unit price, currency and quantity of each line), and the same cart snapshot is pushed again to the widget whenever the cart changes, so the AI can refer to what is already in the cart. The cart itself is read on your own site through WooCommerce's front-end AJAX router (`?wc-ajax=ovebotai_cart`), and adding a product from the chat goes through WooCommerce's own add-to-cart endpoint on your site; no cart data is sent anywhere other than to the widget already running in the visitor's browser.
 
 = 4. Requests Ovebot.ai makes back to your site =
 
 Not an outbound connection the plugin opens, but disclosed here because this is how your product and order data actually reaches Ovebot.ai. Once configured, Ovebot.ai's servers call two REST endpoints on your own site. Both require WooCommerce, both can be switched off in the plugin's settings, and both are served as Forbidden while the chat widget is disabled.
 
-* **`/wp-json/ovebotai/v1/feed`** — your product catalog, protected by a secret hash in the URL. For each purchasable, in-stock product it returns: the internal product id, name, description, category path, brand/manufacturer, availability, price and sale price, currency, main image URL, product-page URL, product attributes and — for managed-stock products — the available quantity. Out-of-stock and zero-priced products are left out. This is the product data Ovebot.ai uses to answer questions and recommend items.
+* **`/wp-json/ovebotai/v1/feed`** — your product catalog, protected by a secret hash in the URL. For each purchasable, in-stock product (each variation of a variable product counts as its own product) it returns: the internal product/variation id, name, description, category path, brand/manufacturer, availability, price and sale price, currency, main image URL, gallery image URLs, product-page URL, product attributes, SKU, the GTIN/UPC/EAN/ISBN when filled in, and — for managed-stock products — the available quantity. Out-of-stock and zero-priced products are left out. This is the product data Ovebot.ai uses to answer questions and recommend items.
 * **`/wp-json/ovebotai/v1/orders`** — order-status lookup, protected by HTTP Basic credentials generated on your site. The order is always found by **this plugin, looking it up live in your own site's WooCommerce database** — Ovebot.ai keeps no copy of your orders and does not search for it on its side. When a customer asks "where is my order?", Ovebot.ai simply forwards the order number they gave, together with the email address **or** phone number they entered so ownership can be proven, to this endpoint; the plugin does the lookup and hands back the answer. The email/phone is used only to check it matches that one order in that single request — it is never stored or logged, on your site or on Ovebot.ai. Only on a match does the endpoint return the order number, creation date, status, total and currency, plus — when your shipping plugin has stored one — the tracking (AWB) number, carrier name and a public tracking URL. Nothing is returned for an order the request cannot prove ownership of.
 
 What Ovebot.ai keeps, and what it does not:
 
 * **Product feed:** Ovebot.ai stores the catalog it reads from `/feed` so the AI can recommend your products to visitors, and refreshes it as your stock and prices change. Remove a product, or let it go out of stock, and it drops out on the next refresh.
-* **Orders:** Ovebot.ai records only the order id and order total (from the order-received event above), and keeps them solely to build your account's activity / justification report.
+* **Orders:** Ovebot.ai records the order id, order total and order lines (from the order-received event above), and keeps them solely to build your account's activity / justification report.
 * **Customer contact details are not retained:** the email address or phone number a customer enters when asking "where is my order?" is used only to authorize that one lookup. It is not stored or logged by this plugin, and it is not saved by Ovebot.ai either — it never becomes part of your account's stored data.
 
 = 5. Courier tracking links =
@@ -330,6 +331,12 @@ All of the plugin's options, cached feed data and knowledge-base id mappings are
 
 == Changelog ==
 
+= 1.1.0 =
+* Add to cart from chat: new "Add to cart button" setting (on by default, synced to your Ovebot.ai account as `products.add_to_cart`). Recommended products can be added to the cart straight from the conversation through WooCommerce's own add-to-cart flow, so the mini-cart, notices and tracking events behave exactly as for a normal click, and the chat follows the visitor's cart as it changes.
+* Product feed: variable products are now published one row per variation (own image, price, stock, SKU and attributes), so the AI recommends and adds to the cart the exact combination. New optional `sku`, `gtin` (WooCommerce's native GTIN/UPC/EAN/ISBN field) and `additional_image_link` (gallery images) columns.
+* Purchase event: the order-received event now also carries the order lines (product/variation id, name, unit price, quantity), and fires on the block-based Order Confirmation template too (it previously relied on the `woocommerce_thankyou` hook, which that template only fires from its optional "Additional information" block).
+* Sign-up link no longer carries a plan parameter.
+
 = 1.0.1 =
 * Expanded the External services documentation: what data is sent and when, what Ovebot.ai retains (product feed for recommendations, order id/total for the activity report) and what it never stores (the email/phone a customer enters for an order lookup), and terms/privacy links for every courier whose public tracking page the plugin can build a link to.
 * Sanitized the HTTP Basic credentials read from `$_SERVER` on the order-lookup endpoint.
@@ -339,6 +346,9 @@ All of the plugin's options, cached feed data and knowledge-base id mappings are
 * Initial release.
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+* Add-to-cart button in the chat, cart sync, variations in the product feed, SKU/GTIN/gallery columns and order lines in the purchase event.
 
 = 1.0.1 =
 * Documentation and security hardening for the plugin review: fuller External services disclosure, sanitized order-endpoint credentials, and a stricter OAuth return handler.

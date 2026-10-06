@@ -164,7 +164,7 @@ $ovebotai_agent_settings_url  = $ovebotai_oauth->get_agent_settings_url();
 						<div class="ovebotai-radio-info">
 							<span class="ovebotai-radio-title"><?php esc_html_e( 'Use the built-in feed', 'ovebot-ai-chatbot-sales-agent' ); ?></span>
 							<p class="description">
-								<?php esc_html_e( 'Only products currently in stock are sent to Ovebot.ai.', 'ovebot-ai-chatbot-sales-agent' ); ?>
+								<?php esc_html_e( 'Only products currently in stock are sent to Ovebot.ai. Variable products are sent as one product per variation.', 'ovebot-ai-chatbot-sales-agent' ); ?>
 							</p>
 						</div>
 					</label>
