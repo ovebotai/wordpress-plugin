@@ -260,6 +260,15 @@ class Ovebotai_Frontend {
 			'items'          => $items,
 		);
 
+		// The agent the conversion belongs to, named explicitly as the tracking
+		// docs ask (event.js would otherwise fall back to the agent of the
+		// "chat" push, or to the default agent). Same rule as inject_widget():
+		// the default agent has no id, so the key is left out for it.
+		$agent_id = Ovebotai_OAuth::instance()->get_agent_id();
+		if ( '' !== $agent_id ) {
+			$payload = array( 'agent' => $agent_id ) + $payload;
+		}
+
 		// wp_footer runs this at its default priority (10), before core's own
 		// wp_print_footer_scripts (priority 20) — safe to enqueue here.
 		//
