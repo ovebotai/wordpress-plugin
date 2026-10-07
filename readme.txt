@@ -328,7 +328,6 @@ All of the plugin's options, cached feed data and knowledge-base id mappings are
 * Add to cart from chat: new "Add to cart button" setting (on by default, synced to your Ovebot.ai account as `products.add_to_cart`). Recommended products can be added to the cart straight from the conversation through WooCommerce's own add-to-cart flow, so the mini-cart, notices and tracking events behave exactly as for a normal click, and the chat follows the visitor's cart as it changes.
 * Product feed: variable products are now published one row per variation (own image, price, stock, SKU and attributes), so the AI recommends and adds to the cart the exact combination. New optional `sku`, `gtin` (WooCommerce's native GTIN/UPC/EAN/ISBN field) and `additional_image_link` (gallery images) columns.
 * Purchase event: the order-received event now also carries the order lines (product/variation id, name, unit price, quantity), and fires on the block-based Order Confirmation template too (it previously relied on the `woocommerce_thankyou` hook, which that template only fires from its optional "Additional information" block).
-* Sign-up link no longer carries a plan parameter.
 
 = 1.0.5 =
 * Tested up field updated
